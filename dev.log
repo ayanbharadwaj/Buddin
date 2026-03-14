@@ -1,0 +1,12 @@
+
+> buddin-2@2.0.0 dev
+> vite
+
+
+  VITE v5.4.21  ready in 427 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+[BABEL] Note: The code generator has deoptimised the styling of /app/App.jsx as it exceeds the max of 500KB.
+10:40:41 PM [vite] vite.config.js changed, restarting server...
+10:40:41 PM [vite] server restarted.
