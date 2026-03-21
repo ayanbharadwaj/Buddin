@@ -2,12 +2,48 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <link rel="manifest" href="/manifest.json" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>Buddin 2.0</title>
-    <meta name="description" content="Buddin — your companion for loneliness and emotional fatigue" />
+    <title>Buddin — Your Conversational Companion</title>
+
+    <!-- SEO -->
+    <meta name="description" content="Buddin is a conversational app designed to be a reliable buddy you can talk to about anything. A supportive friend, ready to listen, chat, and help you navigate whatever is on your mind, anytime." />
+    <meta name="keywords" content="mental wellness, loneliness app, emotional support, companion app, AI buddy, teen mental health, talk to someone" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://getbuddin.org" />
+
+    <!-- Open Graph (shows up when shared on WhatsApp, iMessage, etc.) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://getbuddin.org" />
+    <meta property="og:title" content="Buddin — Your Conversational Companion" />
+    <meta property="og:description" content="A supportive friend, ready to listen, chat, and help you navigate whatever is on your mind, anytime you need it." />
+    <meta property="og:image" content="https://getbuddin.org/og-image.png" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Buddin — Your Conversational Companion" />
+    <meta name="twitter:description" content="A supportive friend, ready to listen anytime." />
+    <meta name="twitter:image" content="https://getbuddin.org/og-image.png" />
+
+    <!-- PWA / Mobile -->
     <meta name="theme-color" content="#F5ECDC" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Buddin" />
+
+    <!-- Structured Data for Google (this is what makes the rich snippet appear) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Buddin",
+      "url": "https://getbuddin.org",
+      "description": "Buddin is a conversational app designed to be a reliable buddy you can talk to about anything. It acts as a supportive friend, ready to listen, chat, and help you navigate whatever is on your mind, anytime you need it.",
+      "applicationCategory": "HealthApplication",
+      "operatingSystem": "Web",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>
