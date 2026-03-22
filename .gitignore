@@ -1,11 +1,6 @@
 .vercel
 .env*.local
-<<<<<<< HEAD
-node_modules/
-.env
-=======
 .env
 data/
 node_modules/
->>>>>>> origin/feature/add-mood-inference-3411396584101466690
 dist/
