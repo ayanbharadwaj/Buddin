@@ -1,0 +1,22 @@
+{
+  "name": "Buddin",
+  "short_name": "Buddin",
+  "description": "A conversational buddy you can talk to about anything, anytime.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F5ECDC",
+  "theme_color": "#F5ECDC",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/imagebuddin.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/imagebuddin.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
