@@ -11,13 +11,16 @@
     <!-- SEO -->
     <meta name="description" content="Buddin is a conversational app designed to be a reliable buddy you can talk to about anything. A supportive friend, ready to listen, chat, and help you navigate whatever is on your mind, anytime." />
     <meta name="keywords" content="mental wellness, loneliness app, emotional support, companion app, AI buddy, teen mental health, talk to someone" />
+    <meta name="author" content="Ayan Bharadwaj" />
     <meta name="robots" content="index, follow" />
     <meta name="google-site-verification" content="GihO8X2qF46dvfESkjqQCpg5xGzdtjkWRjjGyyaTW5k" />
     <link rel="canonical" href="https://getbuddin.org" />
+    <link rel="alternate" href="https://getbuddin.org" hreflang="en" />
 
     <!-- Open Graph (shows up when shared on WhatsApp, iMessage, etc.) -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://getbuddin.org" />
+    <meta property="og:site_name" content="Buddin" />
     <meta property="og:title" content="Buddin — Your Conversational Companion" />
     <meta property="og:description" content="A supportive friend, ready to listen, chat, and help you navigate whatever is on your mind, anytime you need it." />
     <meta property="og:image" content="https://getbuddin.org/og-image.png" />
@@ -30,6 +33,7 @@
 
     <!-- PWA / Mobile -->
     <meta name="theme-color" content="#F5ECDC" />
+    <meta name="application-name" content="Buddin" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Buddin" />
@@ -38,13 +42,23 @@
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "WebApplication",
+      "@type": "WebSite",
       "name": "Buddin",
       "url": "https://getbuddin.org",
       "description": "Buddin is a conversational app designed to be a reliable buddy you can talk to about anything. It acts as a supportive friend, ready to listen, chat, and help you navigate whatever is on your mind, anytime you need it.",
       "applicationCategory": "HealthApplication",
       "operatingSystem": "Web",
-      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "brand": {
+        "@type": "Brand",
+        "name": "Buddin",
+        "logo": "https://getbuddin.org/imagebuddin.png"
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://getbuddin.org/?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
     }
     </script>
 
