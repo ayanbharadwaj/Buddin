@@ -5,6 +5,17 @@ import path from 'path';
 const FREE_LIMIT       = 10;
 const SUPPORTER_LIMIT  = 40;
 const MAX_LIMIT        = 120;
+
+// Model per tier — each tier gets a better model as a real upgrade incentive
+const MODEL_FREE      = 'claude-haiku-4-5-20251001';     // fast, cheap, great for free
+const MODEL_SUPPORTER = 'claude-sonnet-4-5-20250929';    // noticeably smarter
+const MODEL_MAX       = 'claude-sonnet-4-6';             // latest & best balanced
+
+function modelForTier(tier) {
+  if (tier === 'supporter') return MODEL_SUPPORTER;
+  if (tier === 'max')       return MODEL_MAX;
+  return MODEL_FREE;
+}
 const MAX_BODY_SIZE    = 32000;
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
 const RATE_LIMIT_MAX   = 100;  // requests per minute
@@ -210,7 +221,7 @@ export default async function handler(req, res) {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-3-haiku-20240307',
+        model: modelForTier(tier),
         max_tokens: max_tokens || 800,
         system,
         messages,
@@ -222,7 +233,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       ...apiData,
-      usage_meta: { count: data.count, limit, tier, remaining },
+      usage_meta: { count: data.count, limit, tier, remaining, model: modelForTier(tier) },
     });
 
   } catch (error) {
