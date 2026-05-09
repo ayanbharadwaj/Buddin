@@ -624,15 +624,15 @@ const res = await fetch("/api/chat", {
    BUBBLE — AI message typewriter (adaptive speed)
    Longer message → faster speed. Shorter → slower, more deliberate.
 ═══════════════════════════════════════════════════════════════ */
-function Bubble({ role, content, avatar, isTypingIndicator }) {
+function Bubble({ role, content, avatar, isTypingIndicator, isNew }) {
   const av = AVATARS.find(a=>a.id===avatar?.id);
   const isAI = role==="assistant";
-  const [displayed, setDisplayed] = useState(isAI ? "" : content);
-  const [done, setDone]           = useState(!isAI);
+  const [displayed, setDisplayed] = useState(isAI && isNew ? "" : content);
+  const [done, setDone]           = useState(!isAI || !isNew);
   const timerRef = useRef(null);
 
   useEffect(() => {
-    if (!isAI || isTypingIndicator || !content) return;
+    if (!isAI || isTypingIndicator || !content || !isNew) return;
     setDisplayed("");
     setDone(false);
     // Adaptive speed: target 2.5–5.5s for any message length
@@ -1342,11 +1342,7 @@ const res = await fetch("/api/chat", {
             style={{ width:"100%", padding:"19px 24px", background:`linear-gradient(135deg, ${C.sage}, ${C.forest})`, color:"#fff", border:"none", borderRadius:20, fontSize:16, fontWeight:700, cursor:"pointer", boxShadow:`0 10px 32px ${C.sage}50` }}>
             Get started
           </button>
-          {!musicEnabled && (
-            <button onClick={enableMusic} className="btn glass" style={{ width:"100%", padding:"12px 24px", marginTop:10, border:`1px solid ${C.sage}44`, color:C.sage, borderRadius:16, fontSize:13, fontWeight:600, cursor:"pointer", background:`${C.sage}08` }}>
-              🎵 Enable background music
-            </button>
-          )}
+          
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:16 }}>
   <p style={{ color:C.stoneMid, fontSize:12 }}>No account · Free · Made by a student</p>
   <button onClick={musicEnabled ? disableMusic : enableMusic} className="btn glass"
@@ -1506,11 +1502,10 @@ const res = await fetch("/api/chat", {
               </div>
               <div style={{ color:C.stoneMid, fontSize:9 }}>pts</div>
             </div>
-            {musicEnabled && (
-              <button onClick={disableMusic} className="btn glass"
-                style={{ borderRadius:12, padding:"8px 10px", border:`1px solid ${avatarColor}33`, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}
-                title="Stop music"><VolumeX size={15} color={C.stoneMid} strokeWidth={2}/></button>
-            )}
+            <button onClick={musicEnabled ? disableMusic : enableMusic} className="btn glass"
+  style={{ borderRadius:12, padding:"7px 12px", border:`1px solid ${avatarColor}33`, cursor:"pointer", display:"flex", alignItems:"center", gap:5, fontSize:11, color:avatarColor, fontWeight:600 }}>
+  {musicEnabled ? <><VolumeX size={13} strokeWidth={2}/> Stop</> : <><Music size={13} strokeWidth={2}/> Music</>}
+</button>
             <button onClick={() => { setHoveredAv(null); setSelectedAv(null); setIntroText(""); setShowIntro(false); setScreen("onboard2"); }} className="btn glass"
               style={{ borderRadius:12, padding:"8px 10px", border:`1px solid ${avatarColor}33`, cursor:"pointer", fontSize:11, color:avatarColor, fontWeight:600 }}>
               Switch {av?.emoji}
@@ -1652,9 +1647,17 @@ const res = await fetch("/api/chat", {
           </div>
         )}
         <div style={{ maxWidth:480, margin:"0 auto" }}>
-          {messages.map((m, i) => <Bubble key={i} role={m.role} content={m.content} avatar={av}/>)}
-          {loading && <Bubble role="assistant" content="" avatar={av} isTypingIndicator/>}
-        </div>
+  {messages.map((m, i) => (
+    <Bubble 
+      key={i} 
+      role={m.role} 
+      content={m.content} 
+      avatar={av} 
+      isNew={i === messages.length - 1 && m.role === "assistant"}
+    />
+  ))}
+  {loading && <Bubble role="assistant" content="" avatar={av} isTypingIndicator/>}
+</div>
         <div ref={endRef}/>
       </div>
 
@@ -1700,8 +1703,7 @@ const res = await fetch("/api/chat", {
 
       <div className="glass chat-input-bar" style={{ padding:`12px 16px calc(12px + env(safe-area-inset-bottom))`, paddingBottom:`calc(12px + env(safe-area-inset-bottom))`, borderTop:"1px solid rgba(255,235,200,0.28)", flexShrink:0, position:"relative", zIndex:10, borderRadius:0, background:`rgba(245,236,220,0.85)`, backdropFilter:"blur(22px)", WebkitBackdropFilter:"blur(22px)" }}>        <div style={{ maxWidth:480, margin:"0 auto" }}>
           <div style={{ display:"flex", gap:9, alignItems:"center" }}>
-            <input ref={inputRef} value={input} onChange={e => !limitReached && setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && !e.shiftKey && input.trim() && send(input)} placeholder={limitReached ? "Today's conversations are complete." : "What's on your mind..."} style={{ flex:1, background:"rgba(255,248,235,0.55)", border:"1px solid rgba(255,235,200,0.4)", backdropFilter:"blur(12px)", borderRadius:16, padding:"13px 18px", color:C.ink, fontSize:14, boxShadow:"0 2px 8px rgba(40,28,16,0.06)" }}/>
-            <button onClick={() => input.trim() && !limitReached && send(input)} disabled={loading || !input.trim() || limitReached} className="btn"
+              <textarea ref={inputRef} value={input} onChange={e => !limitReached && setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && !e.shiftKey && input.trim() && (e.preventDefault(), send(input))} placeholder={limitReached ? "Today's conversations are complete." : "What's on your mind..."} rows={1} style={{ flex:1, background:"rgba(255,248,235,0.55)", border:"1px solid rgba(255,235,200,0.4)", backdropFilter:"blur(12px)", borderRadius:16, padding:"13px 18px", color:C.ink, fontSize:14, boxShadow:"0 2px 8px rgba(40,28,16,0.06)", resize:"none", overflowY:"hidden", lineHeight:"1.5", fontFamily:"inherit", maxHeight:120, minHeight:46 }} onInput={e => { e.target.style.height = "auto"; e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px"; }}/>            <button onClick={() => input.trim() && !limitReached && send(input)} disabled={loading || !input.trim() || limitReached} className="btn"
               style={{ width:46, height:46, borderRadius:16, border:"none", cursor:limitReached || loading || !input.trim() ? "not-allowed" : "pointer", background:limitReached || loading || !input.trim() ? C.stoneLight : `linear-gradient(135deg, ${avatarColor}, ${avatarColor}cc)`, color:limitReached || loading || !input.trim() ? C.stoneMid : "#fff", fontSize:19, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, boxShadow:limitReached || loading || !input.trim() ? "none" : `0 6px 20px ${avatarColor}44`, opacity:limitReached || loading ? 0.6 : 1, transition:"all 0.2s ease" }}>
               <Send size={18} strokeWidth={2}/>
             </button>
@@ -1918,7 +1920,7 @@ const res = await fetch("/api/chat", {
       </div>
 
       <div className="glass card" style={{ borderRadius:22, padding:22, marginBottom:14, border:`2px solid ${avatarColor}66`, position:"relative" }}>
-        <div style={{ position:"absolute", top:-10, right:14, background:`linear-gradient(135deg, ${avatarColor}, ${avatarColor}cc)`, color:"#fff", borderRadius:20, padding:"5px 16px", fontSize:11, fontWeight:700, boxShadow:`0 4px 12px ${avatarColor}44` }}>POPULAR · $9/mo</div>
+        <div style={{ position:"absolute", top:-14, left:"50%", transform:"translateX(-50%)", background:`linear-gradient(135deg, ${avatarColor}, ${avatarColor}cc)`, color:"#fff", borderRadius:20, padding:"6px 20px", fontSize:12, fontWeight:700, boxShadow:`0 4px 12px ${avatarColor}44`, whiteSpace:"nowrap" }}> POPULAR · $9/mo</div>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
           <div style={{ display:"flex", alignItems:"center", gap:8 }}>
             <p style={{ fontWeight:700, fontSize:16, color:C.ink, fontFamily:"'Fraunces', Georgia, serif" }}>Supporter</p>
