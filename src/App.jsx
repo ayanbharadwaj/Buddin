@@ -1123,7 +1123,7 @@ export default function App() {
              method: "POST",
              headers: { "Content-Type": "application/json" },
              body: JSON.stringify({ questionId: activeQuestion.id, userResponse: content })
-         }).then(res => res.json()).then(inference => {
+         }).then(res => res.json()).then(async (inference) => {
              if (inference.energy) { // basic check if valid
                  inference.questionId = activeQuestion.id;
                  const { data: { session: s } } = await supabase.auth.getSession();
