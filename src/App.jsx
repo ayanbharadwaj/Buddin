@@ -1495,13 +1495,6 @@ const res = await fetch("/api/chat", {
             <p style={{ color:C.stoneMid, fontSize:12, marginTop:2 }}>with {av?.name} {av?.emoji}</p>
           </div>
           <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-            <div className="glass" style={{ borderRadius:12, padding:"7px 15px", textAlign:"center" }}>
-              <div style={{ color:avatarColor, fontWeight:800, fontSize:16, fontFamily:"'Fraunces', Georgia, serif", display:"flex", alignItems:"center", justifyContent:"center", gap:5 }}>
-                <Star size={14} color={avatarColor} strokeWidth={2}/>
-                {points}
-              </div>
-              <div style={{ color:C.stoneMid, fontSize:9 }}>pts</div>
-            </div>
             <button onClick={musicEnabled ? disableMusic : enableMusic} className="btn glass"
   style={{ borderRadius:12, padding:"7px 12px", border:`1px solid ${avatarColor}33`, cursor:"pointer", display:"flex", alignItems:"center", gap:5, fontSize:11, color:avatarColor, fontWeight:600 }}>
   {musicEnabled ? <><VolumeX size={13} strokeWidth={2}/> Stop</> : <><Music size={13} strokeWidth={2}/> Music</>}
