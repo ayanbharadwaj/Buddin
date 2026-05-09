@@ -1,5 +1,6 @@
 import { StrictMode, useState, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
+import { Analytics } from '@vercel/analytics/react'
 import App from './src/App.jsx'
 import Login from './components/Login.jsx'
 import Signup from './components/Signup.jsx'
@@ -34,5 +35,8 @@ function Root() {
 }
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode><Root /></StrictMode>
+  <StrictMode>
+    <Root />
+    <Analytics />
+  </StrictMode>
 )
