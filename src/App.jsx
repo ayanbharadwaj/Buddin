@@ -1425,8 +1425,13 @@ const res = await fetch("/api/chat", {
             {activePortalAv ? `Tap ${activePortalAv.name} again to select` : "Select a companion above"}
           </div>
         )}
-        <button onClick={() => setScreen("onboard1")} style={{ background:"transparent", border:"none", color:C.stoneMid, cursor:"pointer", fontSize:13, padding:"8px 0" }}>← Back</button>
-      </div>
+<div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+  <button onClick={() => setScreen("onboard1")} style={{ background:"transparent", border:"none", color:C.stoneMid, cursor:"pointer", fontSize:13, padding:"8px 0" }}>← Back</button>
+  <button onClick={musicEnabled ? disableMusic : enableMusic} className="btn glass"
+    style={{ border:`1px solid ${C.sage}44`, color:C.sage, borderRadius:16, fontSize:12, fontWeight:600, cursor:"pointer", background:`${C.sage}08`, padding:"6px 12px", display:"flex", alignItems:"center", gap:6 }}>
+    {musicEnabled ? <><VolumeX size={13}/> Stop</> : <><Music size={13}/> Music</>}
+  </button>
+</div>      </div>
     </div>
   )}
 
