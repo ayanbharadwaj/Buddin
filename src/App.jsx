@@ -1244,7 +1244,7 @@ const res = await fetch("/api/chat", {
   // ── Layout constants ──────────────────────────────────────────
   const W  = {
     width:"100%",
-    maxWidth:"min(640px, 96vw)",
+    maxWidth:"min(780px, 96vw)",
     margin:"0 auto",
     padding:"0 clamp(12px, 4vw, 40px)",
     position:"relative",
@@ -1347,7 +1347,13 @@ const res = await fetch("/api/chat", {
               🎵 Enable background music
             </button>
           )}
-          <p style={{ textAlign:"center", color:C.stoneMid, fontSize:12, marginTop:16 }}>No account · Free · Made by a student</p>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:16 }}>
+  <p style={{ color:C.stoneMid, fontSize:12 }}>No account · Free · Made by a student</p>
+  <button onClick={musicEnabled ? disableMusic : enableMusic} className="btn glass"
+    style={{ border:`1px solid ${C.sage}44`, color:C.sage, borderRadius:16, fontSize:12, fontWeight:600, cursor:"pointer", background:`${C.sage}08`, padding:"6px 12px", display:"flex", alignItems:"center", gap:6 }}>
+    {musicEnabled ? <><VolumeX size={13}/> Stop</> : <><Music size={13}/> Music</>}
+  </button>
+</div>
         </div>
       </div>
     </div>
@@ -1619,7 +1625,11 @@ const res = await fetch("/api/chat", {
           <div style={{ fontWeight:600, fontSize:14, color:C.ink }}>{av?.name || "Buddin"}</div>
           <div style={{ color:avatarColor, fontSize:11 }}>{av?.vibe}</div>
         </div>
-        <button onClick={() => { setBreathOn(false); setScreen("breathe"); }} className="glass btn" style={{ marginLeft:"auto", borderRadius:11, padding:"7px 14px", border:`1px solid ${avatarColor}33`, color:avatarColor, cursor:"pointer", fontSize:12, fontWeight:600, display:"flex", alignItems:"center", gap:6 }}>
+        <button onClick={musicEnabled ? disableMusic : enableMusic} className="glass btn"
+          style={{ marginLeft:"auto", borderRadius:11, padding:"7px 12px", border:`1px solid ${avatarColor}33`, color:avatarColor, cursor:"pointer", fontSize:12, display:"flex", alignItems:"center", gap:5 }}>
+          {musicEnabled ? <VolumeX size={13} strokeWidth={2}/> : <Music size={13} strokeWidth={2}/>}
+        </button>
+        <button onClick={() => { setBreathOn(false); setScreen("breathe"); }} className="glass btn" style={{ borderRadius:11, padding:"7px 14px", border:`1px solid ${avatarColor}33`, color:avatarColor, cursor:"pointer", fontSize:12, fontWeight:600, display:"flex", alignItems:"center", gap:6 }}>
           <Wind size={13} strokeWidth={2}/> Breathe
         </button>
         <div className="glass" style={{ borderRadius:11, padding:"6px 12px", fontSize:10, fontWeight:700, color:avatarColor, border:`1px solid ${avatarColor}33`, textTransform:"capitalize" }}>
@@ -1889,7 +1899,7 @@ const res = await fetch("/api/chat", {
     <LivingBg intensity={3} avatarColor={avatarColor}/>
     <div style={W}>
       <SectionHeader onBack={() => setScreen("home")} title="Plans"/>
-      <p style={{ color:C.stone, fontSize:13, lineHeight:1.76, marginBottom:24 }}>Buddin is a non-profit passion project. Every conversation costs real money — your support keeps it free for everyone who needs it.</p>
+      <p style={{ color:C.stone, fontSize:13, lineHeight:1.76, marginBottom:16 }}>Buddin is a non-profit passion project. Every conversation costs real money — your support keeps it free for everyone who needs it.</p>
 
       <div className="glass card" style={{ borderRadius:22, padding:22, marginBottom:14, border:`1px solid ${C.stoneLight}` }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
@@ -1908,7 +1918,7 @@ const res = await fetch("/api/chat", {
       </div>
 
       <div className="glass card" style={{ borderRadius:22, padding:22, marginBottom:14, border:`2px solid ${avatarColor}66`, position:"relative" }}>
-        <div style={{ position:"absolute", top:12, right:14, background:`linear-gradient(135deg, ${avatarColor}, ${avatarColor}cc)`, color:"#fff", borderRadius:20, padding:"3px 12px", fontSize:10, fontWeight:700 }}>POPULAR</div>
+        <div style={{ position:"absolute", top:-10, right:14, background:`linear-gradient(135deg, ${avatarColor}, ${avatarColor}cc)`, color:"#fff", borderRadius:20, padding:"5px 16px", fontSize:11, fontWeight:700, boxShadow:`0 4px 12px ${avatarColor}44` }}>POPULAR · $9/mo</div>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
           <div style={{ display:"flex", alignItems:"center", gap:8 }}>
             <p style={{ fontWeight:700, fontSize:16, color:C.ink, fontFamily:"'Fraunces', Georgia, serif" }}>Supporter</p>
@@ -1924,7 +1934,7 @@ const res = await fetch("/api/chat", {
         ))}
         <PayPalScriptProvider options={{ 'client-id': import.meta.env.VITE_PAYPAL_CLIENT_ID, currency: 'USD' }}>
   <PayPalButtons
-    style={{ layout: 'vertical', shape: 'rect' }}
+    style={{ layout: 'vertical', shape: 'pill' }}
     createOrder={(data, actions) => actions.order.create({
       purchase_units: [{ amount: { value: '4.99' }, description: 'Buddin Supporter Plan' }]
     })}
@@ -1954,7 +1964,7 @@ const res = await fetch("/api/chat", {
         ))}
         <PayPalScriptProvider options={{ 'client-id': import.meta.env.VITE_PAYPAL_CLIENT_ID, currency: 'USD' }}>
   <PayPalButtons
-    style={{ layout: 'vertical', shape: 'rect' }}
+    style={{ layout: 'vertical', shape: 'pill' }}
     createOrder={(data, actions) => actions.order.create({
       purchase_units: [{ amount: { value: '9.99' }, description: 'Buddin Max Plan' }]
     })}
@@ -2008,7 +2018,7 @@ const res = await fetch("/api/chat", {
 
         <PayPalScriptProvider options={{ 'client-id': import.meta.env.VITE_PAYPAL_CLIENT_ID, currency: 'USD' }}>
   <PayPalButtons
-    style={{ layout: 'vertical', shape: 'rect' }}
+    style={{ layout: 'vertical', shape: 'pill' }}
     createOrder={(data, actions) => actions.order.create({
       purchase_units: [{ amount: { value: '5.00' }, description: 'Buddin Donation' }]
     })}
