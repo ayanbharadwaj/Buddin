@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { supabase } from '../src/lib/supabase'
+import { supabase } from '../lib/supabase'
 
 export default function Signup({ onSwitch }) {
   const [email, setEmail] = useState('')
