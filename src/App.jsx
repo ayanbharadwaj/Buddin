@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { toneToSystemInstruction } from '../api/boom/memorySchema.js';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
+import { supabase } from '../lib/supabase.js'
 
 /* ═══════════════════════════════════════════════════════════════
    HIDDEN MATHEMATICAL ENGINE
@@ -591,9 +592,13 @@ function useInsightEngine() {
     try {
       if (limitReached) { setLoading(false); return; }
 
-      const res = await fetch("/api/chat", {
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({ max_tokens:1200, system:INSIGHT_PROMPT,
+      const { data: { session: insightSession } } = await supabase.auth.getSession();
+const res = await fetch("/api/chat", {
+  method:"POST", headers:{
+    "Content-Type":"application/json",
+    "Authorization": `Bearer ${insightSession?.access_token}`
+  },
+  body:JSON.stringify({ max_tokens:1200, system:INSIGHT_PROMPT,
           messages:[{role:"user",content:"Generate 5 new insights. Output ONLY valid JSON array, no markdown."}] }),
       });
       if (res.status === 429) {
@@ -1047,8 +1052,11 @@ export default function App() {
     async function initSession() {
       try {
         await fetch("/api/session", { method: "POST" });
-        const memRes = await fetch("/api/memory");
-        if (memRes.ok) {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+        const memRes = await fetch("/api/memory", {
+          headers: { "Authorization": `Bearer ${token}` }
+});        if (memRes.ok) {
            const store = await memRes.json();
           const { deriveAdaptiveTone } = await import("../api/boom/memorySchema.js");
 
@@ -1118,11 +1126,15 @@ export default function App() {
          }).then(res => res.json()).then(inference => {
              if (inference.energy) { // basic check if valid
                  inference.questionId = activeQuestion.id;
-                 fetch("/api/memory", {
-                     method: "POST",
-                     headers: { "Content-Type": "application/json" },
-                     body: JSON.stringify({ snapshot: inference })
-                 }).then(res => res.json()).then(result => {
+                 const { data: { session: s } } = await supabase.auth.getSession();
+fetch("/api/memory", {
+    method: "POST",
+    headers: { 
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${s?.access_token}`
+    },
+    body: JSON.stringify({ snapshot: inference })
+}).then(res => res.json()).then(result => {
                      if (result.success && result.adaptiveTone) {
                          setAdaptiveTone(result.adaptiveTone);
                      }
@@ -1134,10 +1146,14 @@ export default function App() {
       // Strip custom properties like isProjectiveProbe before sending to Anthropic
       const safeW10 = w10.map(({ role, content }) => ({ role, content }));
 
-      const res = await fetch("/api/chat", {
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({
-          max_tokens:800,
+      const { data: { session: chatSession } } = await supabase.auth.getSession();
+const res = await fetch("/api/chat", {
+  method:"POST", headers:{
+    "Content-Type":"application/json",
+    "Authorization": `Bearer ${chatSession?.access_token}`
+  },
+  body: JSON.stringify({
+    max_tokens:800,
           system: buildSystemPrompt(av, mood, newSummary, getMinutes(), lyapunovRef.current, gut, superpositions, looping, adaptiveTone)
             + (isCrisis ? "\n\nCRITICAL SAFETY: Lead with warmth. Include 988 Lifeline and Crisis Text Line (HOME to 741741). Acknowledge pain before any redirect." : ""),
           messages: safeW10,
@@ -1497,6 +1513,15 @@ export default function App() {
               style={{ borderRadius:12, padding:"8px 10px", border:`1px solid ${avatarColor}33`, cursor:"pointer", fontSize:11, color:avatarColor, fontWeight:600, display:"flex", alignItems:"center", gap:4 }}>
               <Sparkles size={13} strokeWidth={2}/> Plans
             </button>
+            <button 
+  onClick={() => supabase.auth.signOut()}
+  style={{ 
+    background:'none', border:`1px solid ${C.stoneLight}`, 
+    borderRadius:20, padding:'4px 14px', fontSize:12, 
+    color:C.stone, cursor:'pointer' 
+  }}>
+  Sign Out
+</button>
           </div>
         </div>
 
