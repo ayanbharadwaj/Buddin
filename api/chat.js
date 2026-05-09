@@ -1,40 +1,30 @@
 import crypto from 'crypto';
-import fs from 'fs';
-import path from 'path';
+import { createClient } from '@supabase/supabase-js'
 
-const FREE_LIMIT       = 10;
-const SUPPORTER_LIMIT  = 40;
-const MAX_LIMIT        = 120;
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+)
 
-// Model per tier — each tier gets a better model as a real upgrade incentive
-const MODEL_FREE      = 'claude-haiku-4-5-20251001';     // fast, cheap, great for free
-const MODEL_SUPPORTER = 'claude-sonnet-4-5-20250929';    // noticeably smarter
-const MODEL_MAX       = 'claude-sonnet-4-6';             // latest & best balanced
+const FREE_LIMIT      = 10;
+const SUPPORTER_LIMIT = 40;
+const MAX_LIMIT       = 120;
+
+const MODEL_FREE      = 'claude-haiku-4-5-20251001';
+const MODEL_SUPPORTER = 'claude-sonnet-4-5-20250929';
+const MODEL_MAX       = 'claude-sonnet-4-6';
 
 function modelForTier(tier) {
   if (tier === 'supporter') return MODEL_SUPPORTER;
   if (tier === 'max')       return MODEL_MAX;
   return MODEL_FREE;
 }
-const MAX_BODY_SIZE    = 32000;
-const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
-const RATE_LIMIT_MAX   = 100;  // requests per minute
 
-const DATA_DIR = process.env.NODE_ENV === 'production'
-  ? '/tmp/buddin_usage'
-  : path.join(process.cwd(), 'data', 'usage');
+const MAX_BODY_SIZE     = 32000;
+const RATE_LIMIT_WINDOW = 60 * 1000;
+const RATE_LIMIT_MAX    = 100;
 
-const TIERS_DIR = process.env.NODE_ENV === 'production'
-  ? '/tmp'
-  : path.join(process.cwd(), 'data');
-
-const RATE_LIMIT_DIR = process.env.NODE_ENV === 'production'
-  ? '/tmp/buddin_ratelimit'
-  : path.join(process.cwd(), 'data', 'ratelimit');
-
-if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-if (!fs.existsSync(TIERS_DIR)) fs.mkdirSync(TIERS_DIR, { recursive: true });
-if (!fs.existsSync(RATE_LIMIT_DIR)) fs.mkdirSync(RATE_LIMIT_DIR, { recursive: true });
+const rateLimitStore = {};
 
 function hashIP(req) {
   const raw = req.headers['x-forwarded-for']?.split(',')[0]?.trim()
@@ -43,93 +33,59 @@ function hashIP(req) {
   return crypto.createHash('sha256').update(raw + 'buddin_salt_2025').digest('hex').slice(0, 32);
 }
 
-function getUsage(ipHash) {
-  const file = path.join(DATA_DIR, `${ipHash}.json`);
+function checkRateLimit(ipHash) {
+  const now = Date.now();
+  if (!rateLimitStore[ipHash]) rateLimitStore[ipHash] = [];
+  rateLimitStore[ipHash] = rateLimitStore[ipHash].filter(t => now - t < RATE_LIMIT_WINDOW);
+  if (rateLimitStore[ipHash].length >= RATE_LIMIT_MAX) {
+    return { allowed: false };
+  }
+  rateLimitStore[ipHash].push(now);
+  return { allowed: true };
+}
+
+async function getUsageFromDB(userId) {
   const today = new Date().toISOString().slice(0, 10);
-  let data = { date: today, count: 0, blocked: false, offTopicStrikes: 0 };
-  if (fs.existsSync(file)) {
-    try {
-      const raw = JSON.parse(fs.readFileSync(file, 'utf8'));
-      if (raw.date !== today) { 
-        data = { ...data, blocked: raw.blocked }; 
-      } else { 
-        data = raw; 
-      }
-    } catch {}
-  }
-  return { file, data };
+  const { data } = await supabase
+    .from('usage')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('date', today)
+    .single();
+  return data || { count: 0, off_topic_strikes: 0 };
 }
 
-function getTier(ipHash) {
-  const tiersFile = path.join(TIERS_DIR, 'tiers.json');
-  try {
-    if (fs.existsSync(tiersFile)) {
-      const tiers = JSON.parse(fs.readFileSync(tiersFile, 'utf8'));
-      return tiers[ipHash] || 'free';
-    }
-  } catch {}
-  return 'free';
+async function saveUsageToDB(userId, usageData) {
+  const today = new Date().toISOString().slice(0, 10);
+  await supabase.from('usage').upsert({
+    user_id: userId,
+    date: today,
+    count: usageData.count,
+    off_topic_strikes: usageData.off_topic_strikes || 0
+  });
 }
 
-function setTier(ipHash, tier) {
-  const tiersFile = path.join(TIERS_DIR, 'tiers.json');
-  try {
-    let tiers = {};
-    if (fs.existsSync(tiersFile)) {
-      tiers = JSON.parse(fs.readFileSync(tiersFile, 'utf8'));
-    }
-    tiers[ipHash] = tier;
-    fs.writeFileSync(tiersFile, JSON.stringify(tiers, null, 2));
-    return true;
-  } catch (e) {
-    console.error('Error saving tier:', e);
-    return false;
-  }
-}
-
-function saveUsage(file, data) {
-  try { fs.writeFileSync(file, JSON.stringify(data)); } catch {}
+async function getTierFromDB(userId) {
+  const { data } = await supabase
+    .from('profiles')
+    .select('tier')
+    .eq('id', userId)
+    .single();
+  return data?.tier || 'free';
 }
 
 function limitForTier(tier) {
   if (tier === 'supporter') return SUPPORTER_LIMIT;
-  if (tier === 'max') return MAX_LIMIT;
+  if (tier === 'max')       return MAX_LIMIT;
   return FREE_LIMIT;
 }
 
-function checkRateLimit(ipHash) {
-  const rateLimitFile = path.join(RATE_LIMIT_DIR, `${ipHash}.json`);
-  const now = Date.now();
-  let rateLimitData = { requests: [], blocked: false };
-  
-  if (fs.existsSync(rateLimitFile)) {
-    try {
-      rateLimitData = JSON.parse(fs.readFileSync(rateLimitFile, 'utf8'));
-    } catch {}
-  }
-  
-  rateLimitData.requests = rateLimitData.requests.filter(t => now - t < RATE_LIMIT_WINDOW);
-  
-  if (rateLimitData.requests.length >= RATE_LIMIT_MAX) {
-    return { allowed: false, reason: 'rate_limit' };
-  }
-  
-  rateLimitData.requests.push(now);
-  try {
-    fs.writeFileSync(rateLimitFile, JSON.stringify(rateLimitData));
-  } catch {}
-  
-  return { allowed: true, reason: null };
-}
-
 const OFF_TOPIC_PATTERNS = [
-  /\b(homework|essay|assignment|quiz|exam|test|chapter|textbook)\b/i,
-  /\b(recipe|bake|baking|cook|ingredient|tablespoon|teaspoon|oven|celsius|fahrenheit)\b/i,
-  /\b(factor|quadratic|derivative|integral|algebra|calculus|geometry|theorem|equation)\b/i,
-  /write me (a |an )?(essay|story|poem|code|script|email|report|letter)/i,
-  /\b(calculate|solve for|what is \d+[\+\-\*\/]\d+|what equals)\b/i,
-  /\b(weather|forecast|stock price|bitcoin|crypto|exchange rate|current time)\b/i,
-  /\b(translate this|translation of|what does.*mean in)\b/i,
+  /write me (a |an )?(full |complete )?(essay|story|poem|script|report|letter)/i,
+  /\b(recipe for|how to bake|baking instructions|tablespoon|teaspoon|preheat oven)\b/i,
+  /\b(what is \d+[\+\-\*\/]\d+|solve for x|calculate the derivative|find the integral)\b/i,
+  /\b(current (stock|bitcoin|crypto) price|today's weather|exchange rate)\b/i,
+  /\b(translate this to|what does .* mean in (spanish|french|hindi|tamil))\b/i,
 ];
 
 function detectOffTopic(messages) {
@@ -146,10 +102,7 @@ export default async function handler(req, res) {
   const ipHash = hashIP(req);
   const rateLimitCheck = checkRateLimit(ipHash);
   if (!rateLimitCheck.allowed) {
-    return res.status(429).json({ 
-      error: 'Too many requests. Please wait a moment.', 
-      code: 'RATE_LIMIT' 
-    });
+    return res.status(429).json({ error: 'Too many requests. Please wait a moment.', code: 'RATE_LIMIT' });
   }
 
   if (JSON.stringify(req.body).length > MAX_BODY_SIZE) {
@@ -162,13 +115,17 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Missing ANTHROPIC_API_KEY' });
   }
 
-  const { file, data } = getUsage(ipHash);
-  const tier = getTier(ipHash);
-  const limit = limitForTier(tier);
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.replace('Bearer ', '');
+  let userId = ipHash;
+  try {
+    const { data: { user } } = await supabase.auth.getUser(token);
+    if (user?.id) userId = user.id;
+  } catch {}
 
-  if (data.blocked) {
-    return res.status(429).json({ error: 'BLOCKED', code: 'BLOCKED' });
-  }
+  const data = await getUsageFromDB(userId);
+  const tier = await getTierFromDB(userId);
+  const limit = limitForTier(tier);
 
   if (data.count >= limit) {
     return res.status(429).json({
@@ -181,36 +138,30 @@ export default async function handler(req, res) {
     });
   }
 
-
   const offTopic = detectOffTopic(messages);
   if (offTopic) {
-    data.offTopicStrikes = (data.offTopicStrikes || 0) + 1;
-    saveUsage(file, data);
+    data.off_topic_strikes = (data.off_topic_strikes || 0) + 1;
+    await saveUsageToDB(userId, data);
 
-    if (data.offTopicStrikes >= 2) {
+    if (data.off_topic_strikes >= 2) {
       return res.status(200).json({
         content: [{
           type: 'text',
           text: `I appreciate you being here — but I'm not the right tool for that. I'm Buddin: a friend you can talk to about what's actually going on in your life. Not a homework helper, recipe finder, or general assistant. If something's weighing on you, I'm genuinely here for that. What's actually going on today?`
         }],
         offTopicRedirect: true,
-        usage_meta: { 
-          count: data.count, 
-          limit, 
-          tier, 
-          remaining: limit - data.count 
-        }
+        usage_meta: { count: data.count, limit, tier, remaining: limit - data.count }
       });
     }
   } else {
-    if (data.offTopicStrikes > 0) {
-      data.offTopicStrikes = 0;
+    if (data.off_topic_strikes > 0) {
+      data.off_topic_strikes = 0;
     }
   }
 
   data.count += 1;
   const remaining = limit - data.count;
-  saveUsage(file, data);
+  await saveUsageToDB(userId, data);
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -238,7 +189,7 @@ export default async function handler(req, res) {
 
   } catch (error) {
     data.count = Math.max(0, data.count - 1);
-    saveUsage(file, data);
+    await saveUsageToDB(userId, data);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 }

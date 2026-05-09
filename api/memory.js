@@ -1,66 +1,49 @@
-import fs from 'fs';
-import path from 'path';
-import { addSnapshot, deriveAdaptiveTone, createMemoryStore } from './boom/memorySchema.js';
+import { createClient } from '@supabase/supabase-js'
+import { addSnapshot, deriveAdaptiveTone, createMemoryStore } from './boom/memorySchema.js'
 
-// Use /tmp for Vercel serverless environment compatibility
-const DATA_DIR = process.env.NODE_ENV === 'production' ? '/tmp/data' : path.join(process.cwd(), 'data');
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY  // service key for server-side
+)
 
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-}
+export default async function handler(req, res) {
+  const authHeader = req.headers.authorization
+  if (!authHeader) return res.status(401).json({ error: 'Unauthorized' })
 
-export default function handler(req, res) {
-  // Extract token from cookie
-  const cookies = req.headers.cookie || '';
-  const match = cookies.match(/buddin_session=([^;]+)/);
-  const token = match ? match[1] : null;
+  const token = authHeader.replace('Bearer ', '')
+  const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+  if (authError || !user) return res.status(401).json({ error: 'Invalid token' })
 
-  if (!token) {
-    return res.status(401).json({ error: 'Unauthorized: missing session' });
-  }
-
-  // Basic validation to prevent path traversal
-  if (!/^[0-9a-fA-F-]+$/.test(token)) {
-    return res.status(400).json({ error: 'Invalid session token format' });
-  }
-
-  const filePath = path.join(DATA_DIR, `${token}.json`);
-
-  let store;
-  if (fs.existsSync(filePath)) {
-    try {
-      store = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-    } catch (e) {
-      store = createMemoryStore();
-    }
-  } else {
-    store = createMemoryStore();
-  }
+  const userId = user.id
 
   if (req.method === 'GET') {
-    return res.status(200).json(store);
+    const { data } = await supabase
+      .from('user_memory')
+      .select('*')
+      .eq('user_id', userId)
+      .single()
+    return res.status(200).json(data || createMemoryStore())
   }
 
   if (req.method === 'POST') {
-    try {
-      const snapshot = req.body.snapshot;
-      if (!snapshot) return res.status(400).json({ error: 'Missing snapshot' });
+    const { snapshot } = req.body
+    if (!snapshot) return res.status(400).json({ error: 'Missing snapshot' })
 
-      // Record snapshot which also runs detectDrift
-      addSnapshot(store, snapshot);
+    const { data: existing } = await supabase
+      .from('user_memory')
+      .select('*')
+      .eq('user_id', userId)
+      .single()
 
-      // Save the store
-      fs.writeFileSync(filePath, JSON.stringify(store, null, 2));
+    const store = existing || createMemoryStore()
+    addSnapshot(store, snapshot)
 
-      // Derive adaptive tone
-      const adaptiveTone = deriveAdaptiveTone(store);
+    await supabase
+      .from('user_memory')
+      .upsert({ user_id: userId, ...store, updated_at: new Date().toISOString() })
 
-      return res.status(200).json({ success: true, adaptiveTone, store });
-    } catch (error) {
-      console.error('Error in /api/memory:', error);
-      return res.status(500).json({ error: 'Internal Server Error' });
-    }
+    return res.status(200).json({ success: true, adaptiveTone: deriveAdaptiveTone(store), store })
   }
 
-  return res.status(405).json({ error: 'Method Not Allowed' });
+  return res.status(405).json({ error: 'Method Not Allowed' })
 }

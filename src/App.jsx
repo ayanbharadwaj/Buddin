@@ -7,6 +7,7 @@ import {
   Globe, Brain, BatteryLow, Flame, Shuffle, User, UserPlus, Crown, HeartHandshake
 } from "lucide-react";
 import { toneToSystemInstruction } from '../api/boom/memorySchema.js';
+import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
 
 /* ═══════════════════════════════════════════════════════════════
    HIDDEN MATHEMATICAL ENGINE
@@ -116,7 +117,7 @@ const SEED_INSIGHTS = [
 ];
 
 const AVATARS = [
-  {id:"mochi", name:"Mochi", vibe:"Warm & Gentle",   color:"#B87840", glow:"#FDF3E7", glowDark:"#E8C99A", homeBg:"#F5ECDC", mesh:["#FFD8B1","#b87840","#7D4E24"], emoji:"🧸", shape:"blob",    intro:"Most things in life don't need to be rushed. I'm here to hold space with you — to meet you exactly where you are, without judgment. We can move at your pace, one quiet breath at a time.", personality:"warm, gentle, patient. Uses 'we' instead of 'you'. Validates before anything else. Never rushes.", voice:"Compassionate. Validates feelings first."},
+  {id:"mochi", name:"Mochi", vibe:"Warm & Gentle",   color:"#B87840", glow:"#FDF3E7", glowDark:"#E8C99A", homeBg:"#F5ECDC", mesh:["#FFD8B1","#b87840","#7D4E24"], emoji:"🍪", shape:"blob",    intro:"Most things in life don't need to be rushed. I'm here to hold space with you — to meet you exactly where you are, without judgment. We can move at your pace, one quiet breath at a time.", personality:"warm, gentle, patient. Uses 'we' instead of 'you'. Validates before anything else. Never rushes.", voice:"Compassionate. Validates feelings first."},
   {id:"sage",  name:"Sage",  vibe:"Deep & Thoughtful",color:"#3A7A58", glow:"#EAF7F1", glowDark:"#B8DECA", homeBg:"#EEF7F2", mesh:["#A8E6CF","#3a7a58","#1B3B2B"], emoji:"🌿", shape:"crystal", intro:"I don't offer quick answers. I offer questions that help you find your own truth. The world is full of noise, but clarity lives in the pauses between thoughts. If you're ready to look beneath the surface, I'll walk that path with you.", personality:"philosophical, Socratic, patient. Asks one deep question at a time. Grounds thoughts in pattern and history.", voice:"Philosophical, grounded in history."},
   {id:"zap",   name:"Zap",   vibe:"Clear & Direct",   color:"#2A6FA8", glow:"#E8F2FC", glowDark:"#AACFE8", homeBg:"#EEF4FA", mesh:["#89CFF0","#2a6fa8","#153E63"], emoji:"⚡", shape:"orb",     intro:"I value your time and your intelligence, so I'll be direct. My goal is to help you cut through the mental fog and find your focus. I'll challenge you when it's useful, but always with the intent of keeping you grounded.", personality:"direct, clear, warm. Concise sentences. Challenges cognitive biases gently. Eliminates fluff.", voice:"Concise, honest, warm."},
   {id:"nova",  name:"Nova",  vibe:"Curious & Playful", color:"#7A4AAA", glow:"#F5EEFB", glowDark:"#CCA8E8", homeBg:"#F3EEF8", mesh:["#E0BBE4","#7a4aaa","#4B2E6B"], emoji:"✨", shape:"nebula",  intro:"I find the extraordinary hidden in the mundane — the physics in a raindrop, the philosophy in a sidewalk crack. I'm here to help you reframe the world with genuine wonder. Everything is connected if you look closely enough.", personality:"curious, imaginative, philosophical. Uses metaphor and scientific reframes. Sees wonder in the ordinary.", voice:"Imaginative. Uses metaphor and scientific reframes."},
@@ -339,7 +340,7 @@ function AvatarCore({ avatar, size=60, pulse=false }) {
   if (av.shape==="blob") return (
     <div style={common}>
       <div style={{ position:"absolute", inset:0, background:`radial-gradient(circle at 35% 30%, ${av.mesh[0]}, ${av.mesh[1]}, ${av.mesh[2]})`, borderRadius:"62% 38% 70% 30%/50% 60% 40% 50%", animation:`blobMorph 8s ease-in-out infinite${pulse?", orbPulse 3s ease-in-out infinite":""}`, boxShadow:`0 0 ${s*0.4}px ${av.mesh[0]}88, 0 ${s*0.12}px ${s*0.36}px ${C.shadowMd}`, filter:`blur(${s*0.012}px)` }}/>
-      <AnimEmoji e="🧸" size={s*0.44} color={av.color} delay="0s"/>
+      <AnimEmoji e="🍪" size={s*0.44} color={av.color} delay="0s"/>
     </div>
   );
   if (av.shape==="crystal") return (
@@ -1896,10 +1897,20 @@ export default function App() {
             <p style={{ color:C.stone, fontSize:13 }}>{f}</p>
           </div>
         ))}
-        <a href="https://buymeacoffee.com/YOURUSERNAME" target="_blank" rel="noopener noreferrer" className="btn"
-          style={{ display:"block", marginTop:16, width:"100%", padding:"13px", background:`linear-gradient(135deg, ${avatarColor}, ${avatarColor}cc)`, color:"#fff", border:"none", borderRadius:16, fontSize:14, fontWeight:700, cursor:"pointer", textAlign:"center", textDecoration:"none" }}>
-          Get Supporter →
-        </a>
+        <PayPalScriptProvider options={{ 'client-id': import.meta.env.VITE_PAYPAL_CLIENT_ID, currency: 'USD' }}>
+  <PayPalButtons
+    style={{ layout: 'vertical', shape: 'rect' }}
+    createOrder={(data, actions) => actions.order.create({
+      purchase_units: [{ amount: { value: '4.99' }, description: 'Buddin Supporter Plan' }]
+    })}
+    onApprove={async () => {
+      if (session) {
+        await supabase.from('profiles').update({ tier: 'supporter' }).eq('id', session.user.id)
+        alert('You are now a Supporter! Refresh to see your new limits.')
+      }
+    }}
+  />
+</PayPalScriptProvider>
       </div>
 
       <div className="glass card" style={{ borderRadius:22, padding:22, marginBottom:20, border:`1px solid ${C.gold}55` }}>
@@ -1916,10 +1927,20 @@ export default function App() {
             <p style={{ color:C.stone, fontSize:13 }}>{f}</p>
           </div>
         ))}
-        <a href="https://buymeacoffee.com/YOURUSERNAME" target="_blank" rel="noopener noreferrer" className="btn"
-          style={{ display:"block", marginTop:16, width:"100%", padding:"13px", background:`linear-gradient(135deg, ${C.gold}, ${C.clay})`, color:"#fff", border:"none", borderRadius:16, fontSize:14, fontWeight:700, cursor:"pointer", textAlign:"center", textDecoration:"none" }}>
-          Get Max →
-        </a>
+        <PayPalScriptProvider options={{ 'client-id': import.meta.env.VITE_PAYPAL_CLIENT_ID, currency: 'USD' }}>
+  <PayPalButtons
+    style={{ layout: 'vertical', shape: 'rect' }}
+    createOrder={(data, actions) => actions.order.create({
+      purchase_units: [{ amount: { value: '9.99' }, description: 'Buddin Max Plan' }]
+    })}
+    onApprove={async () => {
+      if (session) {
+        await supabase.from('profiles').update({ tier: 'max' }).eq('id', session.user.id)
+        alert('You are now on Max! Refresh to see your new limits.')
+      }
+    }}
+  />
+</PayPalScriptProvider>
       </div>
 
       <p style={{ color:C.stoneMid, fontSize:11, textAlign:"center", lineHeight:1.65 }}>No subscription traps — cancel anytime.<br/>Built by a high school student. Every dollar goes to API costs.</p>
@@ -1960,17 +1981,15 @@ export default function App() {
           ))}
         </div>
 
-        <a href="https://buymeacoffee.com/" target="_blank" rel="noopener noreferrer"
-          className="btn"
-          style={{ display:"block", width:"100%", padding:"18px 24px", background:`linear-gradient(135deg, #FFDD00, #F7B924)`, color:"#333", border:"none", borderRadius:20, fontSize:15, fontWeight:700, cursor:"pointer", boxShadow:"0 10px 32px rgba(247,185,36,0.4)", textAlign:"center", textDecoration:"none", marginBottom:12 }}>
-          ☕ Buy me a coffee
-        </a>
-
-        <a href="https://ko-fi.com/" target="_blank" rel="noopener noreferrer"
-          className="btn"
-          style={{ display:"block", width:"100%", padding:"15px 24px", background:"rgba(255,248,235,0.42)", color:C.ink, border:`1.5px solid ${avatarColor}44`, borderRadius:18, fontSize:14, fontWeight:600, cursor:"pointer", textAlign:"center", textDecoration:"none", marginBottom:20 }}>
-          💜 Support on Ko-fi
-        </a>
+        <PayPalScriptProvider options={{ 'client-id': import.meta.env.VITE_PAYPAL_CLIENT_ID, currency: 'USD' }}>
+  <PayPalButtons
+    style={{ layout: 'vertical', shape: 'rect' }}
+    createOrder={(data, actions) => actions.order.create({
+      purchase_units: [{ amount: { value: '5.00' }, description: 'Buddin Donation' }]
+    })}
+    onApprove={() => alert('Thank you so much! Every dollar keeps Buddin alive.')}
+  />
+</PayPalScriptProvider>
 
         <p style={{ color:C.stoneMid, fontSize:12, textAlign:"center", lineHeight:1.65 }}>
           No account needed. Any amount helps. Thank you for believing in this.
