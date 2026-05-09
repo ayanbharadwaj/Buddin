@@ -1273,13 +1273,13 @@ const res = await fetch("/api/chat", {
     setScreen("missions");
   }, [filterMissions]);
 
-  /* ════════════════════════════════════════════════════════════
+  {/* ════════════════════════════════════════════════════════════
      SCREENS
-  ════════════════════════════════════════════════════════════ */
+  ════════════════════════════════════════════════════════════ */}
 
   {/* ── ONBOARD 1 ───────────────────────────────────────────── */}
 
-  // ── Single persistent return — audio tags never unmount ──────
+  {/* ── Single persistent return — audio tags never unmount ────── */}
   return (
     <div style={{position:"relative", background:"#F5ECDC", minHeight:"100dvh"}}>
       <style>{CSS}</style>
@@ -1893,7 +1893,7 @@ const res = await fetch("/api/chat", {
       <Dock screen={screen} setScreen={setScreen} onMissions={onMissions} avatarColor={avatarColor}/>
     </div>
   )}
-    {{/* ── UPGRADE ─────────────────────────────────────────── */}}
+    {/* ── UPGRADE ─────────────────────────────────────────── */}
 {screen === "upgrade" && (
   <div style={{ ...BG, paddingBottom:100, overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
     <LivingBg intensity={3} avatarColor={avatarColor}/>
@@ -1983,7 +1983,7 @@ const res = await fetch("/api/chat", {
     <Dock screen={screen} setScreen={setScreen} onMissions={onMissions} avatarColor={avatarColor}/>
   </div>
 )}
-  {{/* ── DONATE ──────────────────────────────────────────── */}}
+  {/* ── DONATE ──────────────────────────────────────────── */}
   {screen === "donate" && (
     <div style={{ ...BG, paddingBottom:100, overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
       <LivingBg intensity={3} avatarColor={avatarColor}/>
