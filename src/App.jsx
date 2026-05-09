@@ -1277,7 +1277,7 @@ const res = await fetch("/api/chat", {
      SCREENS
   ════════════════════════════════════════════════════════════ */
 
-  /* ── ONBOARD 1 ───────────────────────────────────────────── */
+  {/* ── ONBOARD 1 ───────────────────────────────────────────── */}
 
   // ── Single persistent return — audio tags never unmount ──────
   return (
@@ -1355,7 +1355,7 @@ const res = await fetch("/api/chat", {
     </div>
   )}
 
-  /* ── ONBOARD 2 ───────────────────────────────────────────── */
+  {/* ── ONBOARD 2 ───────────────────────────────────────────── */}
   {screen === "onboard2" && (
     <div style={{ ...BG, overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
       <ColorWashOverlay wash={colorWash}/>
@@ -1435,7 +1435,7 @@ const res = await fetch("/api/chat", {
     </div>
   )}
 
-  /* ── ONBOARD 3 ───────────────────────────────────────────── */
+  {/* ── ONBOARD 3 ───────────────────────────────────────────── */}
   {screen === "onboard3" && (
     <div style={{ ...BG, overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
       <LivingBg intensity={3} avatarColor={avatarColor}/>
@@ -1488,7 +1488,7 @@ const res = await fetch("/api/chat", {
     </div>
   )}
 
-  /* ── HOME ─────────────────────────────────────────────────── */
+  {/* ── HOME ─────────────────────────────────────────────────── */}
   {screen === "home" && (
     <div style={{ ...BG, paddingBottom:100, overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
       <LivingBg intensity={mood?.intensity || 3} avatarColor={avatarColor}/>
@@ -1601,7 +1601,7 @@ const res = await fetch("/api/chat", {
     </div>
   )}
 
-  /* ── CHAT ─────────────────────────────────────────────────── */
+  {/* ── CHAT ─────────────────────────────────────────────────── */}
   {screen === "chat" && (
     <div style={{ position:"fixed", inset:0, display:"flex", flexDirection:"column", fontFamily:"'Cabinet Grotesk', sans-serif", color:C.ink, overflow:"hidden" }}>
       <div style={{ position:"absolute", inset:0, zIndex:0, pointerEvents:"none", overflow:"hidden" }}>
@@ -1717,7 +1717,7 @@ const res = await fetch("/api/chat", {
     </div>
   )}
 
-  /* ── MISSIONS ─────────────────────────────────────────────── */
+  {/* ── MISSIONS ─────────────────────────────────────────────── */}
   {screen === "missions" && (
     <div style={{ ...BG, paddingBottom:100, background:`linear-gradient(180deg, ${avatarColor}08 0%, ${C.cream} 160px)` }}>
       <LivingBg intensity={mood?.intensity || 3} avatarColor={avatarColor}/>
@@ -1784,7 +1784,7 @@ const res = await fetch("/api/chat", {
     </div>
   )}
 
-  /* ── BREATHE ──────────────────────────────────────────────── */
+  {/* ── BREATHE ──────────────────────────────────────────────── */}
   {screen === "breathe" && (
     <div style={{ ...BG, minHeight:"100dvh" }}>
       <LivingBg intensity={3} avatarColor={avatarColor}/>
@@ -1812,7 +1812,7 @@ const res = await fetch("/api/chat", {
     </div>
   )}
 
-  /* ── SCIENCE ──────────────────────────────────────────────── */
+  {/* ── SCIENCE ──────────────────────────────────────────────── */}
   {screen === "science" && (
     <div style={{ ...BG, paddingBottom:100, overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
       <LivingBg intensity={4} avatarColor={avatarColor}/>
@@ -1830,7 +1830,7 @@ const res = await fetch("/api/chat", {
     </div>
   )}
 
-  /* ── SOURCES ──────────────────────────────────────────────── */
+  {/* ── SOURCES ──────────────────────────────────────────────── */}
   {screen === "sources" && (
     <div style={{ ...BG, paddingBottom:100, overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
       <LivingBg intensity={4} avatarColor={avatarColor}/>
@@ -1848,7 +1848,7 @@ const res = await fetch("/api/chat", {
     </div>
   )}
 
-  /* ── PROGRESS ─────────────────────────────────────────────── */
+  {/* ── PROGRESS ─────────────────────────────────────────────── */}
   {screen === "progress" && (
     <div style={{ ...BG, paddingBottom:100, overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
       <LivingBg intensity={mood?.intensity || 3} avatarColor={avatarColor}/>
@@ -1893,7 +1893,7 @@ const res = await fetch("/api/chat", {
       <Dock screen={screen} setScreen={setScreen} onMissions={onMissions} avatarColor={avatarColor}/>
     </div>
   )}
-    {/* ── UPGRADE ─────────────────────────────────────────── */}
+    {{/* ── UPGRADE ─────────────────────────────────────────── */}}
 {screen === "upgrade" && (
   <div style={{ ...BG, paddingBottom:100, overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
     <LivingBg intensity={3} avatarColor={avatarColor}/>
@@ -1983,7 +1983,7 @@ const res = await fetch("/api/chat", {
     <Dock screen={screen} setScreen={setScreen} onMissions={onMissions} avatarColor={avatarColor}/>
   </div>
 )}
-  {/* ── DONATE ──────────────────────────────────────────── */}
+  {{/* ── DONATE ──────────────────────────────────────────── */}}
   {screen === "donate" && (
     <div style={{ ...BG, paddingBottom:100, overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
       <LivingBg intensity={3} avatarColor={avatarColor}/>
