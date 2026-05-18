@@ -220,6 +220,7 @@ const CSS = `
   * { scrollbar-width:thin; scrollbar-color:${C.clay}55 rgba(255,248,235,0.55); }
   input, textarea, button { font-family:inherit; -webkit-tap-highlight-color:transparent; }
   input { outline:none; }
+  textarea:focus { outline: none !important; border-color: rgba(255,235,200,0.7) !important; box-shadow: 0 2px 8px rgba(40,28,16,0.06) !important; }
   /* Prevent text-selection callouts on touch devices */
   * { -webkit-touch-callout:none; -webkit-user-select:none; user-select:none; }
   input, textarea { -webkit-user-select:text; user-select:text; }
@@ -655,7 +656,7 @@ function Bubble({ role, content, avatar, isTypingIndicator, isNew }) {
       <div style={{maxWidth:"80%",background:isAI?"rgba(255,252,245,0.62)":"rgba(255,255,255,0.40)",backdropFilter:"blur(20px)",border:`1px solid ${isAI?C.glassBorder:av?.color+"33"}`,borderRadius:isAI?"6px 20px 20px 20px":"20px 6px 20px 20px",padding:"14px 18px",boxShadow:`0 4px 20px ${C.shadow}`}}>
         {isTypingIndicator
           ? <div style={{display:"flex",gap:5,padding:"3px 2px",alignItems:"center"}}>{[0,1,2].map(i=><div key={i} style={{width:7,height:7,borderRadius:"50%",background:av?.color||C.sage,animation:`dot 1.5s ease-in-out ${i*0.22}s infinite`}}/>)}</div>
-          : <p style={{color:C.ink,fontSize:15,lineHeight:1.88,fontFamily:"'Fraunces', Georgia, serif",whiteSpace:"pre-wrap"}}>{isAI?displayed:content}</p>
+          : <p style={{color:C.ink,fontSize:15,lineHeight:1.88,fontFamily:"'Fraunces', Georgia, serif",whiteSpace:"pre-wrap",wordBreak:"break-word",overflowWrap:"break-word"}}>{isAI?displayed:content}</p>
         }
       </div>
     </div>
@@ -1169,13 +1170,11 @@ const res = await fetch("/api/chat", {
 
         // Inject projective question seamlessly as the 3rd message from the assistant
         if (!questionAsked && activeQuestion && updated.filter(m => m.role === 'assistant').length === 3) {
-          setTimeout(() => {
-             setMessages(prev => {
-                setQuestionAsked(true);
-                return [...prev, { role: "assistant", content: `By the way, random question: ${activeQuestion.text}`, isProjectiveProbe: true }];
-             });
-          }, 3500);
-        }
+  setQuestionAsked(true);
+  setTimeout(() => {
+     setMessages(prev => [...prev, { role: "assistant", content: `By the way, random question: ${activeQuestion.text}`, isProjectiveProbe: true }]);
+  }, 3500);
+}
         return updated;
       });
 
@@ -1701,7 +1700,7 @@ const res = await fetch("/api/chat", {
 
       <div className="glass chat-input-bar" style={{ padding:`12px 16px calc(12px + env(safe-area-inset-bottom))`, paddingBottom:`calc(12px + env(safe-area-inset-bottom))`, borderTop:"1px solid rgba(255,235,200,0.28)", flexShrink:0, position:"relative", zIndex:10, borderRadius:0, background:`rgba(245,236,220,0.85)`, backdropFilter:"blur(22px)", WebkitBackdropFilter:"blur(22px)" }}>        <div style={{ maxWidth:480, margin:"0 auto" }}>
           <div style={{ display:"flex", gap:9, alignItems:"center" }}>
-              <textarea ref={inputRef} value={input} onChange={e => !limitReached && setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && !e.shiftKey && input.trim() && (e.preventDefault(), send(input))} placeholder={limitReached ? "Today's conversations are complete." : "What's on your mind..."} rows={1} style={{ flex:1, background:"rgba(255,248,235,0.55)", border:"1px solid rgba(255,235,200,0.4)", backdropFilter:"blur(12px)", borderRadius:16, padding:"13px 18px", color:C.ink, fontSize:14, boxShadow:"0 2px 8px rgba(40,28,16,0.06)", resize:"none", overflowY:"hidden", lineHeight:"1.5", fontFamily:"inherit", maxHeight:120, minHeight:46 }} onInput={e => { e.target.style.height = "auto"; e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px"; }}/>            <button onClick={() => input.trim() && !limitReached && send(input)} disabled={loading || !input.trim() || limitReached} className="btn"
+              <textarea ref={inputRef} value={input} onChange={e => !limitReached && setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && !e.shiftKey && input.trim() && (e.preventDefault(), send(input))} placeholder={limitReached ? "Today's conversations are complete." : "What's on your mind..."} rows={1} style={{ flex:1, background:"rgba(255,248,235,0.55)", border:"1.5px solid rgba(255,235,200,0.6)", outline:"none", backdropFilter:"blur(12px)", borderRadius:16, padding:"13px 18px", color:C.ink, fontSize:14, boxShadow:"0 2px 8px rgba(40,28,16,0.06)", resize:"none", overflowY:"hidden", lineHeight:"1.5", fontFamily:"inherit", maxHeight:120, minHeight:46 }} onInput={e => { e.target.style.height = "auto"; e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px"; }}/>            <button onClick={() => input.trim() && !limitReached && send(input)} disabled={loading || !input.trim() || limitReached} className="btn"
               style={{ width:46, height:46, borderRadius:16, border:"none", cursor:limitReached || loading || !input.trim() ? "not-allowed" : "pointer", background:limitReached || loading || !input.trim() ? C.stoneLight : `linear-gradient(135deg, ${avatarColor}, ${avatarColor}cc)`, color:limitReached || loading || !input.trim() ? C.stoneMid : "#fff", fontSize:19, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, boxShadow:limitReached || loading || !input.trim() ? "none" : `0 6px 20px ${avatarColor}44`, opacity:limitReached || loading ? 0.6 : 1, transition:"all 0.2s ease" }}>
               <Send size={18} strokeWidth={2}/>
             </button>
