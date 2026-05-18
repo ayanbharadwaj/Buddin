@@ -23,8 +23,8 @@ function modelForTier(tier) {
 const MAX_BODY_SIZE     = 32000;
 const RATE_LIMIT_WINDOW = 60 * 1000;
 const RATE_LIMIT_MAX    = 100;
-
-const rateLimitStore = {};
+const rateLimitStore    = {};
+const dailyIPCount      = {};
 
 function hashIP(req) {
   const raw = req.headers['x-forwarded-for']?.split(',')[0]?.trim()
@@ -37,9 +37,7 @@ function checkRateLimit(ipHash) {
   const now = Date.now();
   if (!rateLimitStore[ipHash]) rateLimitStore[ipHash] = [];
   rateLimitStore[ipHash] = rateLimitStore[ipHash].filter(t => now - t < RATE_LIMIT_WINDOW);
-  if (rateLimitStore[ipHash].length >= RATE_LIMIT_MAX) {
-    return { allowed: false };
-  }
+  if (rateLimitStore[ipHash].length >= RATE_LIMIT_MAX) return { allowed: false };
   rateLimitStore[ipHash].push(now);
   return { allowed: true };
 }
@@ -100,6 +98,7 @@ export default async function handler(req, res) {
   }
 
   const ipHash = hashIP(req);
+
   const rateLimitCheck = checkRateLimit(ipHash);
   if (!rateLimitCheck.allowed) {
     return res.status(429).json({ error: 'Too many requests. Please wait a moment.', code: 'RATE_LIMIT' });
@@ -115,53 +114,77 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Missing ANTHROPIC_API_KEY' });
   }
 
+  // Resolve user identity
   const authHeader = req.headers.authorization;
   const token = authHeader?.replace('Bearer ', '');
-  let userId = ipHash;
+  let userId = null;
+  let isAuthenticated = false;
+
   try {
     const { data: { user } } = await supabase.auth.getUser(token);
-    if (user?.id) userId = user.id;
+    if (user?.id) {
+      userId = user.id;
+      isAuthenticated = true;
+    }
   } catch {}
 
-  const data = await getUsageFromDB(userId);
-  const tier = await getTierFromDB(userId);
+  // Unauthenticated users: strict in-memory daily limit
+  if (!isAuthenticated) {
+    const today = new Date().toISOString().slice(0, 10);
+    const key = ipHash + '_' + today;
+    if (!dailyIPCount[key]) dailyIPCount[key] = 0;
+    if (dailyIPCount[key] >= FREE_LIMIT) {
+      return res.status(429).json({
+        error: 'LIMIT_REACHED',
+        code: 'LIMIT_REACHED',
+        tier: 'free',
+        limit: FREE_LIMIT,
+        count: FREE_LIMIT,
+        usage_meta: { count: FREE_LIMIT, limit: FREE_LIMIT, tier: 'free', remaining: 0 }
+      });
+    }
+    dailyIPCount[key] += 1;
+    userId = ipHash;
+  }
+
+  // Authenticated users: DB-based usage
+  const usageData = await getUsageFromDB(userId);
+  const tier = isAuthenticated ? await getTierFromDB(userId) : 'free';
   const limit = limitForTier(tier);
 
-  if (data.count >= limit) {
+  if (usageData.count >= limit) {
     return res.status(429).json({
       error: 'LIMIT_REACHED',
       code: 'LIMIT_REACHED',
       tier,
       limit,
-      count: data.count,
-      usage_meta: { count: data.count, limit, tier, remaining: 0 }
+      count: usageData.count,
+      usage_meta: { count: usageData.count, limit, tier, remaining: 0 }
     });
   }
 
   const offTopic = detectOffTopic(messages);
   if (offTopic) {
-    data.off_topic_strikes = (data.off_topic_strikes || 0) + 1;
-    await saveUsageToDB(userId, data);
+    usageData.off_topic_strikes = (usageData.off_topic_strikes || 0) + 1;
+    if (isAuthenticated) await saveUsageToDB(userId, usageData);
 
-    if (data.off_topic_strikes >= 2) {
+    if (usageData.off_topic_strikes >= 2) {
       return res.status(200).json({
         content: [{
           type: 'text',
           text: `I appreciate you being here — but I'm not the right tool for that. I'm Buddin: a friend you can talk to about what's actually going on in your life. Not a homework helper, recipe finder, or general assistant. If something's weighing on you, I'm genuinely here for that. What's actually going on today?`
         }],
         offTopicRedirect: true,
-        usage_meta: { count: data.count, limit, tier, remaining: limit - data.count }
+        usage_meta: { count: usageData.count, limit, tier, remaining: limit - usageData.count }
       });
     }
   } else {
-    if (data.off_topic_strikes > 0) {
-      data.off_topic_strikes = 0;
-    }
+    if (usageData.off_topic_strikes > 0) usageData.off_topic_strikes = 0;
   }
 
-  data.count += 1;
-  const remaining = limit - data.count;
-  await saveUsageToDB(userId, data);
+  usageData.count += 1;
+  const remaining = limit - usageData.count;
+  if (isAuthenticated) await saveUsageToDB(userId, usageData);
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -184,12 +207,12 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       ...apiData,
-      usage_meta: { count: data.count, limit, tier, remaining, model: modelForTier(tier) },
+      usage_meta: { count: usageData.count, limit, tier, remaining, model: modelForTier(tier) },
     });
 
   } catch (error) {
-    data.count = Math.max(0, data.count - 1);
-    await saveUsageToDB(userId, data);
+    usageData.count = Math.max(0, usageData.count - 1);
+    if (isAuthenticated) await saveUsageToDB(userId, usageData);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 }

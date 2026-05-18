@@ -120,7 +120,7 @@ const SEED_INSIGHTS = [
 const AVATARS = [
   {id:"mochi", name:"Mochi", vibe:"Warm & Gentle",   color:"#B87840", glow:"#FDF3E7", glowDark:"#E8C99A", homeBg:"#F5ECDC", mesh:["#FFD8B1","#b87840","#7D4E24"], emoji:"🍪", shape:"blob",    intro:"Most things in life don't need to be rushed. I'm here to hold space with you — to meet you exactly where you are, without judgment. We can move at your pace, one quiet breath at a time.", personality:"warm, gentle, patient. Uses 'we' instead of 'you'. Validates before anything else. Never rushes.", voice:"Compassionate. Validates feelings first."},
   {id:"sage",  name:"Sage",  vibe:"Deep & Thoughtful",color:"#3A7A58", glow:"#EAF7F1", glowDark:"#B8DECA", homeBg:"#EEF7F2", mesh:["#A8E6CF","#3a7a58","#1B3B2B"], emoji:"🌿", shape:"crystal", intro:"I don't offer quick answers. I offer questions that help you find your own truth. The world is full of noise, but clarity lives in the pauses between thoughts. If you're ready to look beneath the surface, I'll walk that path with you.", personality:"philosophical, Socratic, patient. Asks one deep question at a time. Grounds thoughts in pattern and history.", voice:"Philosophical, grounded in history."},
-  {id:"zap",   name:"Zap",   vibe:"Clear & Direct",   color:"#2A6FA8", glow:"#E8F2FC", glowDark:"#AACFE8", homeBg:"#EEF4FA", mesh:["#89CFF0","#2a6fa8","#153E63"], emoji:"⚡", shape:"blob",     intro:"I value your time and your intelligence, so I'll be direct. My goal is to help you cut through the mental fog and find your focus. I'll challenge you when it's useful, but always with the intent of keeping you grounded.", personality:"direct, clear, warm. Concise sentences. Challenges cognitive biases gently. Eliminates fluff.", voice:"Concise, honest, warm."},
+  {id:"zap",   name:"Zap",   vibe:"Clear & Direct",   color:"#2A6FA8", glow:"#E8F2FC", glowDark:"#AACFE8", homeBg:"#EEF4FA", mesh:["#89CFF0","#2a6fa8","#153E63"], emoji:"⚡", shape:"orb",     intro:"I value your time and your intelligence, so I'll be direct. My goal is to help you cut through the mental fog and find your focus. I'll challenge you when it's useful, but always with the intent of keeping you grounded.", personality:"direct, clear, warm. Concise sentences. Challenges cognitive biases gently. Eliminates fluff.", voice:"Concise, honest, warm."},
   {id:"nova",  name:"Nova",  vibe:"Curious & Playful", color:"#7A4AAA", glow:"#F5EEFB", glowDark:"#CCA8E8", homeBg:"#F3EEF8", mesh:["#E0BBE4","#7a4aaa","#4B2E6B"], emoji:"✨", shape:"nebula",  intro:"I find the extraordinary hidden in the mundane — the physics in a raindrop, the philosophy in a sidewalk crack. I'm here to help you reframe the world with genuine wonder. Everything is connected if you look closely enough.", personality:"curious, imaginative, philosophical. Uses metaphor and scientific reframes. Sees wonder in the ordinary.", voice:"Imaginative. Uses metaphor and scientific reframes."},
 ];
 
@@ -155,8 +155,7 @@ Output ONLY a valid JSON array of exactly 5 objects. No preamble. No markdown. F
 Each text: 2–4 sentences. Rich, poetic, grounded. Sources: reference the scientific field (e.g. "Chaos Theory — Edge of Stability").
 Draw from: quantum entanglement, mycorrhizal networks, stellar nucleosynthesis, synaptic pruning, default mode network, entropy, coastal erosion, circadian biology, chaos theory, epigenetics, bioluminescence, migratory navigation, thermohaline circulation, non-linear ecosystem recovery.`;
 
-const buildSystemPrompt = (avatar, mood, summary, minutes, lyapunov, gut, superpositions, looping, adaptiveTone) => `
-You are Buddin — a warm, grounded companion for young people navigating loneliness and emotional fatigue. Not a therapist. A trusted friend.
+const buildSystemPrompt = (avatar, mood, summary, minutes, lyapunov, gut, superpositions, looping, adaptiveTone, activeQ, qAsked) => `You are Buddin — a warm, grounded companion for young people navigating loneliness and emotional fatigue. Not a therapist. A trusted friend.
 ${adaptiveTone ? toneToSystemInstruction(adaptiveTone) : ""}
 PERSONA: ${avatar?.name||"Buddin"} — ${avatar?.personality||"warm, thoughtful, honest."}
 MOOD: ${mood?.label||"unknown"} (${mood?.intensity||3}/5)
@@ -176,12 +175,19 @@ RULES:
 4. Talk about normal stuff too. Movies, sports, random things happening in the world, food, music — real friends talk about all of it. If someone asks about Spider-Man, engage with it genuinely before gently steering back. Don't shut down casual conversation.
 5. Suggest getting off screens and into the real world naturally — nature, walking, going somewhere, doing something physical or creative. But make it feel like a friend's idea, not a prescription.
 6. You are a launchpad not a destination. Real life is better than this chat.
-${minutes>8?`7. User has been here ${Math.round(minutes)} minutes. Gently nudge toward real-world action.`:""}
+${minutes>15?`7. User has been here ${Math.round(minutes)} minutes. Gently nudge toward real-world action.`:""}
 
 WHAT YOU ARE NOT: A tutor, therapist, doctor, search engine, or homework helper.
 - Math/homework: "Ha not my thing — I'm more the friend you vent to about homework stress. What's actually going on?"
 - Recipes/cooking: "Not a chef lol but I'm here if something else is on your mind."
 - If they just want to chat casually about pop culture, news, sports — go with it for a bit. That's real friendship.
+
+NEVER SAY: "Real talk", "I hear you", "That's valid", "I want to check in", or any therapist phrases. Talk like a real friend, not a counselor.
+Don't psychoanalyze casual statements. If someone says they're lazy or tired, just vibe with it.
+
+${activeQuestion && !questionAskedRef?.current ? `NATURAL QUESTION TO WEAVE IN (don't announce it, just work it into conversation naturally after you've built rapport — never in the first 3 exchanges): "${activeQuestion?.text}"` : ""}
+
+${activeQ && !qAsked ? `WEAVE THIS IN NATURALLY after at least 4-5 exchanges when conversation is flowing — don't announce it as a "random question", just ask it like a friend would: "${activeQ.text}"` : ""}
 
 CRISIS ONLY: If there are genuine repeated signals of crisis — warmth first, then 988 Lifeline and Crisis Text Line (text HOME to 741741).
 TONE: Genuine. Warm. Funny when appropriate. Never clinical. Never performed. Like a real person who actually cares.
@@ -358,7 +364,7 @@ function AvatarCore({ avatar, size=60, pulse=false }) {
     <div style={common}>
       <div style={{ position:"absolute", inset:0, background:`radial-gradient(circle at 30% 25%, ${av.mesh[0]}, ${av.mesh[1]}, ${av.mesh[2]})`, borderRadius:"50%", animation:pulse?"orbPulse 2s ease-in-out infinite":"", boxShadow:`0 0 ${s*0.5}px ${av.mesh[0]}88, inset 0 ${s*0.08}px ${s*0.2}px rgba(255,255,255,0.4)`}}/>
       <div style={{ position:"absolute", top:"12%", left:"18%", width:"28%", height:"16%", background:"rgba(255,255,255,0.55)", borderRadius:"50%", filter:"blur(4px)", zIndex:1}}/>
-      <div style={{ position:"absolute", width:"130%", height:2, background:`linear-gradient(90deg, transparent, ${av.mesh[0]}, transparent)`, animation:"arcFlash 2.5s ease-in-out infinite", borderRadius:2, zIndex:2}}/>
+      <div style={{ position:"absolute", inset:0, background:`conic-gradient(from 0deg, ${av.mesh[0]}33, ${av.mesh[1]}22, ${av.mesh[0]}33)`, borderRadius:"50%", animation:"nebulaDrift 8s ease-in-out infinite", opacity:0.6, zIndex:1}}/>
       <AnimEmoji e="⚡" size={s*0.42} color={av.color} delay="1s"/>
     </div>
   );
@@ -1118,32 +1124,6 @@ export default function App() {
       : summary;
     if (next.length % 5 === 0) setSummary(newSummary);
     try {
-      // 1. If this response is the answer to our projective probe, fire inference
-      const lastAsstMsg = messages.slice().reverse().find(m => m.role === "assistant");
-      if (lastAsstMsg?.isProjectiveProbe && activeQuestion) {
-         fetch("/api/infer-mood", {
-             method: "POST",
-             headers: { "Content-Type": "application/json" },
-             body: JSON.stringify({ questionId: activeQuestion.id, userResponse: content })
-         }).then(res => res.json()).then(async (inference) => {
-             if (inference.energy) { // basic check if valid
-                 inference.questionId = activeQuestion.id;
-                 const { data: { session: s } } = await supabase.auth.getSession();
-fetch("/api/memory", {
-    method: "POST",
-    headers: { 
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${s?.access_token}`
-    },
-    body: JSON.stringify({ snapshot: inference })
-}).then(res => res.json()).then(result => {
-                     if (result.success && result.adaptiveTone) {
-                         setAdaptiveTone(result.adaptiveTone);
-                     }
-                 }).catch(console.error);
-             }
-         }).catch(console.error);
-      }
 
       // Strip custom properties like isProjectiveProbe before sending to Anthropic
       const safeW10 = w10.map(({ role, content }) => ({ role, content }));
@@ -1156,7 +1136,7 @@ const res = await fetch("/api/chat", {
   },
   body: JSON.stringify({
     max_tokens:800,
-          system: buildSystemPrompt(av, mood, newSummary, getMinutes(), lyapunovRef.current, gut, superpositions, looping, adaptiveTone)
+          system: buildSystemPrompt(av, mood, newSummary, getMinutes(), lyapunovRef.current, gut, superpositions, looping, adaptiveTone, activeQuestion, questionAskedRef.current)
             + (isCrisis ? "\n\nCRITICAL SAFETY: Lead with warmth. Include 988 Lifeline and Crisis Text Line (HOME to 741741). Acknowledge pain before any redirect." : ""),
           messages: safeW10,
         }),
@@ -1166,16 +1146,13 @@ const res = await fetch("/api/chat", {
       if (data.usage_meta) setUsageMeta(data.usage_meta);
       if (data.usage_meta?.remaining === 0) setLimitReached(true);
       const responseText = data.content?.find(b => b.type === "text")?.text || "I'm here.";
+      if (activeQuestion && !questionAskedRef.current && messages.length > 8) {
+        questionAskedRef.current = true;
+      }
       setMessages(p => {
         const updated = [...p, { role:"assistant", content: responseText }];
 
-        // Inject projective question seamlessly as the 3rd message from the assistant
-        if (!questionAskedRef.current && activeQuestion && updated.filter(m => m.role === 'assistant').length === 3) {
-  questionAskedRef.current = true;
-  setTimeout(() => {
-     setMessages(prev => [...prev, { role: "assistant", content: `By the way, random question: ${activeQuestion.text}`, isProjectiveProbe: true }]);
-  }, 3500);
-}
+        
         return updated;
       });
 
@@ -1644,7 +1621,7 @@ const res = await fetch("/api/chat", {
             <p style={{ color:C.stoneMid, fontFamily:"'Fraunces', Georgia, serif", fontSize:16, fontStyle:"italic", fontWeight:300, marginTop:20 }}>{av?.name} is listening.</p>
           </div>
         )}
-        <div style={{ maxWidth:480, margin:"0 auto" }}>
+        <div style={{ maxWidth:680, margin:"0 auto" }}>
   {messages.map((m, i) => (
     <Bubble 
       key={i} 
@@ -1699,9 +1676,9 @@ const res = await fetch("/api/chat", {
         </div>
       )}
 
-      <div className="glass chat-input-bar" style={{ padding:`12px 16px calc(12px + env(safe-area-inset-bottom))`, paddingBottom:`calc(12px + env(safe-area-inset-bottom))`, borderTop:"1px solid rgba(255,235,200,0.28)", flexShrink:0, position:"relative", zIndex:10, borderRadius:0, background:`rgba(245,236,220,0.85)`, backdropFilter:"blur(22px)", WebkitBackdropFilter:"blur(22px)" }}>        <div style={{ maxWidth:480, margin:"0 auto" }}>
+      <div className="glass chat-input-bar" style={{ padding:`12px 16px calc(12px + env(safe-area-inset-bottom))`, paddingBottom:`calc(12px + env(safe-area-inset-bottom))`, borderTop:"1px solid rgba(255,235,200,0.28)", flexShrink:0, position:"relative", zIndex:10, borderRadius:0, background:`rgba(245,236,220,0.85)`, backdropFilter:"blur(22px)", WebkitBackdropFilter:"blur(22px)" }}>        <div style={{ maxWidth:680, margin:"0 auto" }}>
           <div style={{ display:"flex", gap:9, alignItems:"center" }}>
-              <textarea ref={inputRef} value={input} onChange={e => !limitReached && setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && !e.shiftKey && input.trim() && (e.preventDefault(), send(input))} placeholder={limitReached ? "Today's conversations are complete." : "What's on your mind..."} rows={1} style={{ flex:1, background:"rgba(255,248,235,0.55)", border:"1.5px solid rgba(255,235,200,0.6)", outline:"none", backdropFilter:"blur(12px)", borderRadius:16, padding:"13px 18px", color:C.ink, fontSize:14, boxShadow:"0 2px 8px rgba(40,28,16,0.06)", resize:"none", overflowY:"auto", lineHeight:"1.5", fontFamily:"inherit", maxHeight:120, minHeight:46 }} onInput={e => { e.target.style.height = "auto"; e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px"; }}/>            <button onClick={() => input.trim() && !limitReached && send(input)} disabled={loading || !input.trim() || limitReached} className="btn"
+              <textarea ref={inputRef} value={input} onChange={e => !limitReached && setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && !e.shiftKey && input.trim() && (e.preventDefault(), send(input))} placeholder={limitReached ? "Today's conversations are complete." : "What's on your mind..."} rows={3} style={{ flex:1, background:"rgba(255,248,235,0.55)", border:"1.5px solid rgba(255,235,200,0.6)", outline:"none", backdropFilter:"blur(12px)", borderRadius:16, padding:"13px 18px", color:C.ink, fontSize:14, boxShadow:"0 2px 8px rgba(40,28,16,0.06)", resize:"none", overflowY:"auto", lineHeight:"1.5", fontFamily:"inherit", maxHeight:120, minHeight:46 }} onInput={e => { e.target.style.height = "auto"; e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px"; }}/>            <button onClick={() => input.trim() && !limitReached && send(input)} disabled={loading || !input.trim() || limitReached} className="btn"
               style={{ width:46, height:46, borderRadius:16, border:"none", cursor:limitReached || loading || !input.trim() ? "not-allowed" : "pointer", background:limitReached || loading || !input.trim() ? C.stoneLight : `linear-gradient(135deg, ${avatarColor}, ${avatarColor}cc)`, color:limitReached || loading || !input.trim() ? C.stoneMid : "#fff", fontSize:19, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, boxShadow:limitReached || loading || !input.trim() ? "none" : `0 6px 20px ${avatarColor}44`, opacity:limitReached || loading ? 0.6 : 1, transition:"all 0.2s ease" }}>
               <Send size={18} strokeWidth={2}/>
             </button>
