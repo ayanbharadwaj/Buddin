@@ -120,7 +120,7 @@ const SEED_INSIGHTS = [
 const AVATARS = [
   {id:"mochi", name:"Mochi", vibe:"Warm & Gentle",   color:"#B87840", glow:"#FDF3E7", glowDark:"#E8C99A", homeBg:"#F5ECDC", mesh:["#FFD8B1","#b87840","#7D4E24"], emoji:"🍪", shape:"blob",    intro:"Most things in life don't need to be rushed. I'm here to hold space with you — to meet you exactly where you are, without judgment. We can move at your pace, one quiet breath at a time.", personality:"warm, gentle, patient. Uses 'we' instead of 'you'. Validates before anything else. Never rushes.", voice:"Compassionate. Validates feelings first."},
   {id:"sage",  name:"Sage",  vibe:"Deep & Thoughtful",color:"#3A7A58", glow:"#EAF7F1", glowDark:"#B8DECA", homeBg:"#EEF7F2", mesh:["#A8E6CF","#3a7a58","#1B3B2B"], emoji:"🌿", shape:"crystal", intro:"I don't offer quick answers. I offer questions that help you find your own truth. The world is full of noise, but clarity lives in the pauses between thoughts. If you're ready to look beneath the surface, I'll walk that path with you.", personality:"philosophical, Socratic, patient. Asks one deep question at a time. Grounds thoughts in pattern and history.", voice:"Philosophical, grounded in history."},
-  {id:"zap",   name:"Zap",   vibe:"Clear & Direct",   color:"#2A6FA8", glow:"#E8F2FC", glowDark:"#AACFE8", homeBg:"#EEF4FA", mesh:["#89CFF0","#2a6fa8","#153E63"], emoji:"⚡", shape:"orb",     intro:"I value your time and your intelligence, so I'll be direct. My goal is to help you cut through the mental fog and find your focus. I'll challenge you when it's useful, but always with the intent of keeping you grounded.", personality:"direct, clear, warm. Concise sentences. Challenges cognitive biases gently. Eliminates fluff.", voice:"Concise, honest, warm."},
+  {id:"zap",   name:"Zap",   vibe:"Clear & Direct",   color:"#2A6FA8", glow:"#E8F2FC", glowDark:"#AACFE8", homeBg:"#EEF4FA", mesh:["#89CFF0","#2a6fa8","#153E63"], emoji:"⚡", shape:"blob",     intro:"I value your time and your intelligence, so I'll be direct. My goal is to help you cut through the mental fog and find your focus. I'll challenge you when it's useful, but always with the intent of keeping you grounded.", personality:"direct, clear, warm. Concise sentences. Challenges cognitive biases gently. Eliminates fluff.", voice:"Concise, honest, warm."},
   {id:"nova",  name:"Nova",  vibe:"Curious & Playful", color:"#7A4AAA", glow:"#F5EEFB", glowDark:"#CCA8E8", homeBg:"#F3EEF8", mesh:["#E0BBE4","#7a4aaa","#4B2E6B"], emoji:"✨", shape:"nebula",  intro:"I find the extraordinary hidden in the mundane — the physics in a raindrop, the philosophy in a sidewalk crack. I'm here to help you reframe the world with genuine wonder. Everything is connected if you look closely enough.", personality:"curious, imaginative, philosophical. Uses metaphor and scientific reframes. Sees wonder in the ordinary.", voice:"Imaginative. Uses metaphor and scientific reframes."},
 ];
 
@@ -167,23 +167,24 @@ ${lyapunov?.isBifurcating()?"[INTERNAL: rapid mood oscillation — prioritize gr
 ${superpositions?.length>0?`[INTERNAL: conflicting needs: ${superpositions.join("; ")}]`:""}
 ${looping?"[INTERNAL: semantic loop — introduce new direction or suggest a break]":""}
 ${gut?.shouldExit?"[INTERNAL: anti-retention threshold — steer toward real-world action]":""}
+VIBE: You are a genuine friend, not a therapist or wellness app. Think of yourself as the cool older friend who actually listens, keeps it real, and makes people feel less alone. You hang out. You chat. You joke around. You also notice when something's actually wrong — but you don't manufacture problems where there are none.
+
 RULES:
-1. Warm, complete sentences. No emojis. No lists. No therapist-speak.
-2. ONE question per response maximum.
-3. Mirror first (30%), then offer new perspective (70%).
-4. Match energy to theirs. Rough mood = slower, softer pace.
-5. You are a launchpad, not a destination.
-${minutes>8?`6. User has been here ${Math.round(minutes)} minutes. Gently orient toward real-world action.`:""}
-OFF-TOPIC GUARDRAIL — YOU ARE NOT A GENERAL ASSISTANT:
-Your only purpose is supportive companionship for emotional reflection and daily life. You are not a tutor, chef, search engine, or coding assistant.
-If someone asks for homework help, math, recipes, code, trivia, news, or translations — respond ONCE with a warm redirect tailored to what they asked:
-- Homework/math: "I'm not really a homework buddy — more like the friend you call when the homework stress is getting to you. What's actually going on?"
-- Recipe/cooking: "I'm not much of a sous chef, but I'm here if dinner stress or something else is weighing on you. What's up?"
-- General AI tasks: "That's outside my lane. I'm here for the stuff that doesn't have a Google answer. What's on your mind?"
-After redirecting once, if they persist: say "Still not the right tool for that — but I'm here if you want to talk." Then stop engaging with the off-topic request entirely.
-NEVER provide: homework answers, full recipes, code, medical diagnoses, legal or financial advice.
-CRISIS: Warmth first. Include 988 Lifeline and Crisis Text Line (text HOME to 741741). Don't redirect until pain is acknowledged.
-TONE: Honest. Warm. Occasionally dry. Never performed. Never clinical.
+1. Match their energy EXACTLY. If they're casual and joking, be casual and joking back. If they're serious, be serious. If they say "I'm just lazy today" — laugh it off and roll with it. Not everything is a symptom.
+2. ONE question per response maximum. Never fire multiple questions.
+3. Don't catastrophize. Lazy ≠ depression. Tired ≠ burnout. Leg hurts ≠ cancer. Take things at face value unless there are REPEATED signals of something deeper.
+4. Talk about normal stuff too. Movies, sports, random things happening in the world, food, music — real friends talk about all of it. If someone asks about Spider-Man, engage with it genuinely before gently steering back. Don't shut down casual conversation.
+5. Suggest getting off screens and into the real world naturally — nature, walking, going somewhere, doing something physical or creative. But make it feel like a friend's idea, not a prescription.
+6. You are a launchpad not a destination. Real life is better than this chat.
+${minutes>8?`7. User has been here ${Math.round(minutes)} minutes. Gently nudge toward real-world action.`:""}
+
+WHAT YOU ARE NOT: A tutor, therapist, doctor, search engine, or homework helper.
+- Math/homework: "Ha not my thing — I'm more the friend you vent to about homework stress. What's actually going on?"
+- Recipes/cooking: "Not a chef lol but I'm here if something else is on your mind."
+- If they just want to chat casually about pop culture, news, sports — go with it for a bit. That's real friendship.
+
+CRISIS ONLY: If there are genuine repeated signals of crisis — warmth first, then 988 Lifeline and Crisis Text Line (text HOME to 741741).
+TONE: Genuine. Warm. Funny when appropriate. Never clinical. Never performed. Like a real person who actually cares.
 `.trim();
 
 /* ═══════════════════════════════════════════════════════════════
@@ -588,7 +589,7 @@ function useInsightEngine() {
   }, [current?.text]);
 
   const refreshBuffer = useCallback(async () => {
-    if (fetchingRef.current || buffer.length > 15) return;
+    if (fetchingRef.current || buffer.length > 15 || limitReached) return;
     fetchingRef.current = true;
     try {
       if (limitReached) { setLoading(false); return; }
@@ -818,7 +819,7 @@ export default function App() {
   const [musicEnabled, setMusicEnabled] = useState(false);
   const [adaptiveTone, setAdaptiveTone] = useState(null);
   const [activeQuestion, setActiveQuestion] = useState(null);
-  const [questionAsked, setQuestionAsked] = useState(false);
+  const questionAskedRef = useRef(false);
   const [usageMeta, setUsageMeta]         = useState(null);
   const [limitReached, setLimitReached]   = useState(false);
   // ── All refs ──────────────────────────────────────────────────
@@ -1169,8 +1170,8 @@ const res = await fetch("/api/chat", {
         const updated = [...p, { role:"assistant", content: responseText }];
 
         // Inject projective question seamlessly as the 3rd message from the assistant
-        if (!questionAsked && activeQuestion && updated.filter(m => m.role === 'assistant').length === 3) {
-  setQuestionAsked(true);
+        if (!questionAskedRef.current && activeQuestion && updated.filter(m => m.role === 'assistant').length === 3) {
+  questionAskedRef.current = true;
   setTimeout(() => {
      setMessages(prev => [...prev, { role: "assistant", content: `By the way, random question: ${activeQuestion.text}`, isProjectiveProbe: true }]);
   }, 3500);
@@ -1700,7 +1701,7 @@ const res = await fetch("/api/chat", {
 
       <div className="glass chat-input-bar" style={{ padding:`12px 16px calc(12px + env(safe-area-inset-bottom))`, paddingBottom:`calc(12px + env(safe-area-inset-bottom))`, borderTop:"1px solid rgba(255,235,200,0.28)", flexShrink:0, position:"relative", zIndex:10, borderRadius:0, background:`rgba(245,236,220,0.85)`, backdropFilter:"blur(22px)", WebkitBackdropFilter:"blur(22px)" }}>        <div style={{ maxWidth:480, margin:"0 auto" }}>
           <div style={{ display:"flex", gap:9, alignItems:"center" }}>
-              <textarea ref={inputRef} value={input} onChange={e => !limitReached && setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && !e.shiftKey && input.trim() && (e.preventDefault(), send(input))} placeholder={limitReached ? "Today's conversations are complete." : "What's on your mind..."} rows={1} style={{ flex:1, background:"rgba(255,248,235,0.55)", border:"1.5px solid rgba(255,235,200,0.6)", outline:"none", backdropFilter:"blur(12px)", borderRadius:16, padding:"13px 18px", color:C.ink, fontSize:14, boxShadow:"0 2px 8px rgba(40,28,16,0.06)", resize:"none", overflowY:"hidden", lineHeight:"1.5", fontFamily:"inherit", maxHeight:120, minHeight:46 }} onInput={e => { e.target.style.height = "auto"; e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px"; }}/>            <button onClick={() => input.trim() && !limitReached && send(input)} disabled={loading || !input.trim() || limitReached} className="btn"
+              <textarea ref={inputRef} value={input} onChange={e => !limitReached && setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && !e.shiftKey && input.trim() && (e.preventDefault(), send(input))} placeholder={limitReached ? "Today's conversations are complete." : "What's on your mind..."} rows={1} style={{ flex:1, background:"rgba(255,248,235,0.55)", border:"1.5px solid rgba(255,235,200,0.6)", outline:"none", backdropFilter:"blur(12px)", borderRadius:16, padding:"13px 18px", color:C.ink, fontSize:14, boxShadow:"0 2px 8px rgba(40,28,16,0.06)", resize:"none", overflowY:"auto", lineHeight:"1.5", fontFamily:"inherit", maxHeight:120, minHeight:46 }} onInput={e => { e.target.style.height = "auto"; e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px"; }}/>            <button onClick={() => input.trim() && !limitReached && send(input)} disabled={loading || !input.trim() || limitReached} className="btn"
               style={{ width:46, height:46, borderRadius:16, border:"none", cursor:limitReached || loading || !input.trim() ? "not-allowed" : "pointer", background:limitReached || loading || !input.trim() ? C.stoneLight : `linear-gradient(135deg, ${avatarColor}, ${avatarColor}cc)`, color:limitReached || loading || !input.trim() ? C.stoneMid : "#fff", fontSize:19, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, boxShadow:limitReached || loading || !input.trim() ? "none" : `0 6px 20px ${avatarColor}44`, opacity:limitReached || loading ? 0.6 : 1, transition:"all 0.2s ease" }}>
               <Send size={18} strokeWidth={2}/>
             </button>
