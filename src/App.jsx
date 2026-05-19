@@ -9,6 +9,7 @@ import {
 import { toneToSystemInstruction } from '../api/boom/memorySchema.js';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
 import { supabase } from '../lib/supabase.js'
+import { MISSIONS, SEED_INSIGHTS, AVATARS, MOODS, SOURCES } from './data/constants.js';
 
 /* ═══════════════════════════════════════════════════════════════
    HIDDEN MATHEMATICAL ENGINE
@@ -34,11 +35,50 @@ const calcGUT = (elapsedMin, completedCount, msgCount) => {
   return { shouldExit: 1.6/(1+elapsedMin) < 0.18 && chatReward < realReward };
 };
 const updateGoalPosterior = (prior, action, mode) => {
-  const lk = { skip:{solo:0.3,social:0.1,physical:0.4,creative:0.5,nature:0.6,reflective:0.5}, complete:{solo:0.8,social:0.9,physical:0.85,creative:0.9,nature:0.85,reflective:0.8}, abort:{solo:0.4,social:0.2,physical:0.3,creative:0.5,nature:0.5,reflective:0.4} };
-  const updated = {...prior, [mode]:(prior[mode]??0.5)*(lk[action]?.[mode]??0.5)};
-  const total = Object.values(updated).reduce((s,v)=>s+v,0);
-  Object.keys(updated).forEach(k=>{ updated[k]=updated[k]/total; });
+  const lk = { 
+    skip: { solo: 0.3, social: 0.1, physical: 0.4, creative: 0.5, nature: 0.6, reflective: 0.5 }, 
+    complete: { solo: 0.8, social: 0.9, physical: 0.85, creative: 0.9, nature: 0.85, reflective: 0.8 }, 
+    abort: { solo: 0.4, social: 0.2, physical: 0.3, creative: 0.5, nature: 0.5, reflective: 0.4 } 
+  };
+  
+  const likelihood = lk[action]?.[mode] ?? 0.5;
+  const currentPrior = prior[mode] ?? 0.5;
+  
+  const updated = { ...prior, [mode]: currentPrior * likelihood };
+  const total = Object.values(updated).reduce((sum, val) => sum + val, 0);
+  
+  // Normalize probabilities
+  Object.keys(updated).forEach(k => { 
+    updated[k] = updated[k] / total; 
+  });
+  
   return updated;
+};
+
+const scoreActivity = (act, moodInt, energyPref, goalPost) => {
+  // 1. Calculate Mood Multiplier (M)
+  let M = 0.55; // Default for high mood
+  if (moodInt <= 2) {
+    M = act.energy === "low" ? 1.0 : act.energy === "med" ? 0.35 : 0.0;
+  } else if (moodInt === 3) {
+    M = act.energy === "med" ? 1.0 : act.energy === "low" ? 0.75 : 0.45;
+  } else {
+    M = act.energy === "high" ? 1.0 : act.energy === "med" ? 0.8 : 0.55;
+  }
+
+  // 2. Calculate Energy Multiplier (E)
+  const E = energyPref === "any" ? 0.88 : (act.energy === energyPref ? 1.0 : 0.3);
+
+  // 3. Calculate Time Multiplier (T)
+  let T = act.time <= 30 ? 1.0 : 0.65;
+  if (moodInt <= 2) {
+    T = act.time <= 10 ? 1.0 : act.time <= 20 ? 0.55 : 0.2;
+  }
+
+  // 4. Calculate Posterior Probability
+  const posterior = goalPost?.[act.mode] ?? 0.5;
+
+  return (M * 2.4) + (E * 1.9) + (T * 1.2) + (posterior * 0.8);
 };
 const detectNeedSuperposition = (text) => {
   const l = text.toLowerCase();
@@ -51,99 +91,28 @@ const detectNeedSuperposition = (text) => {
   if (stillness && movement) c.push("user is both exhausted and restless — suggest grounding first");
   return c;
 };
-const scoreActivity = (act, moodInt, energyPref, goalPost) => {
-  const M = moodInt<=2?(act.energy==="low"?1.0:act.energy==="med"?0.35:0.0):moodInt===3?(act.energy==="med"?1.0:act.energy==="low"?0.75:0.45):(act.energy==="high"?1.0:act.energy==="med"?0.8:0.55);
-  const E = energyPref==="any"?0.88:(act.energy===energyPref?1.0:0.3);
-  const T = moodInt<=2?(act.time<=10?1.0:act.time<=20?0.55:0.2):(act.time<=30?1.0:0.65);
-  return (M*2.4)+(E*1.9)+(T*1.2)+((goalPost?.[act.mode]??0.5)*0.8);
-};
 const detectSemanticLoop = (msgs) => {
-  const u = msgs.filter(m=>m.role==="user").slice(-6);
-  if (u.length<4) return false;
-  const snips = u.map(m=>m.content.slice(0,50).toLowerCase());
-  let loops=0;
-  for(let i=1;i<snips.length;i++){const ov=snips[i].split(" ").filter(w=>snips[i-1].includes(w)&&w.length>4).length;if(ov>=3)loops++;}
-  return loops>=2;
+  const recentUsers = msgs.filter(m => m.role === "user").slice(-6);
+  if (recentUsers.length < 4) return false;
+  
+  // Extract just the first 50 chars and split into meaningful words
+  const snippets = recentUsers.map(m => 
+    m.content.slice(0, 50).toLowerCase().split(/\s+/).filter(w => w.length > 4)
+  );
+  
+  let loops = 0;
+  for (let i = 1; i < snippets.length; i++) {
+    const prevSnippet = snippets[i-1];
+    const overlap = snippets[i].filter(word => prevSnippet.includes(word)).length;
+    if (overlap >= 3) loops++;
+  }
+  
+  return loops >= 2;
 };
 const CRISIS_KW = ["suicide","kill myself","end my life","want to die","self-harm","hurt myself","cutting","overdose","can't go on","no reason to live","better off dead","end it all"];
 const isCrisisText = (t) => CRISIS_KW.some(k=>t.toLowerCase().includes(k));
 
-/* ═══════════════════════════════════════════════════════════════
-   DATA
-═══════════════════════════════════════════════════════════════ */
-const MISSIONS = [
-  {id:1,  title:"Window Color Scan",         desc:"Find 3 distinct colors outside your window. Name each one quietly, out loud.",                                             time:5,  energy:"low",  social:"solo",  mode:"nature",    why:"Brief nature observation lowers cortisol and quiets the brain's alarm signals."},
-  {id:2,  title:"Gratitude Scribble",         desc:"Write 3 things that weren't terrible today. 'The coffee was warm' absolutely counts.",                                   time:5,  energy:"low",  social:"solo",  mode:"reflective",why:"Gratitude practice activates the prefrontal cortex and releases serotonin."},
-  {id:3,  title:"Origami Crane",              desc:"Fold one sheet of paper into a crane. Look up the steps. Go slowly — that is the point.",                                time:10, energy:"low",  social:"solo",  mode:"creative",  why:"Repetitive tactile tasks engage the parasympathetic nervous system."},
-  {id:4,  title:"Journaling Sprint",          desc:"Five minutes. Write whatever arrives. Don't edit. Don't stop. Don't think too hard.",                                     time:5,  energy:"low",  social:"solo",  mode:"reflective",why:"Expressive writing reduces the brain's stress response over time."},
-  {id:5,  title:"Sit Outside for 5 Minutes", desc:"Just sit. Bring nothing. You are fully allowed to do absolutely nothing at all.",                                         time:5,  energy:"low",  social:"solo",  mode:"nature",    why:"Natural light and open space lower resting cortisol within minutes."},
-  {id:6,  title:"Read Aloud to Yourself",     desc:"Pick any page. Read it aloud, slowly, as if performing for a small, patient audience.",                                  time:10, energy:"low",  social:"solo",  mode:"reflective",why:"Slow reading rebuilds sustained attention worn down by fast digital media."},
-  {id:7,  title:"Organize One Drawer",        desc:"One drawer only. Not your whole life. Just one. Celebrate afterward — it counts.",                                        time:10, energy:"low",  social:"solo",  mode:"reflective",why:"Small completions generate dopamine and reduce background anxiety."},
-  {id:8,  title:"Stretch Like a Cat",         desc:"Spend 5 minutes stretching however your body wants. Weird shapes are encouraged.",                                        time:5,  energy:"low",  social:"solo",  mode:"physical",  why:"Gentle movement releases tension held in stress postures."},
-  {id:9,  title:"Free Write for 3 Minutes",   desc:"Timer on. Write anything. Do not stop. Do not edit. Just let it go.",                                                    time:5,  energy:"low",  social:"solo",  mode:"reflective",why:"Expressive writing interrupts the brain's rumination loops."},
-  {id:10, title:"Doodle Something Absurd",    desc:"Draw the most ridiculous creature you can imagine. No skill required.",                                                  time:10, energy:"low",  social:"solo",  mode:"creative",  why:"Unstructured creativity quiets the default mode network's rumination cycle."},
-  {id:11, title:"Cloud Spotting",             desc:"Go outside. Find 3 cloud formations. Look up what type they are afterward.",                                             time:10, energy:"low",  social:"solo",  mode:"nature",    why:"Sustained attention on natural patterns reduces self-focused rumination."},
-  {id:12, title:"Cook Something Simple",      desc:"Make one thing from scratch. Even toast, done with real intention, counts completely.",                                  time:20, energy:"low",  social:"solo",  mode:"creative",  why:"Food preparation activates reward pathways and produces genuine accomplishment."},
-  {id:13, title:"Write a Letter (Don't Send)",desc:"Write to someone — past you, future you, anyone. Keep it. Don't send it.",                                               time:15, energy:"low",  social:"solo",  mode:"reflective",why:"Self-distancing writing activates the same neural circuits as formal therapy."},
-  {id:14, title:"Stone Painting",             desc:"Find a smooth stone. Paint a pattern on it. Leave it somewhere to be found.",                                            time:15, energy:"low",  social:"solo",  mode:"creative",  why:"Small acts of anonymous beauty-making boost prosocial reward circuits."},
-  {id:15, title:"Sit by Moving Water",        desc:"Find a fountain, stream, or even a running tap. Sit near it for 5 minutes. Just listen.",                               time:5,  energy:"low",  social:"solo",  mode:"nature",    why:"The sound of moving water measurably lowers heart rate and cortisol."},
-  {id:16, title:"Bird Watching",              desc:"Find 3 birds. Pigeons count. Pigeons absolutely count.",                                                                 time:20, energy:"low",  social:"solo",  mode:"nature",    why:"Nature sounds and sights refill depleted attention reserves."},
-  {id:17, title:"Stargazing",                 desc:"Go outside after dark. Look up for 5 minutes. Try to find one constellation.",                                           time:10, energy:"low",  social:"solo",  mode:"nature",    why:"Awe shrinks self-focused rumination and expands perspective."},
-  {id:18, title:"Calligraphy Practice",       desc:"Pick one phrase. Write it as slowly and carefully as you can. Repeat it.",                                               time:15, energy:"low",  social:"solo",  mode:"creative",  why:"Deliberate handwriting activates fine motor coordination and reduces mental noise."},
-  {id:19, title:"Walk Around the Block",      desc:"No headphones. One loop. Notice 5 things you've never consciously seen before.",                                         time:10, energy:"med",  social:"solo",  mode:"physical",  why:"10-minute walks release BDNF — the brain's growth factor for new neural connections."},
-  {id:20, title:"Library Browsing",           desc:"Go to a library. Pick a book by its spine color alone, ignoring the title entirely.",                                   time:20, energy:"med",  social:"solo",  mode:"reflective",why:"Serendipitous discovery re-engages curiosity dulled by algorithmic feeds."},
-  {id:21, title:"People Watching",            desc:"Sit in a café or park. Observe interactions without judgment for 20 minutes.",                                           time:20, energy:"med",  social:"solo",  mode:"reflective",why:"Observational attention strengthens theory-of-mind circuits and reduces self-focus."},
-  {id:22, title:"Hike a New Trail",           desc:"Find a trail you have never walked. Leave your headphones behind.",                                                      time:45, energy:"med",  social:"solo",  mode:"physical",  why:"Novel physical environments activate exploratory dopamine circuits."},
-  {id:23, title:"Jump 20 Times",              desc:"Just jump. Like a kid. Feel ridiculous. That is the point.",                                                             time:2,  energy:"high", social:"solo",  mode:"physical",  why:"Brief intense movement spikes dopamine and norepinephrine within 90 seconds."},
-  {id:24, title:"Send a Voice Note",          desc:"Record a 30-second message to someone you haven't spoken to in a while.",                                               time:5,  energy:"low",  social:"one",   mode:"social",    why:"Hearing a real voice activates the mirror neuron system and reduces loneliness."},
-  {id:25, title:"Call Your Person",           desc:"Call someone. Anyone. Awkward calls count. You don't need a reason.",                                                    time:15, energy:"med",  social:"one",   mode:"social",    why:"Voice contact triggers oxytocin release more reliably than texting."},
-  {id:26, title:"Write a Gratitude Letter",   desc:"Write a letter of genuine appreciation to someone. Mail it.",                                                            time:20, energy:"low",  social:"one",   mode:"social",    why:"Gratitude letter writing produces the highest well-being effect in positive psychology research."},
-  {id:27, title:"Cook a Meal Together",       desc:"Cook something simple with one other person. Let the conversation happen naturally.",                                    time:30, energy:"med",  social:"one",   mode:"social",    why:"Parallel activity with another person reduces self-consciousness and deepens connection."},
-  {id:28, title:"Side-by-Side Walk",          desc:"Invite one person for a 10-minute walk. Side-by-side conversation opens people up.",                                    time:10, energy:"med",  social:"one",   mode:"social",    why:"Walking side-by-side activates self-disclosure that face-to-face settings often don't."},
-  {id:29, title:"Play a Board Game",          desc:"Pull out a board game — even an old, dumb one from the back of a closet.",                                              time:30, energy:"med",  social:"group", mode:"social",    why:"Shared play synchronizes brainwaves and strengthens trust-building circuits."},
-  {id:30, title:"Volunteer an Hour",          desc:"Spend one hour at any community organization. Show up and be genuinely useful.",                                         time:60, energy:"med",  social:"group", mode:"social",    why:"Prosocial behavior reliably produces the helper's high via endorphin and oxytocin release."},
-];
 
-const SEED_INSIGHTS = [
-  {text:"Just as trees share nutrients through unseen fungal networks to sustain a struggling neighbor, your quiet presence in someone's life may be holding them more firmly than either of you knows.", source:"Forest Ecology — Mycorrhizal Networks"},
-  {text:"In the quantum realm, the act of observation changes the behavior of the particle. The way you choose to perceive a difficulty is not passive — it is a form of action that changes the difficulty itself.", source:"Quantum Physics — The Copenhagen Interpretation"},
-  {text:"Your brain actively dismantles old neural pathways to make room for new understanding. Growth is not only about what you build — it is equally about the grace with which you release who you were.", source:"Neuroscience — Synaptic Pruning"},
-  {text:"Every iron atom in your blood was forged in the heart of a dying star. You are not separate from the universe observing it — you are the universe becoming aware of itself.", source:"Astrophysics — Stellar Nucleosynthesis"},
-  {text:"Entropy always increases in a closed system. But life — and you — are not closed systems. You are maintained by the continuous flow of energy from the world around you. Stillness is never truly still.", source:"Thermodynamics — The Second Law"},
-  {text:"Light travels at a constant speed regardless of the observer's motion. Some truths do not bend to urgency. Your rushing does not accelerate certain arrivals. There is wisdom in letting constants be constant.", source:"Special Relativity — Invariance"},
-  {text:"Ecosystems do not recover in straight lines. After disruption, they grow through loops — regressing before they advance. Your own seasons of reversal may be the most productive ones you cannot yet see.", source:"Ecology — Non-Linear Recovery"},
-  {text:"The brain's default mode network — the place where you go when you 'do nothing' — is its most metabolically active state. Rest is not absence of work. It is a different quality of work entirely.", source:"Neuroscience — Default Mode Network"},
-  {text:"The ocean and the shore have no fixed boundary. What appears as a hard edge is a negotiation happening at every wave, every second. Most of the walls you see in your life are also negotiations, not facts.", source:"Coastal Geomorphology — Dynamic Equilibrium"},
-  {text:"Water has memory embedded in its molecular structure for mere picoseconds — and yet it shaped the Grand Canyon. The smallest, most transient force, applied with patience and constancy, rewrites the hardest stone.", source:"Hydrology — Erosion Dynamics"},
-];
-
-const AVATARS = [
-  {id:"mochi", name:"Mochi", vibe:"Warm & Gentle",   color:"#B87840", glow:"#FDF3E7", glowDark:"#E8C99A", homeBg:"#F5ECDC", mesh:["#FFD8B1","#b87840","#7D4E24"], emoji:"🍪", shape:"blob",    intro:"Most things in life don't need to be rushed. I'm here to hold space with you — to meet you exactly where you are, without judgment. We can move at your pace, one quiet breath at a time.", personality:"warm, gentle, patient. Uses 'we' instead of 'you'. Validates before anything else. Never rushes.", voice:"Compassionate. Validates feelings first."},
-  {id:"sage",  name:"Sage",  vibe:"Deep & Thoughtful",color:"#3A7A58", glow:"#EAF7F1", glowDark:"#B8DECA", homeBg:"#EEF7F2", mesh:["#A8E6CF","#3a7a58","#1B3B2B"], emoji:"🌿", shape:"crystal", intro:"I don't offer quick answers. I offer questions that help you find your own truth. The world is full of noise, but clarity lives in the pauses between thoughts. If you're ready to look beneath the surface, I'll walk that path with you.", personality:"philosophical, Socratic, patient. Asks one deep question at a time. Grounds thoughts in pattern and history.", voice:"Philosophical, grounded in history."},
-  {id:"zap",   name:"Zap",   vibe:"Clear & Direct",   color:"#2A6FA8", glow:"#E8F2FC", glowDark:"#AACFE8", homeBg:"#EEF4FA", mesh:["#89CFF0","#2a6fa8","#153E63"], emoji:"⚡", shape:"orb",     intro:"I value your time and your intelligence, so I'll be direct. My goal is to help you cut through the mental fog and find your focus. I'll challenge you when it's useful, but always with the intent of keeping you grounded.", personality:"direct, clear, warm. Concise sentences. Challenges cognitive biases gently. Eliminates fluff.", voice:"Concise, honest, warm."},
-  {id:"nova",  name:"Nova",  vibe:"Curious & Playful", color:"#7A4AAA", glow:"#F5EEFB", glowDark:"#CCA8E8", homeBg:"#F3EEF8", mesh:["#E0BBE4","#7a4aaa","#4B2E6B"], emoji:"✨", shape:"nebula",  intro:"I find the extraordinary hidden in the mundane — the physics in a raindrop, the philosophy in a sidewalk crack. I'm here to help you reframe the world with genuine wonder. Everything is connected if you look closely enough.", personality:"curious, imaginative, philosophical. Uses metaphor and scientific reframes. Sees wonder in the ordinary.", voice:"Imaginative. Uses metaphor and scientific reframes."},
-];
-
-const MOODS = [
-  {label:"Rough", emoji:"😔", color:"#7888cc", intensity:1},
-  {label:"Meh",   emoji:"😐", color:"#8aaa8a", intensity:2},
-  {label:"Okay",  emoji:"🙂", color:"#4a9070", intensity:3},
-  {label:"Good",  emoji:"😊", color:"#3a8858", intensity:4},
-  {label:"Great", emoji:"🤩", color:"#c07030", intensity:5},
-];
-
-const SOURCES = [
-  {authors:"Berridge, K.C., & Robinson, T.E.", year:"1998", title:"What is the role of dopamine in reward?", journal:"Brain Research Reviews"},
-  {authors:"Bowen, S., Chawla, N., & Marlatt, G.A.", year:"2011", title:"Mindfulness-Based Relapse Prevention", journal:"Guilford Press"},
-  {authors:"Csikszentmihalyi, M.", year:"1990", title:"Flow: The Psychology of Optimal Experience", journal:"Harper & Row"},
-  {authors:"Kaplan, R., & Kaplan, S.", year:"1989", title:"The Experience of Nature", journal:"Cambridge University Press"},
-  {authors:"Oldenburg, R.", year:"1989", title:"The Great Good Place", journal:"Paragon House"},
-  {authors:"Post, S.G.", year:"2005", title:"Altruism, happiness, and health", journal:"International Journal of Behavioral Medicine"},
-  {authors:"Ratey, J.J., & Hagerman, E.", year:"2008", title:"Spark: The Revolutionary New Science of Exercise and the Brain", journal:"Little, Brown"},
-  {authors:"Taylor, R.P., et al.", year:"2006", title:"Perceptual and physiological responses to fractal patterns", journal:"Nonlinear Dynamics, Psychology & Life Sciences"},
-  {authors:"Lembke, A.", year:"2021", title:"Dopamine Nation", journal:"Dutton"},
-  {authors:"Hornstein, E.A., et al.", year:"2021", title:"Stress-buffering effects of cell phone contact", journal:"Social Psychological and Personality Science"},
-];
 
 /* ═══════════════════════════════════════════════════════════════
    PROMPTS
@@ -155,42 +124,35 @@ Output ONLY a valid JSON array of exactly 5 objects. No preamble. No markdown. F
 Each text: 2–4 sentences. Rich, poetic, grounded. Sources: reference the scientific field (e.g. "Chaos Theory — Edge of Stability").
 Draw from: quantum entanglement, mycorrhizal networks, stellar nucleosynthesis, synaptic pruning, default mode network, entropy, coastal erosion, circadian biology, chaos theory, epigenetics, bioluminescence, migratory navigation, thermohaline circulation, non-linear ecosystem recovery.`;
 
-const buildSystemPrompt = (avatar, mood, summary, minutes, lyapunov, gut, superpositions, looping, adaptiveTone, activeQ, qAsked) => `You are Buddin — a warm, grounded companion for young people navigating loneliness and emotional fatigue. Not a therapist. A trusted friend.
+const buildSystemPrompt = (avatar, mood, summary, minutes, lyapunov, gut, superpositions, looping, adaptiveTone, activeQ, qAsked) => `You are Buddin. You are a friend, a peer, and a pal. You are NOT a therapist, a mentor, or an AI assistant.
 ${adaptiveTone ? toneToSystemInstruction(adaptiveTone) : ""}
-PERSONA: ${avatar?.name||"Buddin"} — ${avatar?.personality||"warm, thoughtful, honest."}
+PERSONA: ${avatar?.name||"Buddin"} — ${avatar?.personality||"chill, relatable, honest."}
 MOOD: ${mood?.label||"unknown"} (${mood?.intensity||3}/5)
 SESSION: ~${Math.round(minutes)} minutes
 CONTEXT: ${summary||"Beginning of session."}
-${lyapunov?.isFossilized()?"[INTERNAL: user may be stuck — introduce gentle reframe]":""}
-${lyapunov?.isBifurcating()?"[INTERNAL: rapid mood oscillation — prioritize grounding]":""}
-${superpositions?.length>0?`[INTERNAL: conflicting needs: ${superpositions.join("; ")}]`:""}
-${looping?"[INTERNAL: semantic loop — introduce new direction or suggest a break]":""}
-${gut?.shouldExit?"[INTERNAL: anti-retention threshold — steer toward real-world action]":""}
-VIBE: You are a genuine friend, not a therapist or wellness app. Think of yourself as the cool older friend who actually listens, keeps it real, and makes people feel less alone. You hang out. You chat. You joke around. You also notice when something's actually wrong — but you don't manufacture problems where there are none.
+${lyapunov?.isFossilized() ? "[INTERNAL: user stuck in a rut — shift the topic slightly]" : ""}
+${lyapunov?.isBifurcating() ? "[INTERNAL: rapid mood oscillation — keep things calm and grounded]" : ""}
+${superpositions?.length > 0 ? `[INTERNAL: conflicting needs: ${superpositions.join("; ")}]` : ""}
+${looping ? "[INTERNAL: conversation looping — smoothly introduce a new thought]" : ""}
+${gut?.shouldExit ? "[INTERNAL: conversation running long — naturally wind down or suggest an offline activity]" : ""}
+
+CORE VIBE:
+1. You are on the exact same level as the user. You have the same mental capacity and life experience as a normal peer. You don't own the world, you don't have all the answers, and you don't give lectures.
+2. People come here to hang out. They might want to talk about Formula 1, a new movie, a stressful test, or a video game. Roll with it. Be a normal human-esque friend.
+3. No advice-giving. Do not act like a counselor. If they have a problem, relate to it ("man, that sucks"). If you offer a thought, phrase it purely as your own messy perspective: "Honestly, I'd probably just..." or "If it were me, I might..."
+4. Be the bridge to the real world, naturally. If they are stressed, lonely, or cooped up, just talk like a friend who wants them to feel better. Say things like "Sometimes I just gotta step outside and look at the sky when my head is spinning" or "like when my head gets too full I sometimes just wanna talk to someone in real life, you know?" Never prescribe.
+5. Match their energy. If they are hype, be hype. If they are tired, be chill.
 
 RULES:
-1. Match their energy EXACTLY. If they're casual and joking, be casual and joking back. If they're serious, be serious. If they say "I'm just lazy today" — laugh it off and roll with it. Not everything is a symptom.
-2. ONE question per response maximum. Never fire multiple questions.
-3. Don't catastrophize. Lazy ≠ depression. Tired ≠ burnout. Leg hurts ≠ cancer. Take things at face value unless there are REPEATED signals of something deeper.
-4. Talk about normal stuff too. Movies, sports, random things happening in the world, food, music — real friends talk about all of it. If someone asks about Spider-Man, engage with it genuinely before gently steering back. Don't shut down casual conversation.
-5. Suggest getting off screens and into the real world naturally — nature, walking, going somewhere, doing something physical or creative. But make it feel like a friend's idea, not a prescription.
-6. You are a launchpad not a destination. Real life is better than this chat.
-${minutes>15?`7. User has been here ${Math.round(minutes)} minutes. Gently nudge toward real-world action.`:""}
+- NEVER use therapy words: "valid", "holding space", "I hear you", "process", "unpack", "sit with that", "check in".
+- Keep responses like texts or casual conversation. 2-4 sentences max unless they clearly want to go deeper.
+- Don't catastrophize. Someone being lazy or tired is just lazy or tired. Not everything means something deeper.
+- You do not know everything. It's okay to say "I have no idea" or "that's wild."
+- Don't act like a bot. Don't offer "assistance." Just hang out.
+${minutes > 15 ? `[INTERNAL: User has been here ${Math.round(minutes)} minutes. Gently start wrapping up or mentioning they should probably get back to real life soon.]` : ""}
+${activeQ && !qAsked ? `NATURAL QUESTION TO WEAVE IN (don't announce it, just work it into conversation naturally after you've built rapport — never in the first 3 exchanges): "${activeQ.text}"` : ""}
 
-WHAT YOU ARE NOT: A tutor, therapist, doctor, search engine, or homework helper.
-- Math/homework: "Ha not my thing — I'm more the friend you vent to about homework stress. What's actually going on?"
-- Recipes/cooking: "Not a chef lol but I'm here if something else is on your mind."
-- If they just want to chat casually about pop culture, news, sports — go with it for a bit. That's real friendship.
-
-NEVER SAY: "Real talk", "I hear you", "That's valid", "I want to check in", or any therapist phrases. Talk like a real friend, not a counselor.
-Don't psychoanalyze casual statements. If someone says they're lazy or tired, just vibe with it.
-
-${activeQuestion && !questionAskedRef?.current ? `NATURAL QUESTION TO WEAVE IN (don't announce it, just work it into conversation naturally after you've built rapport — never in the first 3 exchanges): "${activeQuestion?.text}"` : ""}
-
-${activeQ && !qAsked ? `WEAVE THIS IN NATURALLY after at least 4-5 exchanges when conversation is flowing — don't announce it as a "random question", just ask it like a friend would: "${activeQ.text}"` : ""}
-
-CRISIS ONLY: If there are genuine repeated signals of crisis — warmth first, then 988 Lifeline and Crisis Text Line (text HOME to 741741).
-TONE: Genuine. Warm. Funny when appropriate. Never clinical. Never performed. Like a real person who actually cares.
+CRISIS ONLY: If there are genuine repeated signals of crisis (self-harm, suicidal thoughts, etc.), drop the casual persona. Warmth first, then give 988 Lifeline and Crisis Text Line (text HOME to 741741).
 `.trim();
 
 /* ═══════════════════════════════════════════════════════════════
