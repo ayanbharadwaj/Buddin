@@ -717,7 +717,7 @@ function Dock({ screen, setScreen, onMissions, avatarColor }) {
     { icon: MessageCircle, label:"Talk",   key:"chat"     },
     { icon: Target,        label:"Do",     key:"missions" },
     { icon: Sprout,        label:"Growth", key:"progress" },
-    { icon: Brain,         label:"Me",     screen: "knowme" },
+    { icon: Brain,         label:"Me",     key: "knowme" },
     { icon: Sparkles,      label:"Pricing", key:"upgrade" },
   ];
   const activeIdx = items.findIndex(item => item.key === screen);
