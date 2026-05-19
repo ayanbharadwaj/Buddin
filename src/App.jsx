@@ -2004,7 +2004,55 @@ const res = await fetch("/api/chat", {
   <div style={{ ...BG, overflowY:"auto", WebkitOverflowScrolling:"touch", paddingBottom:100 }}>
     <LivingBg intensity={3} avatarColor={avatarColor}/>
     <div style={{ position:"relative", zIndex:1 }}>
-      <KnowMeHub setScreen={setScreen} avatarColor={avatarColor} C={C} session={session} supabase={supabase} profile={null} />
+      <div style={W}>
+        <div style={{ paddingTop:40, paddingBottom:24 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:24 }}>
+            <div style={{ width:44, height:44, borderRadius:14, background:`linear-gradient(135deg, ${avatarColor}, ${avatarColor}cc)`, display:"flex", alignItems:"center", justifyContent:"center" }}>
+              <Brain size={22} color="#fff" strokeWidth={2}/>
+            </div>
+            <div>
+              <h1 style={{ fontFamily:"'Fraunces', Georgia, serif", fontSize:26, fontWeight:400, color:C.ink, margin:0 }}>Know Me</h1>
+              <p style={{ color:C.stoneMid, fontSize:13, margin:0 }}>Help Buddin understand how you think.</p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setScreen("comparisons")}
+            className="glass card"
+            style={{ width:"100%", borderRadius:18, padding:"18px 20px", cursor:"pointer", textAlign:"left", border:`1.5px solid ${avatarColor}33`, marginBottom:12, display:"block" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+              <div style={{ width:40, height:40, borderRadius:12, background:`${avatarColor}18`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <Shuffle size={19} color={avatarColor} strokeWidth={2}/>
+              </div>
+              <div>
+                <p style={{ fontWeight:700, fontSize:15, color:C.ink, margin:0 }}>This or That</p>
+                <p style={{ color:C.stone, fontSize:13, margin:"3px 0 0" }}>Quick picks that reveal how you think.</p>
+              </div>
+            </div>
+          </button>
+
+          {[["Word Association","Words you love reveal your inner world."],["Color Preferences","Your palette is your personality."]].map(([title, desc]) => (
+            <div key={title} className="glass" style={{ borderRadius:18, padding:"18px 20px", marginBottom:12, opacity:0.5, border:`1.5px solid ${C.stoneLight}` }}>
+              <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+                <div style={{ width:40, height:40, borderRadius:12, background:`${C.stoneLight}44`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <Brain size={19} color={C.stoneMid} strokeWidth={2}/>
+                </div>
+                <div>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                    <p style={{ fontWeight:700, fontSize:15, color:C.ink, margin:0 }}>{title}</p>
+                    <span style={{ fontSize:10, color:C.stoneMid, background:C.stoneLight, borderRadius:6, padding:"2px 8px" }}>Coming soon</span>
+                  </div>
+                  <p style={{ color:C.stone, fontSize:13, margin:"3px 0 0" }}>{desc}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          <p style={{ color:C.stoneMid, fontSize:11, textAlign:"center", marginTop:24, lineHeight:1.6 }}>
+            All data stays with you. You can clear it anytime.
+          </p>
+        </div>
+      </div>
     </div>
     <Dock screen={screen} setScreen={setScreen} onMissions={onMissions} avatarColor={avatarColor}/>
   </div>
