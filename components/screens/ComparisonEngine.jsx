@@ -181,6 +181,29 @@ export default function ComparisonEngine({ setScreen, avatarColor, C, onSave }) 
   const [exiting, setExiting] = useState(false);
   const startTime = useRef(Date.now());
 
+  const [answeredIds, setAnsweredIds] = useState(new Set());
+const [loaded, setLoaded] = useState(false);
+
+useEffect(() => {
+  async function loadAnswered() {
+    try {
+      const { data: { session: s } } = await supabase.auth.getSession();
+      if (!s?.user?.id) { setLoaded(true); return; }
+      const res = await fetch("/api/comparisons", {
+        headers: { "Authorization": `Bearer ${s?.access_token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const ids = new Set(data.map(r => r.comparison_id));
+        setAnsweredIds(ids);
+        setQueue(shuffle(COMPARISONS.filter(c => !ids.has(c.id))));
+      }
+    } catch (e) { console.error(e); }
+    setLoaded(true);
+  }
+  loadAnswered();
+}, []);
+
   const current = queue[idx];
   const remaining = queue.length - idx;
 
@@ -203,6 +226,7 @@ export default function ComparisonEngine({ setScreen, avatarColor, C, onSave }) 
             "Authorization": `Bearer ${s?.access_token}`
           },
           body: JSON.stringify({
+            comparison_id: current.id,
             category: current.category,
             option_a: current.a,
             option_b: current.b,
@@ -232,6 +256,11 @@ export default function ComparisonEngine({ setScreen, avatarColor, C, onSave }) 
     }, 300);
   };
 
+  if (!loaded) return (
+  <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:C.cream }}>
+    <p style={{ color:C.stoneMid, fontSize:14 }}>Loading your progress...</p>
+  </div>
+);
 
   if (idx >= queue.length) {
     return (
