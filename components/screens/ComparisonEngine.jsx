@@ -219,6 +219,7 @@ useEffect(() => {
     try {
       const { data: { session: s } } = await supabase.auth.getSession();
       if (s?.user?.id) {
+        console.log('session token:', s?.access_token?.slice(0, 20));
         await fetch("/api/comparisons", {
           method: "POST",
           headers: {
