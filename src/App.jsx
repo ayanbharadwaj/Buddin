@@ -2001,9 +2001,11 @@ const res = await fetch("/api/chat", {
 )}
   {/* ── DONATE ──────────────────────────────────────────── */}
   {screen === "knowme" && (
-  <div style={{ ...BG, overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
+  <div style={{ ...BG, overflowY:"auto", WebkitOverflowScrolling:"touch", paddingBottom:100 }}>
     <LivingBg intensity={3} avatarColor={avatarColor}/>
-    <KnowMeHub setScreen={setScreen} avatarColor={avatarColor} C={C} session={session} supabase={supabase} />
+    <div style={{ position:"relative", zIndex:1 }}>
+      <KnowMeHub setScreen={setScreen} avatarColor={avatarColor} C={C} session={session} supabase={supabase} profile={null} />
+    </div>
     <Dock screen={screen} setScreen={setScreen} onMissions={onMissions} avatarColor={avatarColor}/>
   </div>
 )}
