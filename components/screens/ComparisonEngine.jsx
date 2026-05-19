@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronLeft } from "lucide-react";
+import { supabase } from '../../lib/supabase.js';
 
 const COMPARISONS = [
   {id: 1, category: "everyday", a: "Pen", b: "Pencil", insight: "organization_style"},
@@ -169,7 +170,7 @@ function shuffle(arr) {
   return a;
 }
 
-export default function ComparisonEngine({ setScreen, avatarColor, C, session, supabase, onSave }) {
+export default function ComparisonEngine({ setScreen, avatarColor, C, onSave }) {
   const [queue, setQueue] = useState(() => shuffle(COMPARISONS));
   const [idx, setIdx] = useState(0);
   const [chosen, setChosen] = useState(null);
@@ -192,10 +193,9 @@ export default function ComparisonEngine({ setScreen, avatarColor, C, session, s
     setIntensity(val);
     const responseTime = Date.now() - startTime.current;
 
-    // Save to Supabase
-    if (session?.user?.id) {
-      try {
-        const { data: { session: s } } = await supabase.auth.getSession();
+    try {
+      const { data: { session: s } } = await supabase.auth.getSession();
+      if (s?.user?.id) {
         await fetch("/api/comparisons", {
           method: "POST",
           headers: {
@@ -215,12 +215,11 @@ export default function ComparisonEngine({ setScreen, avatarColor, C, session, s
         });
         setSaved(p => p + 1);
         if (onSave) onSave(saved + 1);
-      } catch (e) {
-        console.error("Save failed:", e);
       }
+    } catch (e) {
+      console.error("Save failed:", e);
     }
 
-    // Animate out
     setExiting(true);
     setTimeout(() => {
       setIdx(i => i + 1);
@@ -232,6 +231,7 @@ export default function ComparisonEngine({ setScreen, avatarColor, C, session, s
       startTime.current = Date.now();
     }, 300);
   };
+
 
   if (idx >= queue.length) {
     return (

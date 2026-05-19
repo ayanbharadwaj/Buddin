@@ -2060,7 +2060,7 @@ const res = await fetch("/api/chat", {
 
 {screen === "comparisons" && (
   <div style={{ position:"relative", zIndex:1, minHeight:"100vh", background:C.cream }}>
-    <ComparisonEngine setScreen={setScreen} avatarColor={avatarColor} C={C} session={session} supabase={supabase} />
+    <ComparisonEngine setScreen={setScreen} avatarColor={avatarColor} C={C} />
   </div>
 )}
   {screen === "donate" && (
