@@ -171,7 +171,7 @@ function shuffle(arr) {
 }
 
 export default function ComparisonEngine({ setScreen, avatarColor, C, onSave }) {
-  const [queue, setQueue] = useState(() => shuffle(COMPARISONS));
+  const [queue, setQueue] = useState([]);  
   const [idx, setIdx] = useState(0);
   const [chosen, setChosen] = useState(null);
   const [intensity, setIntensity] = useState(null);
