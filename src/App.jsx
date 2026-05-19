@@ -9,7 +9,6 @@ import {
 import { toneToSystemInstruction } from '../api/boom/memorySchema.js';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
 import { supabase } from '../lib/supabase.js'
-import { MISSIONS, SEED_INSIGHTS, AVATARS, MOODS, SOURCES } from './data/constants.js';
 
 /* ═══════════════════════════════════════════════════════════════
    HIDDEN MATHEMATICAL ENGINE
@@ -112,7 +111,82 @@ const detectSemanticLoop = (msgs) => {
 const CRISIS_KW = ["suicide","kill myself","end my life","want to die","self-harm","hurt myself","cutting","overdose","can't go on","no reason to live","better off dead","end it all"];
 const isCrisisText = (t) => CRISIS_KW.some(k=>t.toLowerCase().includes(k));
 
+/* ═══════════════════════════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════════════════════════ */
+const MISSIONS = [
+  {id:1,  title:"Window Color Scan",         desc:"Find 3 distinct colors outside your window. Name each one quietly, out loud.",                                             time:5,  energy:"low",  social:"solo",  mode:"nature",    why:"Brief nature observation lowers cortisol and quiets the brain's alarm signals."},
+  {id:2,  title:"Gratitude Scribble",         desc:"Write 3 things that weren't terrible today. 'The coffee was warm' absolutely counts.",                                   time:5,  energy:"low",  social:"solo",  mode:"reflective",why:"Gratitude practice activates the prefrontal cortex and releases serotonin."},
+  {id:3,  title:"Origami Crane",              desc:"Fold one sheet of paper into a crane. Look up the steps. Go slowly — that is the point.",                                time:10, energy:"low",  social:"solo",  mode:"creative",  why:"Repetitive tactile tasks engage the parasympathetic nervous system."},
+  {id:4,  title:"Journaling Sprint",          desc:"Five minutes. Write whatever arrives. Don't edit. Don't stop. Don't think too hard.",                                     time:5,  energy:"low",  social:"solo",  mode:"reflective",why:"Expressive writing reduces the brain's stress response over time."},
+  {id:5,  title:"Sit Outside for 5 Minutes", desc:"Just sit. Bring nothing. You are fully allowed to do absolutely nothing at all.",                                         time:5,  energy:"low",  social:"solo",  mode:"nature",    why:"Natural light and open space lower resting cortisol within minutes."},
+  {id:6,  title:"Read Aloud to Yourself",     desc:"Pick any page. Read it aloud, slowly, as if performing for a small, patient audience.",                                  time:10, energy:"low",  social:"solo",  mode:"reflective",why:"Slow reading rebuilds sustained attention worn down by fast digital media."},
+  {id:7,  title:"Organize One Drawer",        desc:"One drawer only. Not your whole life. Just one. Celebrate afterward — it counts.",                                        time:10, energy:"low",  social:"solo",  mode:"reflective",why:"Small completions generate dopamine and reduce background anxiety."},
+  {id:8,  title:"Stretch Like a Cat",         desc:"Spend 5 minutes stretching however your body wants. Weird shapes are encouraged.",                                        time:5,  energy:"low",  social:"solo",  mode:"physical",  why:"Gentle movement releases tension held in stress postures."},
+  {id:9,  title:"Free Write for 3 Minutes",   desc:"Timer on. Write anything. Do not stop. Do not edit. Just let it go.",                                                    time:5,  energy:"low",  social:"solo",  mode:"reflective",why:"Expressive writing interrupts the brain's rumination loops."},
+  {id:10, title:"Doodle Something Absurd",    desc:"Draw the most ridiculous creature you can imagine. No skill required.",                                                  time:10, energy:"low",  social:"solo",  mode:"creative",  why:"Unstructured creativity quiets the default mode network's rumination cycle."},
+  {id:11, title:"Cloud Spotting",             desc:"Go outside. Find 3 cloud formations. Look up what type they are afterward.",                                             time:10, energy:"low",  social:"solo",  mode:"nature",    why:"Sustained attention on natural patterns reduces self-focused rumination."},
+  {id:12, title:"Cook Something Simple",      desc:"Make one thing from scratch. Even toast, done with real intention, counts completely.",                                  time:20, energy:"low",  social:"solo",  mode:"creative",  why:"Food preparation activates reward pathways and produces genuine accomplishment."},
+  {id:13, title:"Write a Letter (Don't Send)",desc:"Write to someone — past you, future you, anyone. Keep it. Don't send it.",                                               time:15, energy:"low",  social:"solo",  mode:"reflective",why:"Self-distancing writing activates the same neural circuits as formal therapy."},
+  {id:14, title:"Stone Painting",             desc:"Find a smooth stone. Paint a pattern on it. Leave it somewhere to be found.",                                            time:15, energy:"low",  social:"solo",  mode:"creative",  why:"Small acts of anonymous beauty-making boost prosocial reward circuits."},
+  {id:15, title:"Sit by Moving Water",        desc:"Find a fountain, stream, or even a running tap. Sit near it for 5 minutes. Just listen.",                               time:5,  energy:"low",  social:"solo",  mode:"nature",    why:"The sound of moving water measurably lowers heart rate and cortisol."},
+  {id:16, title:"Bird Watching",              desc:"Find 3 birds. Pigeons count. Pigeons absolutely count.",                                                                 time:20, energy:"low",  social:"solo",  mode:"nature",    why:"Nature sounds and sights refill depleted attention reserves."},
+  {id:17, title:"Stargazing",                 desc:"Go outside after dark. Look up for 5 minutes. Try to find one constellation.",                                           time:10, energy:"low",  social:"solo",  mode:"nature",    why:"Awe shrinks self-focused rumination and expands perspective."},
+  {id:18, title:"Calligraphy Practice",       desc:"Pick one phrase. Write it as slowly and carefully as you can. Repeat it.",                                               time:15, energy:"low",  social:"solo",  mode:"creative",  why:"Deliberate handwriting activates fine motor coordination and reduces mental noise."},
+  {id:19, title:"Walk Around the Block",      desc:"No headphones. One loop. Notice 5 things you've never consciously seen before.",                                         time:10, energy:"med",  social:"solo",  mode:"physical",  why:"10-minute walks release BDNF — the brain's growth factor for new neural connections."},
+  {id:20, title:"Library Browsing",           desc:"Go to a library. Pick a book by its spine color alone, ignoring the title entirely.",                                   time:20, energy:"med",  social:"solo",  mode:"reflective",why:"Serendipitous discovery re-engages curiosity dulled by algorithmic feeds."},
+  {id:21, title:"People Watching",            desc:"Sit in a café or park. Observe interactions without judgment for 20 minutes.",                                           time:20, energy:"med",  social:"solo",  mode:"reflective",why:"Observational attention strengthens theory-of-mind circuits and reduces self-focus."},
+  {id:22, title:"Hike a New Trail",           desc:"Find a trail you have never walked. Leave your headphones behind.",                                                      time:45, energy:"med",  social:"solo",  mode:"physical",  why:"Novel physical environments activate exploratory dopamine circuits."},
+  {id:23, title:"Jump 20 Times",              desc:"Just jump. Like a kid. Feel ridiculous. That is the point.",                                                             time:2,  energy:"high", social:"solo",  mode:"physical",  why:"Brief intense movement spikes dopamine and norepinephrine within 90 seconds."},
+  {id:24, title:"Send a Voice Note",          desc:"Record a 30-second message to someone you haven't spoken to in a while.",                                               time:5,  energy:"low",  social:"one",   mode:"social",    why:"Hearing a real voice activates the mirror neuron system and reduces loneliness."},
+  {id:25, title:"Call Your Person",           desc:"Call someone. Anyone. Awkward calls count. You don't need a reason.",                                                    time:15, energy:"med",  social:"one",   mode:"social",    why:"Voice contact triggers oxytocin release more reliably than texting."},
+  {id:26, title:"Write a Gratitude Letter",   desc:"Write a letter of genuine appreciation to someone. Mail it.",                                                            time:20, energy:"low",  social:"one",   mode:"social",    why:"Gratitude letter writing produces the highest well-being effect in positive psychology research."},
+  {id:27, title:"Cook a Meal Together",       desc:"Cook something simple with one other person. Let the conversation happen naturally.",                                    time:30, energy:"med",  social:"one",   mode:"social",    why:"Parallel activity with another person reduces self-consciousness and deepens connection."},
+  {id:28, title:"Side-by-Side Walk",          desc:"Invite one person for a 10-minute walk. Side-by-side conversation opens people up.",                                    time:10, energy:"med",  social:"one",   mode:"social",    why:"Walking side-by-side activates self-disclosure that face-to-face settings often don't."},
+  {id:29, title:"Play a Board Game",          desc:"Pull out a board game — even an old, dumb one from the back of a closet.",                                              time:30, energy:"med",  social:"group", mode:"social",    why:"Shared play synchronizes brainwaves and strengthens trust-building circuits."},
+  {id:30, title:"Volunteer an Hour",          desc:"Spend one hour at any community organization. Show up and be genuinely useful.",                                         time:60, energy:"med",  social:"group", mode:"social",    why:"Prosocial behavior reliably produces the helper's high via endorphin and oxytocin release."},
+];
 
+const SEED_INSIGHTS = [
+  {text:"Just as trees share nutrients through unseen fungal networks to sustain a struggling neighbor, your quiet presence in someone's life may be holding them more firmly than either of you knows.", source:"Forest Ecology — Mycorrhizal Networks"},
+  {text:"In the quantum realm, the act of observation changes the behavior of the particle. The way you choose to perceive a difficulty is not passive — it is a form of action that changes the difficulty itself.", source:"Quantum Physics — The Copenhagen Interpretation"},
+  {text:"Your brain actively dismantles old neural pathways to make room for new understanding. Growth is not only about what you build — it is equally about the grace with which you release who you were.", source:"Neuroscience — Synaptic Pruning"},
+  {text:"Every iron atom in your blood was forged in the heart of a dying star. You are not separate from the universe observing it — you are the universe becoming aware of itself.", source:"Astrophysics — Stellar Nucleosynthesis"},
+  {text:"Entropy always increases in a closed system. But life — and you — are not closed systems. You are maintained by the continuous flow of energy from the world around you. Stillness is never truly still.", source:"Thermodynamics — The Second Law"},
+  {text:"Light travels at a constant speed regardless of the observer's motion. Some truths do not bend to urgency. Your rushing does not accelerate certain arrivals. There is wisdom in letting constants be constant.", source:"Special Relativity — Invariance"},
+  {text:"Ecosystems do not recover in straight lines. After disruption, they grow through loops — regressing before they advance. Your own seasons of reversal may be the most productive ones you cannot yet see.", source:"Ecology — Non-Linear Recovery"},
+  {text:"The brain's default mode network — the place where you go when you 'do nothing' — is its most metabolically active state. Rest is not absence of work. It is a different quality of work entirely.", source:"Neuroscience — Default Mode Network"},
+  {text:"The ocean and the shore have no fixed boundary. What appears as a hard edge is a negotiation happening at every wave, every second. Most of the walls you see in your life are also negotiations, not facts.", source:"Coastal Geomorphology — Dynamic Equilibrium"},
+  {text:"Water has memory embedded in its molecular structure for mere picoseconds — and yet it shaped the Grand Canyon. The smallest, most transient force, applied with patience and constancy, rewrites the hardest stone.", source:"Hydrology — Erosion Dynamics"},
+];
+
+const AVATARS = [
+  {id:"mochi", name:"Mochi", vibe:"Warm & Gentle",   color:"#B87840", glow:"#FDF3E7", glowDark:"#E8C99A", homeBg:"#F5ECDC", mesh:["#FFD8B1","#b87840","#7D4E24"], emoji:"🍪", shape:"blob",    intro:"Most things in life don't need to be rushed. I'm here to hold space with you — to meet you exactly where you are, without judgment. We can move at your pace, one quiet breath at a time.", personality:"warm, gentle, patient. Uses 'we' instead of 'you'. Validates before anything else. Never rushes.", voice:"Compassionate. Validates feelings first."},
+  {id:"sage",  name:"Sage",  vibe:"Deep & Thoughtful",color:"#3A7A58", glow:"#EAF7F1", glowDark:"#B8DECA", homeBg:"#EEF7F2", mesh:["#A8E6CF","#3a7a58","#1B3B2B"], emoji:"🌿", shape:"crystal", intro:"I don't offer quick answers. I offer questions that help you find your own truth. The world is full of noise, but clarity lives in the pauses between thoughts. If you're ready to look beneath the surface, I'll walk that path with you.", personality:"philosophical, Socratic, patient. Asks one deep question at a time. Grounds thoughts in pattern and history.", voice:"Philosophical, grounded in history."},
+  {id:"zap",   name:"Zap",   vibe:"Clear & Direct",   color:"#2A6FA8", glow:"#E8F2FC", glowDark:"#AACFE8", homeBg:"#EEF4FA", mesh:["#89CFF0","#2a6fa8","#153E63"], emoji:"⚡", shape:"orb",     intro:"I value your time and your intelligence, so I'll be direct. My goal is to help you cut through the mental fog and find your focus. I'll challenge you when it's useful, but always with the intent of keeping you grounded.", personality:"direct, clear, warm. Concise sentences. Challenges cognitive biases gently. Eliminates fluff.", voice:"Concise, honest, warm."},
+  {id:"nova",  name:"Nova",  vibe:"Curious & Playful", color:"#7A4AAA", glow:"#F5EEFB", glowDark:"#CCA8E8", homeBg:"#F3EEF8", mesh:["#E0BBE4","#7a4aaa","#4B2E6B"], emoji:"✨", shape:"nebula",  intro:"I find the extraordinary hidden in the mundane — the physics in a raindrop, the philosophy in a sidewalk crack. I'm here to help you reframe the world with genuine wonder. Everything is connected if you look closely enough.", personality:"curious, imaginative, philosophical. Uses metaphor and scientific reframes. Sees wonder in the ordinary.", voice:"Imaginative. Uses metaphor and scientific reframes."},
+];
+
+const MOODS = [
+  {label:"Rough", emoji:"😔", color:"#7888cc", intensity:1},
+  {label:"Meh",   emoji:"😐", color:"#8aaa8a", intensity:2},
+  {label:"Okay",  emoji:"🙂", color:"#4a9070", intensity:3},
+  {label:"Good",  emoji:"😊", color:"#3a8858", intensity:4},
+  {label:"Great", emoji:"🤩", color:"#c07030", intensity:5},
+];
+
+const SOURCES = [
+  {authors:"Berridge, K.C., & Robinson, T.E.", year:"1998", title:"What is the role of dopamine in reward?", journal:"Brain Research Reviews"},
+  {authors:"Bowen, S., Chawla, N., & Marlatt, G.A.", year:"2011", title:"Mindfulness-Based Relapse Prevention", journal:"Guilford Press"},
+  {authors:"Csikszentmihalyi, M.", year:"1990", title:"Flow: The Psychology of Optimal Experience", journal:"Harper & Row"},
+  {authors:"Kaplan, R., & Kaplan, S.", year:"1989", title:"The Experience of Nature", journal:"Cambridge University Press"},
+  {authors:"Oldenburg, R.", year:"1989", title:"The Great Good Place", journal:"Paragon House"},
+  {authors:"Post, S.G.", year:"2005", title:"Altruism, happiness, and health", journal:"International Journal of Behavioral Medicine"},
+  {authors:"Ratey, J.J., & Hagerman, E.", year:"2008", title:"Spark: The Revolutionary New Science of Exercise and the Brain", journal:"Little, Brown"},
+  {authors:"Taylor, R.P., et al.", year:"2006", title:"Perceptual and physiological responses to fractal patterns", journal:"Nonlinear Dynamics, Psychology & Life Sciences"},
+  {authors:"Lembke, A.", year:"2021", title:"Dopamine Nation", journal:"Dutton"},
+  {authors:"Hornstein, E.A., et al.", year:"2021", title:"Stress-buffering effects of cell phone contact", journal:"Social Psychological and Personality Science"},
+];
 
 /* ═══════════════════════════════════════════════════════════════
    PROMPTS
