@@ -9,6 +9,8 @@ import {
 import { toneToSystemInstruction } from '../api/boom/memorySchema.js';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
 import { supabase } from '../lib/supabase.js'
+import KnowMeHub from '../components/screens/KnowMeHub.jsx';
+import ComparisonEngine from '../components/screens/ComparisonEngine.jsx';
 
 /* ═══════════════════════════════════════════════════════════════
    HIDDEN MATHEMATICAL ENGINE
@@ -715,6 +717,7 @@ function Dock({ screen, setScreen, onMissions, avatarColor }) {
     { icon: MessageCircle, label:"Talk",   key:"chat"     },
     { icon: Target,        label:"Do",     key:"missions" },
     { icon: Sprout,        label:"Growth", key:"progress" },
+    { icon: Brain,         label:"Me",     screen: "knowme" },
     { icon: Sparkles,      label:"Pricing", key:"upgrade" },
   ];
   const activeIdx = items.findIndex(item => item.key === screen);
@@ -1997,6 +2000,17 @@ const res = await fetch("/api/chat", {
   </div>
 )}
   {/* ── DONATE ──────────────────────────────────────────── */}
+  {screen === "knowme" && (
+  <div style={{ ...BG, overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
+    <LivingBg intensity={3} avatarColor={avatarColor}/>
+    <KnowMeHub setScreen={setScreen} avatarColor={avatarColor} C={C} session={session} supabase={supabase} />
+    <Dock screen={screen} setScreen={setScreen} onMissions={onMissions} avatarColor={avatarColor}/>
+  </div>
+)}
+
+{screen === "comparisons" && (
+  <ComparisonEngine setScreen={setScreen} avatarColor={avatarColor} C={C} session={session} supabase={supabase} />
+)}
   {screen === "donate" && (
     <div style={{ ...BG, paddingBottom:100, overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
       <LivingBg intensity={3} avatarColor={avatarColor}/>
