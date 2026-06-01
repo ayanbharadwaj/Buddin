@@ -1579,16 +1579,7 @@ const res = await fetch("/api/chat", {
               <button onClick={insight.next} style={{ background:"transparent", border:`1px solid ${avatarColor}44`, color:avatarColor, borderRadius:20, padding:"6px 14px", cursor:"pointer", fontSize:11, fontWeight:600 }}>Next insight →</button>
             </div>
           </div>
-          {totalAnswered >= 5 && (
-  <button
-    onClick={() => setScreen("myprofile")}
-    className="glass card"
-    style={{ width:"100%", borderRadius:18, padding:"16px 20px", cursor:"pointer", textAlign:"left", border:`1.5px solid ${avatarColor}33`, marginBottom:12, display:"block", background:`${avatarColor}08` }}>
-    <p style={{ color:avatarColor, fontSize:11, fontWeight:700, letterSpacing:"0.1em", marginBottom:4 }}>BUDDIN IS LEARNING YOU</p>
-    <p style={{ color:C.ink, fontSize:14, fontWeight:600, margin:0 }}>See what Buddin has figured out →</p>
-    <p style={{ color:C.stone, fontSize:12, marginTop:3 }}>Based on your This or That answers</p>
-  </button>
-)}
+          
           <button onClick={() => setScreen("breathe")} className="glass card btn" style={{ borderRadius:18, padding:"16px 14px", cursor:"pointer", textAlign:"left", border:`1px solid ${avatarColor}22` }}>
             <div style={{ width:36, height:36, borderRadius:"50%", background:`radial-gradient(circle at 35% 30%, ${avatarColor}88, ${avatarColor}44)`, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:`0 0 12px ${avatarColor}44`, animation:"orbPulse 3s ease-in-out infinite", marginBottom:6 }}>
               <Wind size={19} color={avatarColor} strokeWidth={1.8}
