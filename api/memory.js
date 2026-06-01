@@ -1,18 +1,13 @@
 import { createClient } from '@supabase/supabase-js'
 import { addSnapshot, deriveAdaptiveTone, createMemoryStore } from './boom/memorySchema.js'
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY  // service key for server-side
-)
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY)
+const supabaseAuth = createClient(process.env.SUPABASE_URL, process.env.VITE_SUPABASE_ANON_KEY)
 
 export default async function handler(req, res) {
-  const authHeader = req.headers.authorization
-  if (!authHeader) return res.status(401).json({ error: 'Unauthorized' })
-
-  const token = authHeader.replace('Bearer ', '')
-  const { data: { user }, error: authError } = await supabase.auth.getUser(token)
-  if (authError || !user) return res.status(401).json({ error: 'Invalid token' })
+  const token = req.headers.authorization?.replace('Bearer ', '')
+  const { data: { user }, error } = await supabaseAuth.auth.getUser(token)
+  if (error || !user) return res.status(401).json({ error: 'Unauthorized' })
 
   const userId = user.id
 

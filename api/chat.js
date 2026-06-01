@@ -6,6 +6,11 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY
 )
 
+const supabaseAuth = createClient(
+  process.env.SUPABASE_URL,
+  process.env.VITE_SUPABASE_ANON_KEY
+)
+
 const FREE_LIMIT      = 10;
 const SUPPORTER_LIMIT = 40;
 const MAX_LIMIT       = 120;
@@ -121,7 +126,7 @@ export default async function handler(req, res) {
   let isAuthenticated = false;
 
   try {
-    const { data: { user } } = await supabase.auth.getUser(token);
+    const { data: { user } } = await supabaseAuth.auth.getUser(token);
     if (user?.id) {
       userId = user.id;
       isAuthenticated = true;
