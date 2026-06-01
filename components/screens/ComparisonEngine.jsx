@@ -186,21 +186,31 @@ const [loaded, setLoaded] = useState(false);
 
 useEffect(() => {
   async function loadAnswered() {
-    try {
-      const { data: { session: s } } = await supabase.auth.getSession();
-      if (!s?.user?.id) { setLoaded(true); return; }
-      const res = await fetch("/api/comparisons", {
-        headers: { "Authorization": `Bearer ${s?.access_token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const ids = new Set(data.map(r => r.comparison_id));
-        setAnsweredIds(ids);
-        setQueue(shuffle(COMPARISONS.filter(c => !ids.has(c.id))));
-      }
-    } catch (e) { console.error(e); }
-    setLoaded(true);
+  try {
+    const { data: { session: s } } = await supabase.auth.getSession();
+    if (!s?.user?.id) {
+      setQueue(shuffle(COMPARISONS));
+      setLoaded(true);
+      return;
+    }
+    const res = await fetch("/api/comparisons", {
+      headers: { "Authorization": `Bearer ${s?.access_token}` }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const ids = new Set(data.map(r => r.comparison_id).filter(Boolean));
+      setAnsweredIds(ids);
+      const remaining = COMPARISONS.filter(c => !ids.has(c.id));
+      setQueue(shuffle(remaining.length > 0 ? remaining : COMPARISONS));
+    } else {
+      setQueue(shuffle(COMPARISONS));
+    }
+  } catch (e) {
+    console.error(e);
+    setQueue(shuffle(COMPARISONS));
   }
+  setLoaded(true);
+}
   loadAnswered();
 }, []);
 
