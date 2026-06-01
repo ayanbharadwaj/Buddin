@@ -177,7 +177,7 @@ export default function ComparisonEngine({ setScreen, avatarColor, C, onSave }) 
   const [intensity, setIntensity] = useState(null);
   const [scale, setScale] = useState(getRandomScale());
   const [saved, setSaved] = useState(0);
-  const [phase, setPhase] = useState("pick"); // pick | rate | next
+  const [totalAnswered, setTotalAnswered] = useState(0);  const [phase, setPhase] = useState("pick"); // pick | rate | next
   const [exiting, setExiting] = useState(false);
   const startTime = useRef(Date.now());
 
@@ -200,6 +200,7 @@ useEffect(() => {
       const data = await res.json();
       const ids = new Set(data.map(r => r.comparison_id).filter(Boolean));
       setAnsweredIds(ids);
+      setTotalAnswered(ids.size);
       const remaining = COMPARISONS.filter(c => !ids.has(c.id));
       setQueue(shuffle(remaining.length > 0 ? remaining : COMPARISONS));
     } else {
@@ -299,7 +300,7 @@ useEffect(() => {
         </button>
         <div style={{ flex: 1 }}>
           <p style={{ fontWeight: 700, fontSize: 14, color: C.ink, margin: 0 }}>This or That</p>
-          <p style={{ color: C.stoneMid, fontSize: 11, margin: 0 }}>{remaining} left · {saved} saved</p>
+          <p style={{ color: C.stoneMid, fontSize: 11, margin: 0 }}>{remaining} left · {totalAnswered + saved} saved</p>
         </div>
         {/* Progress bar */}
         <div style={{ width: 80, height: 4, background: C.stoneLight, borderRadius: 4, overflow: "hidden" }}>
