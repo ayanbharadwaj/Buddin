@@ -263,7 +263,7 @@ useEffect(() => {
   </div>
 );
 
-  if (idx >= queue.length) {
+  if (loaded && idx >= queue.length) {
     return (
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, fontFamily: "'Cabinet Grotesk', sans-serif" }}>
         <div style={{ textAlign: "center", maxWidth: 400 }}>
