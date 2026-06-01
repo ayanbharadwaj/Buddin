@@ -11,6 +11,7 @@ import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
 import { supabase } from '../lib/supabase.js'
 import KnowMeHub from '../components/screens/KnowMeHub.jsx';
 import ComparisonEngine from '../components/screens/ComparisonEngine.jsx';
+import MyProfile from '../components/screens/MyProfile.jsx';
 
 /* ═══════════════════════════════════════════════════════════════
    HIDDEN MATHEMATICAL ENGINE
@@ -2047,7 +2048,20 @@ const res = await fetch("/api/chat", {
               </div>
             </div>
           ))}
-
+          <button
+  onClick={() => setScreen("myprofile")}
+  className="glass card"
+  style={{ width:"100%", borderRadius:18, padding:"18px 20px", cursor:"pointer", textAlign:"left", border:`1.5px solid ${avatarColor}33`, marginBottom:12, display:"block" }}>
+  <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+    <div style={{ width:40, height:40, borderRadius:12, background:`${avatarColor}18`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+      <Brain size={19} color={avatarColor} strokeWidth={2}/>
+    </div>
+    <div>
+      <p style={{ fontWeight:700, fontSize:15, color:C.ink, margin:0 }}>My Profile</p>
+      <p style={{ color:C.stone, fontSize:13, margin:"3px 0 0" }}>See what Buddin has figured out about you.</p>
+    </div>
+  </div>
+</button>
           <p style={{ color:C.stoneMid, fontSize:11, textAlign:"center", marginTop:24, lineHeight:1.6 }}>
             All data stays with you. You can clear it anytime.
           </p>
@@ -2063,6 +2077,13 @@ const res = await fetch("/api/chat", {
     <ComparisonEngine setScreen={setScreen} avatarColor={avatarColor} C={C} />
   </div>
 )}
+
+{screen === "myprofile" && (
+  <div style={{ position:"relative", zIndex:1, minHeight:"100vh", background:C.cream }}>
+    <MyProfile setScreen={setScreen} avatarColor={avatarColor} C={C} />
+  </div>
+)}
+
   {screen === "donate" && (
     <div style={{ ...BG, paddingBottom:100, overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
       <LivingBg intensity={3} avatarColor={avatarColor}/>
