@@ -281,7 +281,7 @@ useEffect(() => {
           <div style={{ fontSize: 48, marginBottom: 16 }}>🎉</div>
           <h2 style={{ fontFamily: "'Fraunces', Georgia, serif", color: C.ink, fontWeight: 400, marginBottom: 8 }}>You finished all of them.</h2>
           <p style={{ color: C.stone, fontSize: 14, lineHeight: 1.7, marginBottom: 24 }}>
-            {saved} responses saved. Buddin now has a much clearer picture of how you think.
+            {totalAnswered + saved} responses saved. Buddin now has a much clearer picture of how you think.
           </p>
           <button onClick={() => setScreen("myprofile")} style={{ background: `linear-gradient(135deg, ${avatarColor}, ${avatarColor}cc)`, color: "#fff", border: "none", borderRadius: 16, padding: "14px 28px", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
             See what Buddin knows →
