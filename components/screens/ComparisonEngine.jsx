@@ -300,7 +300,7 @@ useEffect(() => {
         </button>
         <div style={{ flex: 1 }}>
           <p style={{ fontWeight: 700, fontSize: 14, color: C.ink, margin: 0 }}>This or That</p>
-          <p style={{ color: C.stoneMid, fontSize: 11, margin: 0 }}>{remaining} left · {totalAnswered + saved} saved</p>
+          <p style={{ color: C.stoneMid, fontSize: 11, margin: 0 }}>{totalAnswered + saved} answered · keep going</p>
         </div>
         {/* Progress bar */}
         <div style={{ width: 80, height: 4, background: C.stoneLight, borderRadius: 4, overflow: "hidden" }}>

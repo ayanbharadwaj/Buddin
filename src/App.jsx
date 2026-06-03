@@ -865,6 +865,7 @@ export default function App() {
   const [musicEnabled, setMusicEnabled] = useState(false);
   const [adaptiveTone, setAdaptiveTone] = useState(null);
   const [activeQuestion, setActiveQuestion] = useState(null);
+  const [comparisonCount, setComparisonCount] = useState(0);
   const questionAskedRef = useRef(false);
   const [usageMeta, setUsageMeta]         = useState(null);
   const [limitReached, setLimitReached]   = useState(false);
@@ -1119,6 +1120,14 @@ export default function App() {
              const q = await qRes.json();
              setActiveQuestion(q);
            }
+        }
+        const { data: { session: sess2 } } = await supabase.auth.getSession();
+        if (sess2?.user?.id) {
+          const { count } = await supabase
+            .from("comparison_responses")
+            .select("id", { count: "exact", head: true })
+            .eq("user_id", sess2.user.id);
+          if (count != null) setComparisonCount(count);
         }
       } catch (e) {
         console.error("Session init failed", e);
@@ -1606,6 +1615,19 @@ const res = await fetch("/api/chat", {
             </button>
           ))}
         </div>
+
+        {comparisonCount >= 5 && (
+          <button onClick={() => setScreen("myprofile")} className="glass card btn"
+            style={{ width:"100%", borderRadius:18, padding:"16px 20px", cursor:"pointer", border:`1px solid ${avatarColor}33`, textAlign:"left", marginBottom:12, display:"flex", alignItems:"center", gap:14 }}>
+            <div style={{ width:38, height:38, borderRadius:12, background:`linear-gradient(135deg, ${avatarColor}55, ${avatarColor}22)`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+              <Brain size={20} color={avatarColor} strokeWidth={1.8}/>
+            </div>
+            <div style={{ flex:1 }}>
+              <div style={{ color:C.ink, fontWeight:700, fontSize:13, fontFamily:"'Fraunces', Georgia, serif", marginBottom:2 }}>Buddin is starting to figure you out</div>
+              <div style={{ color:C.stoneMid, fontSize:11 }}>{comparisonCount} answers so far · see what it found →</div>
+            </div>
+          </button>
+        )}
 
         <button onClick={() => setScreen("donate")} className="glass card btn"
           style={{ width:"100%", borderRadius:18, padding:"14px 20px", cursor:"pointer", border:`1px solid ${avatarColor}22`, textAlign:"center", marginBottom:10 }}>
