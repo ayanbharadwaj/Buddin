@@ -29,12 +29,22 @@ export default function MyProfile({ setScreen, avatarColor, C }) {
         setTraits(data.inferred_traits);
       }
 
-      const { count } = await supabase
+      const { count: compCount } = await supabase
         .from('comparison_responses')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', session.user.id);
 
-      setTotalResponses(count || 0);
+      const { count: wordCount } = await supabase
+        .from('word_responses')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', session.user.id);
+
+      const { count: writingCount } = await supabase
+        .from('writing_samples')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', session.user.id);
+
+      setTotalResponses((compCount || 0) + (wordCount || 0) + (writingCount || 0));
     } catch (e) {
       console.error(e);
     }
@@ -55,7 +65,7 @@ export default function MyProfile({ setScreen, avatarColor, C }) {
       });
       const data = await res.json();
       if (data.error === 'not_enough_data') {
-        setError('Answer at least 5 This or That questions first.');
+        setError('Answer at least 5 questions across any Know Me module first.');
       } else if (data.traits) {
         setTraits(data.traits);
         setTotalResponses(data.total_responses);
@@ -101,10 +111,10 @@ export default function MyProfile({ setScreen, avatarColor, C }) {
             <div style={{ fontSize: 48, marginBottom: 16 }}>🧠</div>
             <h2 style={{ fontFamily: "'Fraunces', Georgia, serif", color: C.ink, fontWeight: 400, marginBottom: 8 }}>No profile yet</h2>
             <p style={{ color: C.stone, fontSize: 14, lineHeight: 1.7, marginBottom: 24, maxWidth: 300, margin: "0 auto 24px" }}>
-              Answer some This or That questions first, then come back here to see what Buddin has figured out about you.
+              Answer some questions in the Know Me section first, then come back here to see what Buddin has figured out about you.
             </p>
-            <button onClick={() => setScreen("comparisons")} style={{ background: `linear-gradient(135deg, ${avatarColor}, ${avatarColor}cc)`, color: "#fff", border: "none", borderRadius: 16, padding: "14px 28px", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
-              Start This or That →
+            <button onClick={() => setScreen("knowme")} style={{ background: `linear-gradient(135deg, ${avatarColor}, ${avatarColor}cc)`, color: "#fff", border: "none", borderRadius: 16, padding: "14px 28px", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+              Go to Know Me →
             </button>
           </div>
         )}
@@ -125,7 +135,10 @@ export default function MyProfile({ setScreen, avatarColor, C }) {
               { label: "SOCIAL STYLE", value: traits.social_style },
               { label: "RISK PROFILE", value: traits.risk_profile },
               { label: "HOW YOU THINK", value: traits.intellectual_pattern },
-            ].filter(t => t.value).map(trait => (
+              { label: "VOCABULARY PROFILE", value: traits.vocabulary_profile },
+              { label: "WRITING VOICE", value: traits.writing_voice },
+              { label: "EMOTIONAL VOCABULARY", value: traits.emotional_vocabulary },
+            ].filter(t => t.value && t.value !== "null").map(trait => (
               <div key={trait.label} style={{ background: "rgba(255,248,235,0.7)", border: "1px solid rgba(255,235,200,0.5)", borderRadius: 16, padding: "16px 20px", marginBottom: 12, backdropFilter: "blur(12px)" }}>
                 <p style={{ color: avatarColor, fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", marginBottom: 6 }}>{trait.label}</p>
                 <p style={{ color: C.ink, fontSize: 14, lineHeight: 1.7, margin: 0 }}>{trait.value}</p>

@@ -12,6 +12,8 @@ import { supabase } from '../lib/supabase.js'
 import KnowMeHub from '../components/screens/KnowMeHub.jsx';
 import ComparisonEngine from '../components/screens/ComparisonEngine.jsx';
 import MyProfile from '../components/screens/MyProfile.jsx';
+import WordGame from '../components/screens/WordGame.jsx';
+import WritingPrompt from '../components/screens/WritingPrompt.jsx';
 
 /* ═══════════════════════════════════════════════════════════════
    HIDDEN MATHEMATICAL ENGINE
@@ -2055,22 +2057,50 @@ const res = await fetch("/api/chat", {
             </div>
           </button>
 
-          {[["Word Association","Words you love reveal your inner world."],["Color Preferences","Your palette is your personality."]].map(([title, desc]) => (
-            <div key={title} className="glass" style={{ borderRadius:18, padding:"18px 20px", marginBottom:12, opacity:0.5, border:`1.5px solid ${C.stoneLight}` }}>
-              <div style={{ display:"flex", alignItems:"center", gap:14 }}>
-                <div style={{ width:40, height:40, borderRadius:12, background:`${C.stoneLight}44`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                  <Brain size={19} color={C.stoneMid} strokeWidth={2}/>
-                </div>
-                <div>
-                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                    <p style={{ fontWeight:700, fontSize:15, color:C.ink, margin:0 }}>{title}</p>
-                    <span style={{ fontSize:10, color:C.stoneMid, background:C.stoneLight, borderRadius:6, padding:"2px 8px" }}>Coming soon</span>
-                  </div>
-                  <p style={{ color:C.stone, fontSize:13, margin:"3px 0 0" }}>{desc}</p>
-                </div>
+          <button
+            onClick={() => setScreen("wordgame")}
+            className="glass card"
+            style={{ width:"100%", borderRadius:18, padding:"18px 20px", cursor:"pointer", textAlign:"left", border:`1.5px solid ${avatarColor}33`, marginBottom:12, display:"block" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+              <div style={{ width:40, height:40, borderRadius:12, background:`${avatarColor}18`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <BookOpen size={19} color={avatarColor} strokeWidth={2}/>
+              </div>
+              <div>
+                <p style={{ fontWeight:700, fontSize:15, color:C.ink, margin:0 }}>Word Association</p>
+                <p style={{ color:C.stone, fontSize:13, margin:"3px 0 0" }}>What words mean to you says a lot.</p>
               </div>
             </div>
-          ))}
+          </button>
+
+          <button
+            onClick={() => setScreen("writingprompt")}
+            className="glass card"
+            style={{ width:"100%", borderRadius:18, padding:"18px 20px", cursor:"pointer", textAlign:"left", border:`1.5px solid ${avatarColor}33`, marginBottom:12, display:"block" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+              <div style={{ width:40, height:40, borderRadius:12, background:`${avatarColor}18`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <Heart size={19} color={avatarColor} strokeWidth={2}/>
+              </div>
+              <div>
+                <p style={{ fontWeight:700, fontSize:15, color:C.ink, margin:0 }}>Writing Prompts</p>
+                <p style={{ color:C.stone, fontSize:13, margin:"3px 0 0" }}>Show Buddin how you express yourself.</p>
+              </div>
+            </div>
+          </button>
+
+          <div className="glass" style={{ borderRadius:18, padding:"18px 20px", marginBottom:12, opacity:0.5, border:`1.5px solid ${C.stoneLight}` }}>
+            <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+              <div style={{ width:40, height:40, borderRadius:12, background:`${C.stoneLight}44`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <Brain size={19} color={C.stoneMid} strokeWidth={2}/>
+              </div>
+              <div>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                  <p style={{ fontWeight:700, fontSize:15, color:C.ink, margin:0 }}>Preferences</p>
+                  <span style={{ fontSize:10, color:C.stoneMid, background:C.stoneLight, borderRadius:6, padding:"2px 8px" }}>Coming soon</span>
+                </div>
+                <p style={{ color:C.stone, fontSize:13, margin:"3px 0 0" }}>Your habits and preferences reveal your personality.</p>
+              </div>
+            </div>
+          </div>
           <button
   onClick={() => setScreen("myprofile")}
   className="glass card"
@@ -2104,6 +2134,18 @@ const res = await fetch("/api/chat", {
 {screen === "myprofile" && (
   <div style={{ position:"relative", zIndex:1, minHeight:"100vh", background:C.cream }}>
     <MyProfile setScreen={setScreen} avatarColor={avatarColor} C={C} />
+  </div>
+)}
+
+{screen === "wordgame" && (
+  <div style={{ position:"relative", zIndex:1, minHeight:"100vh", background:C.cream }}>
+    <WordGame setScreen={setScreen} avatarColor={avatarColor} C={C} />
+  </div>
+)}
+
+{screen === "writingprompt" && (
+  <div style={{ position:"relative", zIndex:1, minHeight:"100vh", background:C.cream }}>
+    <WritingPrompt setScreen={setScreen} avatarColor={avatarColor} C={C} />
   </div>
 )}
 
