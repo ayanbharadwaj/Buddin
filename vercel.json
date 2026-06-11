@@ -3,7 +3,7 @@
   "outputDirectory": "dist",
   "installCommand": "npm install",
   "framework": "vite",
-  "rewrites": [
+"rewrites": [
     { "source": "/api/feedback", "destination": "/api/profile" }
   ]
 }

@@ -1,4 +1,4 @@
-import { selectQuestion } from './boom/moodInference.js';
+import { selectQuestion } from '../src/boom/moodInference.js';
 
 export default function handler(req, res) {
   if (req.method !== 'POST') {

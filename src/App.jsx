@@ -7,7 +7,7 @@ import {
   Globe, Brain, BatteryLow, Flame, Shuffle, User, UserPlus, Crown, HeartHandshake
 } from "lucide-react";
 import { InstagramIcon, YoutubeIcon } from '../components/SocialIcons.jsx';
-import { toneToSystemInstruction } from '../api/boom/memorySchema.js';
+import { toneToSystemInstruction } from './boom/memorySchema.js';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
 import { supabase } from '../lib/supabase.js'
 import ComparisonEngine from '../components/screens/ComparisonEngine.jsx';
@@ -1110,7 +1110,7 @@ export default function App() {
           headers: { "Authorization": `Bearer ${token}` }
 });        if (memRes.ok) {
            const store = await memRes.json();
-          const { deriveAdaptiveTone } = await import("../api/boom/memorySchema.js");
+          const { deriveAdaptiveTone } = await import("./boom/memorySchema.js");
 
            // Extract recent question IDs to avoid repeating
            const recentIds = store.snapshots ? store.snapshots.slice(-5).map(s => s.questionId).filter(Boolean) : [];

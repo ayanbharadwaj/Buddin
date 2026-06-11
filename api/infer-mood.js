@@ -1,4 +1,4 @@
-import { buildInferencePrompt } from './boom/moodInference.js';
+import { buildInferencePrompt } from '../src/boom/moodInference.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
