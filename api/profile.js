@@ -9,7 +9,7 @@ export default async function handler(req, res) {
   if (error || !user) return res.status(401).json({ error: 'Unauthorized' })
 
   // Route /api/feedback POST requests handled here to stay under Vercel's 12-function limit
-  if (req.url?.startsWith('/api/feedback')) {
+  if (req.query?._route === 'feedback') {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' })
     const { message, page } = req.body || {}
     if (!message || !String(message).trim()) return res.status(400).json({ error: 'Missing message' })

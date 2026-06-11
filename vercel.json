@@ -4,6 +4,6 @@
   "installCommand": "npm install",
   "framework": "vite",
 "rewrites": [
-    { "source": "/api/feedback", "destination": "/api/profile" }
+    { "source": "/api/feedback", "destination": "/api/profile?_route=feedback" }
   ]
 }
