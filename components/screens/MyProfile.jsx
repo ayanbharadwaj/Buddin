@@ -19,14 +19,17 @@ export default function MyProfile({ setScreen, avatarColor, C }) {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { setLoading(false); return; }
 
+      // limit(1) instead of .single() — .single() throws if duplicate
+      // profile rows ever exist, leaving the screen stuck on "Loading".
       const { data } = await supabase
         .from('user_profile')
         .select('inferred_traits')
         .eq('user_id', session.user.id)
-        .single();
+        .order('updated_at', { ascending: false })
+        .limit(1);
 
-      if (data?.inferred_traits?.summary) {
-        setTraits(data.inferred_traits);
+      if (data?.[0]?.inferred_traits?.summary) {
+        setTraits(data[0].inferred_traits);
       }
 
       const { count: compCount } = await supabase
@@ -69,6 +72,8 @@ export default function MyProfile({ setScreen, avatarColor, C }) {
       } else if (data.traits) {
         setTraits(data.traits);
         setTotalResponses(data.total_responses);
+      } else {
+        setError("Couldn't generate your profile right now — try again in a minute.");
       }
     } catch (e) {
       setError('Something went wrong. Try again.');

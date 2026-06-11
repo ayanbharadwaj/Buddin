@@ -32,6 +32,7 @@ export default function WritingPrompt({ setScreen, avatarColor, C }) {
   const [response, setResponse] = useState("");
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(null);
   const [firstKeystrokeRecorded, setFirstKeystrokeRecorded] = useState(false);
   const promptStartTime = useRef(Date.now());
   const firstKeystrokeTime = useRef(null);
@@ -69,6 +70,7 @@ export default function WritingPrompt({ setScreen, avatarColor, C }) {
     firstKeystrokeTime.current = null;
     setFirstKeystrokeRecorded(false);
     setResponse("");
+    setError(null);
     if (textareaRef.current) textareaRef.current.focus();
   }, [idx]);
 
@@ -89,10 +91,15 @@ export default function WritingPrompt({ setScreen, avatarColor, C }) {
   const handleSubmit = async () => {
     if (wordCount < 5 || saving) return;
     setSaving(true);
+    setError(null);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { setSaving(false); return; }
-      await fetch('/api/writing-samples', {
+      if (!session) {
+        setError("You're not signed in, so this can't be saved.");
+        setSaving(false);
+        return;
+      }
+      const res = await fetch('/api/writing-samples', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -106,6 +113,12 @@ export default function WritingPrompt({ setScreen, avatarColor, C }) {
           time_to_first_keystroke_ms: firstKeystrokeTime.current || null,
         }),
       });
+      if (!res.ok) {
+        // Keep their writing on screen — never advance past an unsaved response.
+        setError("Couldn't save — your writing is still here. Try again in a moment.");
+        setSaving(false);
+        return;
+      }
       setAnsweredPrompts(prev => new Set([...prev, current]));
       if (idx + 1 < queue.length) {
         setIdx(i => i + 1);
@@ -114,6 +127,7 @@ export default function WritingPrompt({ setScreen, avatarColor, C }) {
       }
     } catch (e) {
       console.error(e);
+      setError("Couldn't save — your writing is still here. Try again in a moment.");
     }
     setSaving(false);
   };
@@ -166,6 +180,12 @@ export default function WritingPrompt({ setScreen, avatarColor, C }) {
         <p style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 22, fontWeight: 400, color: C.ink, lineHeight: 1.6, marginBottom: 28, textAlign: "center" }}>
           {current}
         </p>
+
+        {error && (
+          <div style={{ background: "#fee", border: "1px solid #fcc", borderRadius: 12, padding: "10px 14px", marginBottom: 14, color: "#c00", fontSize: 13 }}>
+            {error}
+          </div>
+        )}
 
         {/* Textarea */}
         <textarea

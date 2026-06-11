@@ -22,12 +22,14 @@ export default async function handler(req, res) {
     .from('word_responses')
     .select('*')
     .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
     .limit(50)
 
   const { data: writings } = await supabase
     .from('writing_samples')
     .select('*')
     .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
     .limit(10)
 
   const totalDataPoints = (comparisons?.length || 0) + (words?.length || 0) + (writings?.length || 0)
@@ -48,7 +50,7 @@ export default async function handler(req, res) {
   }
 
   if (words?.length > 0) {
-    dataSection += `\nWORD ASSOCIATIONS (word → their response):\n${words.map(w => `${w.word} → "${w.response}" (knew word: ${w.knew_word}, time: ${w.response_time_ms}ms)`).join('\n')}\n`
+    dataSection += `\nWORD ASSOCIATIONS (word → their response):\n${words.map(w => `${w.word} → ${w.response ? `"${w.response}"` : "(didn't know this word)"} (knew word: ${w.knew_word}, time: ${w.response_time_ms}ms)`).join('\n')}\n`
   }
 
   if (writings?.length > 0) {
@@ -82,7 +84,8 @@ Output ONLY a valid JSON object with exactly these keys:
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1000,
+        // The 11-key JSON can run long — too few tokens truncates it and the parse below fails.
+        max_tokens: 1600,
         messages: [{ role: 'user', content: prompt }]
       })
     })
@@ -91,12 +94,21 @@ Output ONLY a valid JSON object with exactly these keys:
     const text = data.content?.[0]?.text || '{}'
     const traits = JSON.parse(text.replace(/```json|```/g, '').trim())
 
-    // Save to user_profile table
-    await supabase.from('user_profile').upsert({
-      user_id: user.id,
-      inferred_traits: traits,
-      updated_at: new Date().toISOString()
-    })
+    // Save to user_profile. We want one row per user (updated in place), which
+    // needs the UNIQUE(user_id) constraint from supabase-fixes.sql. If that
+    // hasn't been run yet, onConflict errors — so fall back to a manual
+    // update-or-insert. Either way the profile still saves and the user sees it.
+    const row = { user_id: user.id, inferred_traits: traits, updated_at: new Date().toISOString() }
+    const { error: saveErr } = await supabase.from('user_profile').upsert(row, { onConflict: 'user_id' })
+    if (saveErr) {
+      const { data: existing } = await supabase
+        .from('user_profile').select('id').eq('user_id', user.id).limit(1)
+      if (existing?.[0]) {
+        await supabase.from('user_profile').update(row).eq('user_id', user.id)
+      } else {
+        await supabase.from('user_profile').insert(row)
+      }
+    }
 
     return res.status(200).json({ traits, total_responses: totalDataPoints })
 

@@ -12,49 +12,63 @@ function shuffle(arr) {
   return a;
 }
 
+// Words near the current level; if that band is empty, fall back to ALL
+// remaining words so the game never declares completion early.
+function buildQueue(level, answeredSet) {
+  const remaining = WORDS.filter(w => !answeredSet.has(w.word));
+  const band = remaining.filter(w => Math.abs(w.difficulty - level) <= 1);
+  return shuffle(band.length > 0 ? band : remaining);
+}
+
 export default function WordGame({ setScreen, avatarColor, C }) {
   const [difficulty, setDifficulty] = useState(3);
   const [queue, setQueue] = useState([]);
   const [idx, setIdx] = useState(0);
   const [response, setResponse] = useState("");
-  const [answered, setAnswered] = useState(0);
   const [saving, setSaving] = useState(false);
   const [showDef, setShowDef] = useState(false);
   const [streak, setStreak] = useState(0);
   const [dontKnowStreak, setDontKnowStreak] = useState(0);
   const [answeredIds, setAnsweredIds] = useState(new Set());
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(null);
+  const answeredRef = useRef(new Set());
   const startTime = useRef(Date.now());
   const inputRef = useRef(null);
 
+  const answered = answeredIds.size;
+  const remainingCount = WORDS.filter(w => !answeredIds.has(w.word)).length;
+
   useEffect(() => {
     async function loadAnswered() {
+      let ids = new Set();
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.user?.id) return;
-        const { data } = await supabase
-          .from('word_responses')
-          .select('word')
-          .eq('user_id', session.user.id);
-        if (data) {
-          const ids = new Set(data.map(d => d.word));
-          setAnsweredIds(ids);
-          setAnswered(ids.size);
+        if (session?.user?.id) {
+          const { data } = await supabase
+            .from('word_responses')
+            .select('word')
+            .eq('user_id', session.user.id);
+          if (data) ids = new Set(data.map(d => d.word));
         }
       } catch (e) {
         console.error(e);
       }
+      answeredRef.current = ids;
+      setAnsweredIds(ids);
+      setQueue(buildQueue(3, ids));
+      setIdx(0);
+      setLoaded(true);
     }
     loadAnswered();
   }, []);
 
+  // Rebuild only when the difficulty actually changes — not after every answer.
   useEffect(() => {
-    const pool = WORDS.filter(w => {
-      const inRange = w.difficulty >= difficulty - 1 && w.difficulty <= difficulty + 1;
-      return inRange && !answeredIds.has(w.word);
-    });
-    setQueue(shuffle(pool));
+    if (!loaded) return;
+    setQueue(buildQueue(difficulty, answeredRef.current));
     setIdx(0);
-  }, [difficulty, answeredIds]);
+  }, [difficulty]); // eslint-disable-line
 
   useEffect(() => {
     startTime.current = Date.now();
@@ -65,12 +79,20 @@ export default function WordGame({ setScreen, avatarColor, C }) {
 
   const current = queue[idx];
 
+  // Returns true only if the server confirmed the save — callers must not
+  // advance or mark the word answered otherwise.
   const save = async (word, knew, text) => {
     setSaving(true);
+    setError(null);
+    let ok = false;
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { setSaving(false); return; }
-      await fetch('/api/word-responses', {
+      if (!session) {
+        setError("You're not signed in, so this can't be saved.");
+        setSaving(false);
+        return false;
+      }
+      const res = await fetch('/api/word-responses', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -84,63 +106,80 @@ export default function WordGame({ setScreen, avatarColor, C }) {
           response_time_ms: Date.now() - startTime.current,
         }),
       });
-      setAnsweredIds(prev => new Set([...prev, word.word]));
-      setAnswered(prev => prev + 1);
+      if (res.ok) {
+        const next = new Set([...answeredRef.current, word.word]);
+        answeredRef.current = next;
+        setAnsweredIds(next);
+        ok = true;
+      } else {
+        setError("Couldn't save that one — check your connection and try again.");
+      }
     } catch (e) {
       console.error(e);
+      setError("Couldn't save that one — check your connection and try again.");
     }
     setSaving(false);
+    return ok;
   };
 
   const handleSubmit = async () => {
     if (!response.trim() || !current || saving) return;
-    await save(current, true, response.trim());
+    const ok = await save(current, true, response.trim());
+    if (!ok) return;
     setDontKnowStreak(0);
     const next = streak + 1;
-    setStreak(next);
-    if (next >= 3) {
-      setDifficulty(d => Math.min(10, d + 1));
+    const bumped = Math.min(10, difficulty + 1);
+    if (next >= 3 && bumped !== difficulty) {
       setStreak(0);
+      setDifficulty(bumped); // triggers queue rebuild
+    } else {
+      setStreak(next >= 3 ? 0 : next);
+      advance();
     }
-    advance();
   };
 
   const handleDontKnow = async () => {
     if (!current || saving) return;
-    await save(current, false, null);
+    const ok = await save(current, false, null);
+    if (!ok) return;
     setStreak(0);
     const next = dontKnowStreak + 1;
-    setDontKnowStreak(next);
-    if (next >= 2) {
-      setDifficulty(d => Math.max(1, d - 1));
+    const lowered = Math.max(1, difficulty - 1);
+    if (next >= 2 && lowered !== difficulty) {
       setDontKnowStreak(0);
+      setDifficulty(lowered); // triggers queue rebuild
+    } else {
+      setDontKnowStreak(next >= 2 ? 0 : next);
+      advance();
     }
-    advance();
   };
 
   const handleSkip = () => {
+    setError(null);
     advance();
   };
 
   const advance = () => {
-    if (idx + 1 < queue.length) {
-      setIdx(i => i + 1);
+    // Walk past anything already answered (the queue isn't rebuilt per-answer).
+    let next = idx + 1;
+    while (next < queue.length && answeredRef.current.has(queue[next].word)) next++;
+    if (next < queue.length) {
+      setIdx(next);
     } else {
-      const pool = WORDS.filter(w => {
-        const inRange = w.difficulty >= difficulty - 1 && w.difficulty <= difficulty + 1;
-        return inRange && !answeredIds.has(w.word);
-      });
-      if (pool.length > 0) {
-        setQueue(shuffle(pool));
-        setIdx(0);
-      } else {
-        setQueue([]);
-        setIdx(0);
-      }
+      setQueue(buildQueue(difficulty, answeredRef.current));
+      setIdx(0);
     }
   };
 
-  if (queue.length === 0 && answered > 0) {
+  if (!loaded) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: C.cream }}>
+        <p style={{ color: C.stoneMid, fontSize: 14 }}>Loading words...</p>
+      </div>
+    );
+  }
+
+  if (remainingCount === 0) {
     return (
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, background: C.cream, fontFamily: "'Cabinet Grotesk', sans-serif" }}>
         <div style={{ textAlign: "center", maxWidth: 400 }}>
@@ -196,6 +235,12 @@ export default function WordGame({ setScreen, avatarColor, C }) {
           <button onClick={() => setShowDef(true)} style={{ background: "transparent", border: "none", color: C.stoneMid, fontSize: 11, cursor: "pointer", marginBottom: 20, textDecoration: "underline" }}>
             Show definition
           </button>
+        )}
+
+        {error && (
+          <div style={{ width: "100%", background: "#fee", border: "1px solid #fcc", borderRadius: 12, padding: "10px 14px", marginBottom: 14, color: "#c00", fontSize: 13 }}>
+            {error}
+          </div>
         )}
 
         {/* Input */}
