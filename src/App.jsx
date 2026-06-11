@@ -6,14 +6,15 @@ import {
   Star, Trophy, Users, Check, Music, Leaf, Zap, Sparkles,
   Globe, Brain, BatteryLow, Flame, Shuffle, User, UserPlus, Crown, HeartHandshake
 } from "lucide-react";
+import { InstagramIcon, YoutubeIcon } from '../components/SocialIcons.jsx';
 import { toneToSystemInstruction } from '../api/boom/memorySchema.js';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
 import { supabase } from '../lib/supabase.js'
-import KnowMeHub from '../components/screens/KnowMeHub.jsx';
 import ComparisonEngine from '../components/screens/ComparisonEngine.jsx';
 import MyProfile from '../components/screens/MyProfile.jsx';
 import WordGame from '../components/screens/WordGame.jsx';
 import WritingPrompt from '../components/screens/WritingPrompt.jsx';
+import Feedback from '../components/screens/Feedback.jsx';
 
 /* ═══════════════════════════════════════════════════════════════
    HIDDEN MATHEMATICAL ENGINE
@@ -1378,6 +1379,16 @@ const res = await fetch("/api/chat", {
     {musicEnabled ? <><VolumeX size={13}/> Stop</> : <><Music size={13}/> Music</>}
   </button>
 </div>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:22, marginTop:14 }}>
+            <a href="https://www.youtube.com/channel/UClXPubvuKuWSYKkRwBqwo1Q" target="_blank" rel="noopener noreferrer"
+              style={{ display:"flex", alignItems:"center", gap:6, color:C.stoneMid, fontSize:12, fontWeight:600, textDecoration:"none" }}>
+              <YoutubeIcon size={15}/> @Getbuddin
+            </a>
+            <a href="https://www.instagram.com/getbuddin" target="_blank" rel="noopener noreferrer"
+              style={{ display:"flex", alignItems:"center", gap:6, color:C.stoneMid, fontSize:12, fontWeight:600, textDecoration:"none" }}>
+              <InstagramIcon size={15}/> getbuddin
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -1636,6 +1647,14 @@ const res = await fetch("/api/chat", {
           <span style={{ color:avatarColor, fontSize:13, fontWeight:600, display:"flex", alignItems:"center", justifyContent:"center", gap:7 }}>
             <Heart size={14} color={avatarColor} strokeWidth={2} style={{ fill:avatarColor }}/>
             Support Buddin
+          </span>
+        </button>
+
+        <button onClick={() => setScreen("feedback")} className="glass card btn"
+          style={{ width:"100%", borderRadius:18, padding:"12px 20px", cursor:"pointer", border:`1px solid ${C.stoneLight}`, textAlign:"center", marginBottom:10, background:"transparent" }}>
+          <span style={{ color:C.stone, fontSize:13, fontWeight:600, display:"flex", alignItems:"center", justifyContent:"center", gap:7 }}>
+            <MessageCircle size={14} strokeWidth={2}/>
+            Send feedback
           </span>
         </button>
       </div>
@@ -2149,6 +2168,12 @@ const res = await fetch("/api/chat", {
   </div>
 )}
 
+{screen === "feedback" && (
+  <div style={{ position:"relative", zIndex:1, minHeight:"100vh", background:C.cream }}>
+    <Feedback setScreen={setScreen} avatarColor={avatarColor} C={C} />
+  </div>
+)}
+
   {screen === "donate" && (
     <div style={{ ...BG, paddingBottom:100, overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
       <LivingBg intensity={3} avatarColor={avatarColor}/>
@@ -2194,6 +2219,24 @@ const res = await fetch("/api/chat", {
         <p style={{ color:C.stoneMid, fontSize:12, textAlign:"center", lineHeight:1.65 }}>
           No account needed. Any amount helps. Thank you for believing in this.
         </p>
+
+        <div className="glass" style={{ borderRadius:18, padding:20, marginTop:16, border:`1px solid ${avatarColor}22` }}>
+          <p style={{ color:C.forest, fontSize:13, fontWeight:600, marginBottom:12 }}>Follow Buddin</p>
+          <div style={{ display:"flex", gap:10, marginBottom:12 }}>
+            <a href="https://www.youtube.com/channel/UClXPubvuKuWSYKkRwBqwo1Q" target="_blank" rel="noopener noreferrer"
+              style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:7, padding:"11px 12px", borderRadius:12, border:`1px solid ${C.stoneLight}`, color:C.stone, fontSize:13, fontWeight:600, textDecoration:"none", background:"rgba(255,248,235,0.55)" }}>
+              <YoutubeIcon size={15}/> @Getbuddin
+            </a>
+            <a href="https://www.instagram.com/getbuddin" target="_blank" rel="noopener noreferrer"
+              style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:7, padding:"11px 12px", borderRadius:12, border:`1px solid ${C.stoneLight}`, color:C.stone, fontSize:13, fontWeight:600, textDecoration:"none", background:"rgba(255,248,235,0.55)" }}>
+              <InstagramIcon size={15}/> getbuddin
+            </a>
+          </div>
+          <button onClick={() => setScreen("feedback")} className="btn"
+            style={{ width:"100%", padding:"12px", background:"transparent", border:`1px solid ${avatarColor}44`, borderRadius:12, fontSize:13, color:avatarColor, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:7 }}>
+            <MessageCircle size={14} strokeWidth={2}/> Send feedback
+          </button>
+        </div>
       </div>
       <Dock screen={screen} setScreen={setScreen} onMissions={onMissions} avatarColor={avatarColor}/>
     </div>
