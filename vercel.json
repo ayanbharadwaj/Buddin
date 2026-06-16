@@ -3,7 +3,22 @@
   "outputDirectory": "dist",
   "installCommand": "npm install",
   "framework": "vite",
-"rewrites": [
-    { "source": "/api/feedback", "destination": "/api/profile?_route=feedback" }
+  "rewrites": [
+    { "source": "/api/feedback", "destination": "/api/profile?_route=feedback" },
+    { "source": "/about", "destination": "/index.html" },
+    { "source": "/blog", "destination": "/index.html" },
+    { "source": "/blog/:slug", "destination": "/index.html" },
+    { "source": "/login", "destination": "/index.html" },
+    { "source": "/signup", "destination": "/index.html" },
+    { "source": "/try", "destination": "/index.html" },
+    { "source": "/privacy", "destination": "/index.html" },
+    { "source": "/terms", "destination": "/index.html" },
+    { "source": "/home", "destination": "/index.html" },
+    { "source": "/chat", "destination": "/index.html" },
+    { "source": "/do", "destination": "/index.html" },
+    { "source": "/growth", "destination": "/index.html" },
+    { "source": "/me", "destination": "/index.html" },
+    { "source": "/plans", "destination": "/index.html" },
+    { "source": "/breathe", "destination": "/index.html" }
   ]
 }

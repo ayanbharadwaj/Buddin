@@ -6,11 +6,11 @@
     <link rel="icon" type="image/png" href="/imagebuddin.png" />
     <link rel="apple-touch-icon" href="/imagebuddin.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>Buddin — Your Conversational Companion</title>
+    <title>Buddin — The quiet companion for teens. Free.</title>
 
     <!-- SEO -->
-    <meta name="description" content="Buddin is a conversational app designed to be a reliable buddy you can talk to about anything. A supportive friend, ready to listen, chat, and help you navigate whatever is on your mind, anytime." />
-    <meta name="keywords" content="mental wellness, loneliness app, emotional support, companion app, AI buddy, teen mental health, talk to someone" />
+    <meta name="description" content="Teens are more connected than ever — and lonelier than ever. Buddin is the friend that's always there: a private, judgment-free conversation built for teen emotional wellness by a high-school founder." />
+    <meta name="keywords" content="AI companion for teens, teen loneliness app, teen mental health, digital wellness for students, talk to someone online free teen, AI buddy, companion app, emotional support app" />
     <meta name="author" content="Ayan Bharadwaj" />
     <meta name="robots" content="index, follow" />
     <meta name="google-site-verification" content="GihO8X2qF46dvfESkjqQCpg5xGzdtjkWRjjGyyaTW5k" />
@@ -21,14 +21,14 @@
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://getbuddin.org" />
     <meta property="og:site_name" content="Buddin" />
-    <meta property="og:title" content="Buddin — Your Conversational Companion" />
-    <meta property="og:description" content="A supportive friend, ready to listen, chat, and help you navigate whatever is on your mind, anytime you need it." />
+    <meta property="og:title" content="Buddin — The quiet companion for teens. Free." />
+    <meta property="og:description" content="48% of US teens now say social media harms people their age. Buddin is what one high schooler is building instead: a private, judgment-free place to think out loud." />
     <meta property="og:image" content="https://getbuddin.org/og-image.png" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Buddin — Your Conversational Companion" />
-    <meta name="twitter:description" content="A supportive friend, ready to listen anytime." />
+    <meta name="twitter:title" content="Buddin — The quiet companion for teens. Free." />
+    <meta name="twitter:description" content="Teens are more connected than ever — and lonelier than ever. Buddin is the friend that's always there." />
     <meta name="twitter:image" content="https://getbuddin.org/og-image.png" />
 
     <!-- PWA / Mobile -->
@@ -42,23 +42,79 @@
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "Buddin",
-      "url": "https://getbuddin.org",
-      "description": "Buddin is a conversational app designed to be a reliable buddy you can talk to about anything. It acts as a supportive friend, ready to listen, chat, and help you navigate whatever is on your mind, anytime you need it.",
-      "applicationCategory": "HealthApplication",
-      "operatingSystem": "Web",
-      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-      "brand": {
-        "@type": "Brand",
-        "name": "Buddin",
-        "logo": "https://getbuddin.org/imagebuddin.png"
-      },
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://getbuddin.org/?q={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://getbuddin.org/#website",
+          "name": "Buddin",
+          "url": "https://getbuddin.org",
+          "description": "Buddin is a conversational companion app for teen emotional wellness, built by high-school founder Ayan Bharadwaj. A private, judgment-free place to think out loud — not a social feed, not a clinician.",
+          "publisher": { "@id": "https://getbuddin.org/#org" },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://getbuddin.org/?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://getbuddin.org/#org",
+          "name": "Buddin",
+          "url": "https://getbuddin.org",
+          "logo": "https://getbuddin.org/imagebuddin.png",
+          "founder": {
+            "@type": "Person",
+            "name": "Ayan Bharadwaj"
+          }
+        },
+        {
+          "@type": "MobileApplication",
+          "@id": "https://getbuddin.org/#app",
+          "name": "Buddin",
+          "url": "https://getbuddin.org",
+          "applicationCategory": "HealthApplication",
+          "operatingSystem": "Web",
+          "audience": { "@type": "PeopleAudience", "suggestedMinAge": 13 },
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Is Buddin a replacement for therapy?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "No. Buddin is a conversational companion — somewhere between a journal and a friend. If you're in crisis or working through something serious, please reach out to a counselor, trusted adult, or a crisis line."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What does Buddin do with what I say?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Conversations are used to help Buddin remember you better over time. They aren't shared, posted, or sold. Buddin has no social feed."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Who built Buddin?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Ayan Bharadwaj, a 9th-grade high school student in Georgia, built Buddin in response to the teen mental health and loneliness crisis."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Is Buddin free?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. The core Buddin experience is free."
+              }
+            }
+          ]
+        }
+      ]
     }
     </script>
 
