@@ -181,6 +181,26 @@ const MOODS = [
   {label:"Great", emoji:"🤩", color:"#c07030", intensity:5},
 ];
 
+// Short acknowledgment shown on the home screen the moment a mood is picked,
+// so the selection clearly *reacts* instead of only tinting the background.
+const moodAck = (mood) => ({
+  1: "Okay — we'll keep today gentle. No pressure.",
+  2: "Got it. Let's ease into it together.",
+  3: "Okay, noted. What's on your mind?",
+  4: "Love that — let's keep the momentum going.",
+  5: "Let's go. Ride that wave.",
+}[mood?.intensity] || "");
+
+// Mood-aware opener Buddin shows when you enter the chat (UI only — it doesn't
+// get sent to the model, but the mood is already woven into the system prompt).
+const moodGreeting = (mood, name) => ({
+  1: `Seems like today's been rough. I'm here — what happened?`,
+  2: `Feeling kind of meh? Let's talk it out.`,
+  3: `What's going on today?`,
+  4: `Good day so far? Tell me about it.`,
+  5: `You're feeling great — what's good?`,
+}[mood?.intensity] || `${name || "Buddin"} is listening.`);
+
 const SOURCES = [
   {authors:"Berridge, K.C., & Robinson, T.E.", year:"1998", title:"What is the role of dopamine in reward?", journal:"Brain Research Reviews"},
   {authors:"Bowen, S., Chawla, N., & Marlatt, G.A.", year:"2011", title:"Mindfulness-Based Relapse Prevention", journal:"Guilford Press"},
@@ -222,6 +242,7 @@ CORE VIBE:
 3. No advice-giving. Do not act like a counselor. If they have a problem, relate to it ("man, that sucks"). If you offer a thought, phrase it purely as your own messy perspective: "Honestly, I'd probably just..." or "If it were me, I might..."
 4. Be the bridge to the real world, naturally. If they are stressed, lonely, or cooped up, just talk like a friend who wants them to feel better. Say things like "Sometimes I just gotta step outside and look at the sky when my head is spinning" or "like when my head gets too full I sometimes just wanna talk to someone in real life, you know?" Never prescribe.
 5. Match their energy. If they are hype, be hype. If they are tired, be chill.
+6. Mirror their grammar. If they type in loose slang with barely any punctuation, loosen up too — lowercase, minimal punctuation, but still readable. If they write in clean, full sentences, match that with good grammar. Never sound like a stiff form letter, and never sound sloppy or drunk. Read the room.
 
 RULES:
 - NEVER use therapy words: "valid", "holding space", "I hear you", "process", "unpack", "sit with that", "check in".
@@ -1603,13 +1624,18 @@ const res = await fetch("/api/chat", {
           <p style={{ color:C.stone, fontSize:13, marginBottom:16, textAlign:"center" }}>What's your energy like today?</p>
           <div style={{ display:"flex", gap:7 }}>
             {MOODS.map(m => (
-              <button key={m.label} onClick={() => setMood(m)} className="btn"
-                style={{ flex:1, padding:"10px 4px", background:mood?.label===m.label ? `${m.color}1a` : "transparent", border:`2px solid ${mood?.label===m.label ? m.color : "rgba(255,235,200,0.4)"}`, borderRadius:16, cursor:"pointer" }}>
+              <button key={m.label} onClick={() => { setMood(m); setColorWash(m.color); }} className="btn"
+                style={{ flex:1, padding:"10px 4px", background:mood?.label===m.label ? `${m.color}1a` : "transparent", border:`2px solid ${mood?.label===m.label ? m.color : "rgba(255,235,200,0.4)"}`, borderRadius:16, cursor:"pointer", transform:mood?.label===m.label ? "translateY(-2px)" : "none", transition:"transform 0.2s, background 0.2s, border 0.2s" }}>
                 <div style={{ fontSize:22 }}>{m.emoji}</div>
                 <div style={{ color:mood?.label===m.label ? m.color : C.stoneMid, fontSize:10, marginTop:5, fontWeight:700 }}>{m.label}</div>
               </button>
             ))}
           </div>
+          {mood && (
+            <p style={{ color:mood.color, fontSize:12.5, marginTop:14, textAlign:"center", fontWeight:600, animation:"rise 0.4s cubic-bezier(0.34,1.56,0.64,1)" }}>
+              {moodAck(mood)}
+            </p>
+          )}
         </div>
 
         <div style={{ display:"flex", flexDirection:"column", gap:11, marginBottom:14, animation:"staggerUp 0.5s ease 0.26s both" }}>
@@ -1738,7 +1764,7 @@ const res = await fetch("/api/chat", {
         {messages.length === 0 && (
           <div style={{ textAlign:"center", paddingTop:24, animation:"rise 0.55s cubic-bezier(0.34,1.56,0.64,1)" }}>
             <AvatarCore avatar={av} size={80} pulse/>
-            <p style={{ color:C.stoneMid, fontFamily:"'Fraunces', Georgia, serif", fontSize:16, fontStyle:"italic", fontWeight:300, marginTop:20 }}>{av?.name} is listening.</p>
+            <p style={{ color:C.stoneMid, fontFamily:"'Fraunces', Georgia, serif", fontSize:16, fontStyle:"italic", fontWeight:300, marginTop:20 }}>{moodGreeting(mood, av?.name)}</p>
           </div>
         )}
         <div style={{ maxWidth:680, margin:"0 auto" }}>

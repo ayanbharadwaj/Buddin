@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { navigate } from './SiteShell.jsx'
+import { navigate, Icon } from './SiteShell.jsx'
 import { sendGuestMessage } from '../lib/guestChat.js'
 
 const STARTERS = [
@@ -9,25 +9,25 @@ const STARTERS = [
   'I feel like nobody gets it'
 ]
 
-const NUDGE_AFTER = 3 // user turns
+const LIMIT = 3 // hard stop after 3 user messages in the inline demo
 
 export default function DemoChat() {
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: "hey, i'm buddin 👋 what's on your mind? pick something below or just type." }
+    { role: 'assistant', content: "hey, i'm buddin. what's on your mind? pick something below or just type." }
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [turns, setTurns] = useState(0)
-  const [nudge, setNudge] = useState(false)
+  const [stopped, setStopped] = useState(false)
   const scrollRef = useRef(null)
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
-  }, [messages, loading, nudge])
+  }, [messages, loading, stopped])
 
   async function send(text) {
     const content = (text ?? input).trim()
-    if (!content || loading) return
+    if (!content || loading || stopped) return
     setInput('')
     const convo = [...messages, { role: 'user', content }]
     setMessages(convo)
@@ -38,31 +38,21 @@ export default function DemoChat() {
     const result = await sendGuestMessage(convo)
     setLoading(false)
 
-    if (result.limitReached) {
-      setMessages(m => [...m, {
-        role: 'assistant',
-        content: "you've used up your free guest messages for today — sign up (it's free) to keep going and i'll remember you next time."
-      }])
-      setNudge(true)
-      return
-    }
+    if (result.limitReached) { setStopped(true); return }
     if (result.error) {
-      setMessages(m => [...m, {
-        role: 'assistant',
-        content: "hmm, i dropped the connection for a sec. mind trying that again?"
-      }])
+      setMessages(m => [...m, { role: 'assistant', content: "hmm, i dropped the connection for a sec. mind trying again?" }])
       return
     }
     setMessages(m => [...m, { role: 'assistant', content: result.text }])
-    if (nextTurns >= NUDGE_AFTER) setTimeout(() => setNudge(true), 600)
+    if (nextTurns >= LIMIT) setTimeout(() => setStopped(true), 700)
   }
 
-  const showStarters = turns === 0 && !loading
+  const showStarters = turns === 0 && !loading && !stopped
 
   return (
     <div style={{
       background: '#fff', borderRadius: 22, padding: 18,
-      boxShadow: '0 12px 40px rgba(40,28,16,0.10)', border: '1px solid #ead8bb',
+      boxShadow: '0 14px 44px rgba(40,28,16,0.12)', border: '1px solid #ead8bb',
       display: 'flex', flexDirection: 'column', minHeight: 420
     }}>
       <div style={{
@@ -71,18 +61,14 @@ export default function DemoChat() {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#5fbf8f' }} />
-          <span style={{ fontSize: 14, fontWeight: 700, color: '#2c2018' }}>
-            Buddin · live · guest mode
-          </span>
+          <span style={{ fontSize: 14, fontWeight: 700, color: '#2c2018' }}>Buddin · live preview</span>
         </div>
-        <button
-          onClick={() => navigate('/try')}
-          style={{
-            background: 'transparent', border: 'none', color: '#b87840',
-            fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit'
-          }}
-        >
-          Full screen ↗
+        <button onClick={() => navigate('/try')} style={{
+          background: 'transparent', border: 'none', color: '#b87840',
+          fontSize: 12.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+          display: 'inline-flex', alignItems: 'center', gap: 4
+        }}>
+          Full screen <Icon name="arrow" size={14} />
         </button>
       </div>
 
@@ -92,10 +78,7 @@ export default function DemoChat() {
         ))}
         {loading && (
           <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 10 }}>
-            <div style={{
-              background: '#f5ecdc', padding: '10px 14px', borderRadius: 16,
-              borderBottomLeftRadius: 4
-            }}>
+            <div style={{ background: '#f5ecdc', padding: '10px 14px', borderRadius: 16, borderBottomLeftRadius: 4 }}>
               <Dots />
             </div>
           </div>
@@ -110,26 +93,25 @@ export default function DemoChat() {
         </div>
       )}
 
-      {nudge && (
+      {stopped && (
         <div style={{
-          marginTop: 12, padding: '14px 16px', background: '#fff5e6',
-          border: '1px solid #f0c8a0', borderRadius: 12
+          marginTop: 12, padding: '16px 18px', background: '#fff5e6',
+          border: '1px solid #f0c8a0', borderRadius: 14, textAlign: 'center'
         }}>
-          <div style={{ color: '#2c2018', fontWeight: 700, marginBottom: 6, fontSize: 14 }}>
-            Want Buddin to remember this?
+          <div style={{ color: '#2c2018', fontWeight: 700, marginBottom: 6, fontSize: 15 }}>
+            That's the preview.
           </div>
-          <div style={{ color: '#5a4634', fontSize: 13, marginBottom: 10, lineHeight: 1.5 }}>
-            Sign up free to save this conversation and pick up where you left off — Buddin
-            gets more personal the more you talk.
+          <div style={{ color: '#5a4634', fontSize: 13.5, marginBottom: 12, lineHeight: 1.5 }}>
+            Keep this conversation going — and have Buddin actually remember you — by starting
+            for real. It's free.
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button onClick={() => navigate('/login')} style={ctaBtn}>Sign up free →</button>
-            <button onClick={() => setNudge(false)} style={keepBtn}>Keep chatting</button>
-          </div>
+          <button onClick={() => navigate('/try')} style={ctaBtn}>
+            Keep talking <Icon name="arrow" size={16} />
+          </button>
         </div>
       )}
 
-      {!showStarters && !nudge && (
+      {!showStarters && !stopped && (
         <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
           <input
             value={input}
@@ -143,17 +125,11 @@ export default function DemoChat() {
               fontSize: 15, outline: 'none', fontFamily: 'inherit'
             }}
           />
-          <button
-            onClick={() => send()}
-            disabled={loading || !input.trim()}
-            style={{
-              background: '#b87840', color: '#fff', border: 'none',
-              padding: '0 18px', borderRadius: 12, fontWeight: 700, cursor: 'pointer',
-              opacity: loading || !input.trim() ? 0.5 : 1, fontFamily: 'inherit'
-            }}
-          >
-            Send
-          </button>
+          <button onClick={() => send()} disabled={loading || !input.trim()} style={{
+            background: '#b87840', color: '#fff', border: 'none',
+            padding: '0 18px', borderRadius: 12, fontWeight: 700, cursor: 'pointer',
+            opacity: loading || !input.trim() ? 0.5 : 1, fontFamily: 'inherit'
+          }}>Send</button>
         </div>
       )}
     </div>
@@ -163,15 +139,11 @@ export default function DemoChat() {
 function Bubble({ side, children }) {
   const me = side === 'me'
   return (
-    <div style={{
-      display: 'flex', justifyContent: me ? 'flex-end' : 'flex-start', marginBottom: 10
-    }}>
+    <div style={{ display: 'flex', justifyContent: me ? 'flex-end' : 'flex-start', marginBottom: 10 }}>
       <div style={{
-        background: me ? '#b87840' : '#f5ecdc',
-        color: me ? 'white' : '#2c2018',
+        background: me ? '#b87840' : '#f5ecdc', color: me ? 'white' : '#2c2018',
         padding: '10px 14px', borderRadius: 16,
-        borderBottomRightRadius: me ? 4 : 16,
-        borderBottomLeftRadius: me ? 16 : 4,
+        borderBottomRightRadius: me ? 4 : 16, borderBottomLeftRadius: me ? 16 : 4,
         maxWidth: '82%', fontSize: 15, lineHeight: 1.45, whiteSpace: 'pre-wrap'
       }}>{children}</div>
     </div>
@@ -182,22 +154,15 @@ function Dots() {
   return (
     <span aria-label="typing" style={{ display: 'inline-flex', gap: 4 }}>
       <Dot delay={0} /><Dot delay={0.15} /><Dot delay={0.3} />
-      <style>{`
-        @keyframes buddinDot {
-          0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
-          30% { transform: translateY(-4px); opacity: 1; }
-        }
-      `}</style>
+      <style>{`@keyframes buddinDot { 0%,60%,100% { transform: translateY(0); opacity: 0.5; } 30% { transform: translateY(-4px); opacity: 1; } }`}</style>
     </span>
   )
 }
 function Dot({ delay }) {
-  return (
-    <span style={{
-      width: 6, height: 6, borderRadius: '50%', background: '#a89888',
-      display: 'inline-block', animation: `buddinDot 1.1s ${delay}s infinite ease-in-out`
-    }} />
-  )
+  return <span style={{
+    width: 6, height: 6, borderRadius: '50%', background: '#a89888',
+    display: 'inline-block', animation: `buddinDot 1.1s ${delay}s infinite ease-in-out`
+  }} />
 }
 
 const starterBtn = {
@@ -207,10 +172,6 @@ const starterBtn = {
 }
 const ctaBtn = {
   background: '#b87840', color: 'white', border: 'none',
-  padding: '10px 18px', borderRadius: 10, fontSize: 14, fontWeight: 700,
-  cursor: 'pointer', fontFamily: 'inherit'
-}
-const keepBtn = {
-  background: 'transparent', color: '#786858', border: '1px solid #ddd0bc',
-  padding: '10px 16px', borderRadius: 10, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit'
+  padding: '10px 20px', borderRadius: 11, fontSize: 14, fontWeight: 700,
+  cursor: 'pointer', fontFamily: 'inherit', display: 'inline-flex', alignItems: 'center', gap: 6
 }

@@ -16,17 +16,22 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://getbuddin.org/blog/connected-and-lonely</loc>
+    <loc>https://getbuddin.org/blog/why-i-built-buddin</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://getbuddin.org/blog/companion-not-clinician</loc>
+    <loc>https://getbuddin.org/blog/waiting-for-the-perfect-time</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://getbuddin.org/blog/designing-against-the-feed</loc>
+    <loc>https://getbuddin.org/blog/forgot-how-to-stop</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://getbuddin.org/blog/my-brain-runs-too-fast</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

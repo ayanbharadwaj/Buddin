@@ -24,7 +24,7 @@ function LegalShell({ title, children }) {
           Buddin is built by a student founder and written in plain English so you can
           actually read it. It's offered in good faith and isn't a substitute for legal
           advice. If anything here is unclear, email{' '}
-          <a href="mailto:hello@getbuddin.org" style={inlineLink}>hello@getbuddin.org</a>.
+          <a href="mailto:getbuddin@gmail.com" style={inlineLink}>getbuddin@gmail.com</a>.
         </div>
         {children}
         <div style={{ height: 48 }} />
@@ -91,7 +91,7 @@ export function Privacy() {
 
       <h2 style={h2}>Your choices &amp; rights</h2>
       <ul style={ul}>
-        <li><strong>Access or delete:</strong> email <a href="mailto:hello@getbuddin.org" style={inlineLink}>hello@getbuddin.org</a> to get a copy of, or permanently delete, your account and conversations.</li>
+        <li><strong>Access or delete:</strong> email <a href="mailto:getbuddin@gmail.com" style={inlineLink}>getbuddin@gmail.com</a> to get a copy of, or permanently delete, your account and conversations.</li>
         <li><strong>Correct:</strong> you can update your name or email from your account.</li>
         <li><strong>Stop using:</strong> you can stop and request deletion at any time — no hoops.</li>
       </ul>
@@ -112,7 +112,7 @@ export function Privacy() {
 
       <h2 style={h2}>Contact</h2>
       <p style={p}>
-        Questions? Email <a href="mailto:hello@getbuddin.org" style={inlineLink}>hello@getbuddin.org</a>.
+        Questions? Email <a href="mailto:getbuddin@gmail.com" style={inlineLink}>getbuddin@gmail.com</a>.
         See also our <a href="/terms" onClick={lnk('/terms')} style={inlineLink}>Terms of Service</a>.
       </p>
     </LegalShell>
@@ -155,7 +155,7 @@ export function Terms() {
       <h2 style={h2}>Your account</h2>
       <p style={p}>
         You're responsible for keeping your login secure and for what happens under your
-        account. Let us know at <a href="mailto:hello@getbuddin.org" style={inlineLink}>hello@getbuddin.org</a> if
+        account. Let us know at <a href="mailto:getbuddin@gmail.com" style={inlineLink}>getbuddin@gmail.com</a> if
         you think someone else has accessed it.
       </p>
 
@@ -191,7 +191,7 @@ export function Terms() {
       <h2 style={h2}>Governing law &amp; contact</h2>
       <p style={p}>
         These terms are governed by the laws of the State of Georgia, USA. Questions? Email{' '}
-        <a href="mailto:hello@getbuddin.org" style={inlineLink}>hello@getbuddin.org</a>.
+        <a href="mailto:getbuddin@gmail.com" style={inlineLink}>getbuddin@gmail.com</a>.
       </p>
     </LegalShell>
   )
