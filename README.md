@@ -45,7 +45,7 @@ Copy `.env.example` to `.env.local` and fill in your own Supabase and Anthropic 
 
 ## Tools
 
-Tried a few AI coding tools along the way — Claude Code, Google Labs' Jules — and landed on Claude Code for most of the build.
+Tried a few AI coding tools along the way — Claude Code, Google Labs' Jules — and ultimately ended up doing much of it myself except for the web hosting and Supabase Dashboard managements which I had no prior experience doing so I needed some assistance from Claude.
 
 ## Contact
 
