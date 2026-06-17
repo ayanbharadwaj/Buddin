@@ -181,6 +181,7 @@ const MOODS = [
   {label:"Great", emoji:"🤩", color:"#c07030", intensity:5},
 ];
 
+
 // Short acknowledgment shown on the home screen the moment a mood is picked,
 // so the selection clearly *reacts* instead of only tinting the background.
 const moodAck = (mood) => ({
@@ -359,6 +360,7 @@ const CSS = `
     .chat-input-bar { padding-bottom: calc(12px + env(safe-area-inset-bottom)) !important; }
   }
 `;
+
 
 /* ═══════════════════════════════════════════════════════════════
    ANIMATED EMOJI — Anime-style depth: float + glow + shadow
@@ -630,6 +632,7 @@ const BR_URL = "/832Hz-Love-Freq.mp3";
 
 
 
+
 /* ═══════════════════════════════════════════════════════════════
    INSIGHT ENGINE — buffer + typewriter
 ═══════════════════════════════════════════════════════════════ */
@@ -690,6 +693,7 @@ const res = await fetch("/api/chat", {
 
   return { current, displayText, typing, next:useCallback(()=>setIdx(i=>i+1),[]) };
 }
+
 
 /* ═══════════════════════════════════════════════════════════════
    BUBBLE — AI message typewriter (adaptive speed)
@@ -769,6 +773,7 @@ function Dock({ screen, setScreen, onMissions, avatarColor }) {
     </div>
   );
 }
+
 
 /* ═══════════════════════════════════════════════════════════════
    BADGE POPUP
@@ -919,6 +924,7 @@ export default function App() {
   const chatScrollRef = useRef(null);
 
 
+
   // ── Custom hooks ─────────────────────────────────────────────
   const insight = useInsightEngine();
   // ── Audio refs — point to <audio> DOM elements in JSX ────────
@@ -961,6 +967,7 @@ export default function App() {
   const av          = avatar ? AVATARS.find(a => a.id === avatar.id) || avatar : null;
   const avatarColor = av?.color || C.sage;
   const activePortalAv = selectedAv || hoveredAv;
+
 
   const enableMusic = useCallback(() => {
     setMusicEnabled(true);
@@ -1058,6 +1065,7 @@ export default function App() {
       }
     };
   }, []); // eslint-disable-line
+
 
   // BG screen routing: pause when entering breathe, resume on all other screens
   useEffect(() => {
@@ -1208,6 +1216,7 @@ export default function App() {
     }
     initSession();
   }, []);
+
 
   // ── Callbacks ─────────────────────────────────────────────────
   const filterMissions = useCallback(() => {
@@ -1464,6 +1473,7 @@ const res = await fetch("/api/chat", {
     </div>
   )}
 
+
   {/* ── ONBOARD 2 ───────────────────────────────────────────── */}
   {screen === "onboard2" && (
     <div style={{ ...BG, overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
@@ -1543,6 +1553,7 @@ const res = await fetch("/api/chat", {
 </div>      </div>
     </div>
   )}
+
 
   {/* ── ONBOARD 3 ───────────────────────────────────────────── */}
   {screen === "onboard3" && (
@@ -1737,6 +1748,7 @@ const res = await fetch("/api/chat", {
     </div>
   )}
 
+
   {/* ── CHAT ─────────────────────────────────────────────────── */}
   {screen === "chat" && (
     <div style={{ position:"fixed", inset:0, display:"flex", flexDirection:"column", fontFamily:"'Cabinet Grotesk', sans-serif", color:C.ink, overflow:"hidden" }}>
@@ -1853,6 +1865,7 @@ const res = await fetch("/api/chat", {
     </div>
   )}
 
+
   {/* ── MISSIONS ────────────────────────────────────────────── */}
   {screen === "missions" && (
     <div style={{ ...BG, paddingBottom:100, background:`linear-gradient(180deg, ${avatarColor}08 0%, ${C.cream} 160px)` }}>
@@ -1920,6 +1933,7 @@ const res = await fetch("/api/chat", {
     </div>
   )}
 
+
   {/* ── BREATHE ──────────────────────────────────────────────── */}
   {screen === "breathe" && (
     <div style={{ ...BG, minHeight:"100dvh" }}>
@@ -1948,6 +1962,7 @@ const res = await fetch("/api/chat", {
     </div>
   )}
 
+
   {/* ── SCIENCE ──────────────────────────────────────────────── */}
   {screen === "science" && (
     <div style={{ ...BG, paddingBottom:100, overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
@@ -1965,6 +1980,7 @@ const res = await fetch("/api/chat", {
       <Dock screen={screen} setScreen={setScreen} onMissions={onMissions} avatarColor={avatarColor}/>
     </div>
   )}
+
 
   {/* ── SOURCES ──────────────────────────────────────────────── */}
   {screen === "sources" && (
@@ -1984,7 +2000,7 @@ const res = await fetch("/api/chat", {
     </div>
   )}
 
-  {/* ── PROGRESS ─────────────────────────────────────────────── */}
+  {/* ── PROGRESS ────────────────────────────────────────────── */}
   {screen === "progress" && (
     <div style={{ ...BG, paddingBottom:100, overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
       <LivingBg intensity={mood?.intensity || 3} avatarColor={avatarColor}/>
@@ -2012,7 +2028,9 @@ const res = await fetch("/api/chat", {
               </div>
             ))}</div>
         }
+
         <h3 style={{ fontFamily:"'Fraunces', Georgia, serif", fontSize:20, color:C.ink, marginBottom:14, fontWeight:500 }}>Recent Activities</h3>
+        
         {completed.length === 0
           ? <p style={{ color:C.stoneMid, fontStyle:"italic", fontSize:14 }}>Nothing yet. You're here, which already counts.</p>
           : completed.slice(-5).reverse().map((a, i) => (
@@ -2025,11 +2043,12 @@ const res = await fetch("/api/chat", {
               </div>
             ))
         }
+      
       </div>
       <Dock screen={screen} setScreen={setScreen} onMissions={onMissions} avatarColor={avatarColor}/>
     </div>
   )}
-    {/* ── UPGRADE ─────────────────────────────────────────── */}
+    {/* ── UPGRADE─────────────────────────────────────── */}
 {screen === "upgrade" && (
   <div style={{ ...BG, paddingBottom:100, overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
     <LivingBg intensity={3} avatarColor={avatarColor}/>
