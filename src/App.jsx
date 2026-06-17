@@ -938,11 +938,23 @@ export default function App() {
       const bg = bgRef.current;
       const br = brRef.current;
       if (!bg || !br) return;
-      // BG: start at silence — timeupdate listener ramps to 0.2 over first 10s
       bg.volume = 0;
-      bg.play().catch(() => {});
-      // BR: prime — silent play then immediate pause unlocks .play() for gesture policy
       br.volume = 0;
+
+      // Don't start playback until the file has buffered enough to play through
+      // without stalling — starting on a half-loaded file is what caused the
+      // audible stutter. Fall back to starting anyway after 1.5s on slow connections.
+      const startBg = () => bg.play().catch(() => {});
+      if (bg.readyState >= 4 || bg._ready) {
+        startBg();
+      } else {
+        let started = false;
+        const go = () => { if (started) return; started = true; startBg(); };
+        bg.addEventListener('canplaythrough', go, { once: true });
+        setTimeout(go, 1500);
+      }
+
+      // BR: prime — silent play then immediate pause unlocks .play() for gesture policy
       br.play().then(() => { br.pause(); br.currentTime = 0; }).catch(() => {});
     });
   }, []); // eslint-disable-line
@@ -1122,7 +1134,7 @@ export default function App() {
     if (atBottom) endRef.current?.scrollIntoView({ behavior:"smooth" });
   }, [messages, atBottom]);
 
-  // Lyapunov tracker
+  // Lyapunov trackerr
   useEffect(() => {
     if (mood) lyapunovRef.current.update(mood.intensity);
   }, [mood]);
