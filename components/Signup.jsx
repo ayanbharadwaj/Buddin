@@ -24,6 +24,7 @@ export default function Signup({ onSwitch }) {
     else setSuccess(true)
     setLoading(false)
   }
+  /* Google Auth */
 
   const handleGoogle = async () => {
     await supabase.auth.signInWithOAuth({
@@ -31,6 +32,7 @@ export default function Signup({ onSwitch }) {
       options: { redirectTo: window.location.origin }
     })
   }
+  /* Google Auth */
 
   if (success) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center',

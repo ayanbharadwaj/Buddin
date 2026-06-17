@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <script>
+      if (location.hostname === 'www.getbuddin.org')
+        location.replace('https://getbuddin.org' + location.pathname + location.search + location.hash);
+    </script>
     <meta charset="UTF-8" />
     <link rel="manifest" href="/manifest.json" />
     <link rel="icon" type="image/png" href="/imagebuddin.png" />

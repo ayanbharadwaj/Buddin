@@ -12,6 +12,7 @@ function shuffle(arr) {
   return a;
 }
 
+
 // Words near the current level; if that band is empty, fall back to ALL
 // remaining words so the game never declares completion early.
 function buildQueue(level, answeredSet) {

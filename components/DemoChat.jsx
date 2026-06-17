@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { navigate, Icon } from './SiteShell.jsx'
-import { sendGuestMessage } from '../lib/guestChat.js'
+import { sendGuestMessage, loadGuest, saveGuest } from '../lib/guestChat.js'
 
 const STARTERS = [
   'I had a rough day at school',
@@ -11,14 +11,16 @@ const STARTERS = [
 
 const LIMIT = 3 // hard stop after 3 user messages in the inline demo
 
+const saved = loadGuest('demo')
+
 export default function DemoChat() {
-  const [messages, setMessages] = useState([
-    { role: 'assistant', content: "hey, i'm buddin. what's on your mind? pick something below or just type." }
-  ])
+  const [messages, setMessages] = useState(
+    saved?.messages?.length ? saved.messages : [{ role: 'assistant', content: "hey, i'm buddin. what's on your mind? pick something below or just type." }]
+  )
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [turns, setTurns] = useState(0)
-  const [stopped, setStopped] = useState(false)
+  const [turns, setTurns] = useState(saved?.turns ?? 0)
+  const [stopped, setStopped] = useState((saved?.turns ?? 0) >= LIMIT)
   const scrollRef = useRef(null)
 
   useEffect(() => {
@@ -43,7 +45,9 @@ export default function DemoChat() {
       setMessages(m => [...m, { role: 'assistant', content: "hmm, i dropped the connection for a sec. mind trying again?" }])
       return
     }
-    setMessages(m => [...m, { role: 'assistant', content: result.text }])
+    const finalMessages = [...convo, { role: 'assistant', content: result.text }]
+    setMessages(finalMessages)
+    saveGuest('demo', nextTurns, finalMessages)
     if (nextTurns >= LIMIT) setTimeout(() => setStopped(true), 700)
   }
 

@@ -1,19 +1,21 @@
 import { useEffect, useRef, useState } from 'react'
 import { navigate, Icon } from './SiteShell.jsx'
-import { sendGuestMessage } from '../lib/guestChat.js'
+import { sendGuestMessage, loadGuest, saveGuest } from '../lib/guestChat.js'
 
 const LIMIT = 5      // hard stop after 5 user messages
 const REMIND_AT = 3  // gentle one-time nudge
 
+const saved = loadGuest('try')
+
 export default function GuestChat() {
-  const [messages, setMessages] = useState([
-    { role: 'assistant', content: "hey, i'm buddin. what's going on?" }
-  ])
+  const [messages, setMessages] = useState(
+    saved?.messages?.length ? saved.messages : [{ role: 'assistant', content: "hey, i'm buddin. what's going on?" }]
+  )
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [turns, setTurns] = useState(0)
+  const [turns, setTurns] = useState(saved?.turns ?? 0)
   const [remind, setRemind] = useState(false)
-  const [stopped, setStopped] = useState(false)
+  const [stopped, setStopped] = useState((saved?.turns ?? 0) >= LIMIT)
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
 
@@ -39,7 +41,9 @@ export default function GuestChat() {
       setMessages(m => [...m, { role: 'assistant', content: "hmm, lost the connection for a sec. want to try that again?" }])
       return
     }
-    setMessages(m => [...m, { role: 'assistant', content: result.text }])
+    const finalMessages = [...convo, { role: 'assistant', content: result.text }]
+    setMessages(finalMessages)
+    saveGuest('try', nextTurns, finalMessages)
 
     if (nextTurns >= LIMIT) setTimeout(() => setStopped(true), 600)
     else if (nextTurns === REMIND_AT) setRemind(true)
