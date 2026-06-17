@@ -1067,6 +1067,7 @@ export default function App() {
   }, []); // eslint-disable-line
 
 
+  
   // BG screen routing: pause when entering breathe, resume on all other screens
   useEffect(() => {
     if (!musicEnabled || !bgRef.current || !bgStartedRef.current) return;
@@ -1080,6 +1081,7 @@ export default function App() {
     }
   }, [screen, musicEnabled]); // eslint-disable-line
 
+  
   // Breath cycle: orb phase sequencer + breath track volume swell
   useEffect(() => {
     if (!breathOn) {
@@ -1102,6 +1104,7 @@ export default function App() {
       return;
     }
 
+    
     // breathOn = true
     if (musicEnabled) {
       bgDuckedRef.current = true;
@@ -1115,6 +1118,7 @@ export default function App() {
       }
     }
 
+    
     // Phase sequencer: inhale→hold→exhale→hold, repeat
     const seq    = [['inhale',4000],['hold_high',4000],['exhale',4000],['hold_low',4000]];
     const volMap = { inhale:0.5, hold_high:0.5, exhale:0.1, hold_low:0.1 };
@@ -1138,16 +1142,19 @@ export default function App() {
     };
   }, [breathOn, musicEnabled]); // eslint-disable-line
 
+  
   // Auto-scroll chat — only when already near bottom
   useEffect(() => {
     if (atBottom) endRef.current?.scrollIntoView({ behavior:"smooth" });
   }, [messages, atBottom]);
 
+  
   // Lyapunov trackerr
   useEffect(() => {
     if (mood) lyapunovRef.current.update(mood.intensity);
   }, [mood]);
 
+  
   // Anti-retention
   useEffect(() => {
     if (gutFiredRef.current || screen !== "chat" || messages.length < 4) return;
@@ -1161,6 +1168,7 @@ export default function App() {
     return () => clearInterval(t);
   }, [screen, messages.length, completed.length]);
 
+  
   // Avatar intro typewriter
   useEffect(() => {
     clearInterval(introTimerRef.current);
@@ -1177,6 +1185,7 @@ export default function App() {
     return () => clearInterval(introTimerRef.current);
   }, [activePortalAv?.id]);
 
+  
   // ── Session Init & Pre-fetch ──────────────────────────────────
   useEffect(() => {
     async function initSession() {
@@ -1218,7 +1227,10 @@ export default function App() {
   }, []);
 
 
+
+
   // ── Callbacks ─────────────────────────────────────────────────
+  
   const filterMissions = useCallback(() => {
     const mi = mood?.intensity || 3;
     const recentIds = new Set(completed.slice(-8).map(c => c.id));
@@ -1235,11 +1247,14 @@ export default function App() {
     setExpandedCard(null);
   }, []);
 
+
   // Re-compute activities when seed changes
   useEffect(() => {
     if (screen === "missions") setActivities(filterMissions());
   }, [refreshSeed, screen]);
 
+
+  
   const send = async (content) => {
     if (!content.trim()) return;
     const userMsg = { role:"user", content };
@@ -1254,6 +1269,7 @@ export default function App() {
       ? `Mood:${mood?.label}. Recent:${next.filter(m => m.role === "user").slice(-3).map(m => m.content.slice(0, 45)).join("; ")}`
       : summary;
     if (next.length % 5 === 0) setSummary(newSummary);
+
     try {
 
       // Strip custom properties like isProjectiveProbe before sending to Anthropic
@@ -1265,6 +1281,7 @@ const res = await fetch("/api/chat", {
     "Content-Type":"application/json",
     "Authorization": `Bearer ${chatSession?.access_token}`
   },
+  
   body: JSON.stringify({
     max_tokens:800,
           system: buildSystemPrompt(av, mood, newSummary, getMinutes(), lyapunovRef.current, gut, superpositions, looping, adaptiveTone, activeQuestion, questionAskedRef.current)
@@ -1277,6 +1294,7 @@ const res = await fetch("/api/chat", {
       if (data.usage_meta) setUsageMeta(data.usage_meta);
       if (data.usage_meta?.remaining === 0) setLimitReached(true);
       const responseText = data.content?.find(b => b.type === "text")?.text || "I'm here.";
+      
       if (activeQuestion && !questionAskedRef.current && messages.length > 8) {
         questionAskedRef.current = true;
       }
@@ -1293,6 +1311,7 @@ const res = await fetch("/api/chat", {
     setLoading(false);
   };
 
+
   const handleDone = (act) => {
     const nc = [...completed, { ...act, date: new Date() }];
     setCompleted(nc);
@@ -1304,6 +1323,7 @@ const res = await fetch("/api/chat", {
     setScreen("chat");
     setTimeout(() => send(`[I just completed: "${act.title}"]`), 200);
   };
+
   const handleSkip = (act) => {
     const n = skipCt + 1; setSkipCt(n);
     if (act) setGoalPost(p => updateGoalPosterior(p, "skip", act.mode));
@@ -1311,21 +1331,25 @@ const res = await fetch("/api/chat", {
     if (n >= 3) setMessages(p => [...p, { role:"assistant", content:"I've noticed you've stepped back from a few activities. That's fine. I'm curious — what's making it hard to try one right now?" }]);
     else send("[I decided to skip the activity and just talk]");
   };
+
   const handleAbort = (act) => {
     setGoalPost(p => updateGoalPosterior(p, "abort", act.mode));
     setScreen("chat");
     send(`[I started "${act.title}" but stopped early]`);
   };
+
   const award = (emoji, name, desc) => {
     setBadges(b => [...b, { emoji, name, desc }]);
     setBadge({ emoji, name, desc });
     if (navigator.vibrate) navigator.vibrate([20, 80, 20]);
     setTimeout(() => setBadge(null), 3800);
   };
+
   const selectAvatar = (chosen) => {
     setAvatar(chosen);
     setColorWash({ color1: chosen.glow, color2: chosen.glowDark });
     // Welcome chord — pure local sine waves, no external fetch, no CORS
+
     try {
       const AC = window.AudioContext || window.webkitAudioContext;
       if (AC) {
@@ -1349,7 +1373,9 @@ const res = await fetch("/api/chat", {
     }, 1100);
   };
 
+
   // ── Layout constants ──────────────────────────────────────────
+
   const W  = {
     width:"100%",
     maxWidth:"min(780px, 96vw)",
@@ -1359,6 +1385,7 @@ const res = await fetch("/api/chat", {
     zIndex:1,
     boxSizing:"border-box",
   };
+
   const BG = {
     minHeight:"100dvh",
     background:C.cream,
@@ -1366,6 +1393,7 @@ const res = await fetch("/api/chat", {
     color:C.ink,
     WebkitFontSmoothing:"antialiased",
   };
+
   const SectionHeader = ({ onBack, title }) => (
     <div style={{ display:"flex", alignItems:"center", gap:12, paddingTop:40, marginBottom:22 }}>
       <button onClick={onBack} style={{ background:"transparent", border:"none", color:avatarColor, cursor:"pointer", padding:"4px 2px", display:"flex", alignItems:"center" }}>
@@ -1375,17 +1403,21 @@ const res = await fetch("/api/chat", {
     </div>
   );
 
+
   const onMissions = useCallback(() => {
     setActivities(filterMissions());
     setExpandedCard(null);
     setScreen("missions");
   }, [filterMissions]);
 
+
   {/* ════════════════════════════════════════════════════════════
      SCREENS
   ════════════════════════════════════════════════════════════ */}
 
+
   {/* ── ONBOARD 1 ───────────────────────────────────────────── */}
+
 
   {/* ── Single persistent return — audio tags never unmount ────── */}
   return (
@@ -1400,6 +1432,7 @@ const res = await fetch("/api/chat", {
         onCanPlayThrough={() => { if (bgRef.current) bgRef.current._ready = true; }}
         style={{display:"none"}}
       />
+
       <audio
         ref={el => { brRef.current = el; if (el) el.volume = 0; }}
         src={BR_URL}
@@ -1408,6 +1441,7 @@ const res = await fetch("/api/chat", {
         onCanPlayThrough={() => { if (brRef.current) brRef.current._ready = true; }}
         style={{display:"none"}}
       />
+
 
   {screen === "onboard1" && (
     <div style={{ ...BG, overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
@@ -1428,6 +1462,7 @@ const res = await fetch("/api/chat", {
             <p style={{ color:C.stone, fontSize:16, lineHeight:1.76, fontFamily:"'Fraunces', Georgia, serif", fontStyle:"italic", fontWeight:300 }}>
               Not another app.<br/>A way back to the roots.
             </p>
+
           </div>
           <div style={{ display:"flex", flexDirection:"column", gap:11, marginBottom:40 }}>
             {[
@@ -1474,6 +1509,7 @@ const res = await fetch("/api/chat", {
   )}
 
 
+
   {/* ── ONBOARD 2 ───────────────────────────────────────────── */}
   {screen === "onboard2" && (
     <div style={{ ...BG, overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
@@ -1486,6 +1522,7 @@ const res = await fetch("/api/chat", {
         <p style={{ color:C.sage, fontSize:11, fontWeight:700, letterSpacing:"0.15em", marginBottom:10 }}>STEP 1 OF 2</p>
         <h2 style={{ fontFamily:"'Fraunces', Georgia, serif", fontSize:32, color:C.ink, marginBottom:8, fontWeight:400 }}>Choose your companion.</h2>
         <p style={{ color:C.stone, fontSize:14, marginBottom:28 }}>Tap a companion to hear from them, then continue.</p>
+
 
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:13, marginBottom:22 }}>
           {AVATARS.map(a => {
@@ -1519,6 +1556,7 @@ const res = await fetch("/api/chat", {
           })}
         </div>
 
+
         {showIntro && activePortalAv ? (
           <div style={{ animation:"fadeIn 0.4s ease", background:`${activePortalAv.glow}cc`, backdropFilter:"blur(16px)", WebkitBackdropFilter:"blur(16px)", border:`1px solid ${activePortalAv.color}33`, borderRadius:18, padding:"18px 20px", marginBottom:18, minHeight:86, transition:"background 600ms ease" }}>
             <div style={{ display:"flex", gap:12, alignItems:"flex-start" }}>
@@ -1533,6 +1571,7 @@ const res = await fetch("/api/chat", {
             <p style={{ color:C.stoneMid, fontSize:13 }}>Hover to preview · Tap to select</p>
           </div>
         )}
+
 
         {selectedAv ? (
           <button onClick={() => selectAvatar(selectedAv)} className="btn"
@@ -1555,14 +1594,20 @@ const res = await fetch("/api/chat", {
   )}
 
 
+
   {/* ── ONBOARD 3 ───────────────────────────────────────────── */}
   {screen === "onboard3" && (
+    
     <div style={{ ...BG, overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
+      
       <LivingBg intensity={3} avatarColor={avatarColor}/>
+      
       <div style={W}>
         <div style={{ paddingTop:52, paddingBottom:44 }}>
+          
           <p style={{ color:avatarColor, fontSize:11, fontWeight:700, letterSpacing:"0.15em", marginBottom:10 }}>STEP 2 OF 2</p>
           <h2 style={{ fontFamily:"'Fraunces', Georgia, serif", fontSize:32, color:C.ink, marginBottom:10, fontWeight:400 }}>Quick calibration.</h2>
+          
           <p style={{ color:C.stone, fontSize:14, marginBottom:32 }}>No judgment. This helps me find the right things for you.</p>
           {[
             { label:"Energy level most days?", key:"energy", opts:[
@@ -1578,6 +1623,7 @@ const res = await fetch("/api/chat", {
               ["any",   "Varies",     Shuffle ],
             ]},
           ].map(({ label, key, opts }) => (
+            
             <div key={key} style={{ marginBottom:28 }}>
               <p style={{ fontWeight:600, fontSize:14, color:C.ink, marginBottom:14 }}>{label}</p>
               <div style={{ display:"flex", gap:9, flexWrap:"wrap" }}>
@@ -1591,9 +1637,14 @@ const res = await fetch("/api/chat", {
                     </button>
                   );
                 })}
+              
               </div>
+
             </div>
+
+
           ))}
+          
           <button
             onClick={() => {
               setMessages([{ role:"assistant", content:`Good — you're here.\n\nI'm ${av?.name}. ${av?.intro}\n\nBefore we dive in — quick, honest question: if you had an unexpected free hour right now, what's the first thing that comes to mind?` }]);
@@ -1602,11 +1653,17 @@ const res = await fetch("/api/chat", {
             className="btn"
             style={{ width:"100%", padding:"19px 24px", marginTop:10, background:`linear-gradient(135deg, ${avatarColor}, ${avatarColor}cc)`, color:"#fff", border:"none", borderRadius:20, fontSize:16, fontWeight:700, cursor:"pointer", boxShadow:`0 10px 32px ${avatarColor}48` }}>
             Step into Buddin →
+          
           </button>
+
         </div>
+
       </div>
+
     </div>
+
   )}
+
 
   {/* ── HOME ─────────────────────────────────────────────────── */}
   {screen === "home" && (
@@ -1623,6 +1680,7 @@ const res = await fetch("/api/chat", {
             <button onClick={musicEnabled ? disableMusic : enableMusic} className="btn glass"
   style={{ borderRadius:12, padding:"7px 12px", border:`1px solid ${avatarColor}33`, cursor:"pointer", display:"flex", alignItems:"center", gap:5, fontSize:11, color:avatarColor, fontWeight:600 }}>
   {musicEnabled ? <><VolumeX size={13} strokeWidth={2}/> Stop</> : <><Music size={13} strokeWidth={2}/> Music</>}
+
 </button>
             <button onClick={() => { setHoveredAv(null); setSelectedAv(null); setIntroText(""); setShowIntro(false); setScreen("onboard2"); }} className="btn glass"
               style={{ borderRadius:12, padding:"8px 10px", border:`1px solid ${avatarColor}33`, cursor:"pointer", fontSize:11, color:avatarColor, fontWeight:600 }}>
@@ -1641,8 +1699,11 @@ const res = await fetch("/api/chat", {
   }}>
   Sign Out
 </button>
+
           </div>
+
         </div>
+
 
         <div className="glass card" style={{ borderRadius:22, padding:22, marginBottom:14, animation:"staggerUp 0.5s ease 0.18s both" }}>
           <p style={{ color:C.stone, fontSize:13, marginBottom:16, textAlign:"center" }}>What's your energy like today?</p>
@@ -1655,6 +1716,7 @@ const res = await fetch("/api/chat", {
               </button>
             ))}
           </div>
+
           {mood && (
             <p style={{ color:mood.color, fontSize:12.5, marginTop:14, textAlign:"center", fontWeight:600, animation:"rise 0.4s cubic-bezier(0.34,1.56,0.64,1)" }}>
               {moodAck(mood)}
@@ -1662,11 +1724,13 @@ const res = await fetch("/api/chat", {
           )}
         </div>
 
+
         <div style={{ display:"flex", flexDirection:"column", gap:11, marginBottom:14, animation:"staggerUp 0.5s ease 0.26s both" }}>
           <button onClick={() => setScreen("chat")} className="btn card glass"
             style={{ padding:"17px 24px", background:`linear-gradient(135deg, ${avatarColor}ee, ${avatarColor}99)`, color:"#fff", border:"none", borderRadius:20, fontSize:15, fontWeight:700, cursor:"pointer", boxShadow:`0 8px 28px ${avatarColor}40`, display:"flex", alignItems:"center", justifyContent:"center", gap:10 }}>
             <AvatarCore avatar={av} size={28}/> Talk to {av?.name}
           </button>
+
           {mood && (
             <button onClick={onMissions} className="btn card glass"
               style={{ padding:"15px 24px", border:`1px solid ${avatarColor}33`, color:C.ink, borderRadius:20, fontSize:15, fontWeight:500, cursor:"pointer" }}>
@@ -1674,6 +1738,7 @@ const res = await fetch("/api/chat", {
             </button>
           )}
         </div>
+
 
         <div style={{ display:"grid", gridTemplateColumns:"3fr 2fr", gridTemplateRows:"auto auto", gap:11, marginBottom:14, animation:"staggerUp 0.5s ease 0.34s both" }}>
           <div className="glass card" style={{ borderRadius:22, padding:22, gridRow:"span 2", background:`linear-gradient(145deg, rgba(255,248,235,0.5), ${avatarColor}10)`, border:`1px solid ${avatarColor}22`, position:"relative", overflow:"hidden", boxShadow:`0 8px 32px ${avatarColor}1a` }}>
@@ -1683,10 +1748,12 @@ const res = await fetch("/api/chat", {
               <p style={{ color:C.forest, fontSize:13, lineHeight:1.80, fontFamily:"'Fraunces', Georgia, serif", fontStyle:"italic", fontWeight:300, marginBottom:10, minHeight:80 }}>
                 {insight.displayText}{insight.typing && <span style={{ opacity:0.35 }}>▎</span>}
               </p>
+
               <p style={{ color:C.mist, fontSize:10, marginBottom:12 }}>— {insight.current?.source}</p>
               <button onClick={insight.next} style={{ background:"transparent", border:`1px solid ${avatarColor}44`, color:avatarColor, borderRadius:20, padding:"6px 14px", cursor:"pointer", fontSize:11, fontWeight:600 }}>Next insight →</button>
             </div>
           </div>
+
           
           <button onClick={() => setScreen("breathe")} className="glass card btn" style={{ borderRadius:18, padding:"16px 14px", cursor:"pointer", textAlign:"left", border:`1px solid ${avatarColor}22` }}>
             <div style={{ width:36, height:36, borderRadius:"50%", background:`radial-gradient(circle at 35% 30%, ${avatarColor}88, ${avatarColor}44)`, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:`0 0 12px ${avatarColor}44`, animation:"orbPulse 3s ease-in-out infinite", marginBottom:6 }}>
@@ -1696,6 +1763,7 @@ const res = await fetch("/api/chat", {
             <div style={{ color:C.ink, fontWeight:600, fontSize:13, marginBottom:2, fontFamily:"'Fraunces', Georgia, serif" }}>Breathe</div>
             <div style={{ color:C.stoneMid, fontSize:11 }}>Box method</div>
           </button>
+
           <button onClick={() => setScreen("progress")} className="glass card btn" style={{ borderRadius:18, padding:"16px 14px", cursor:"pointer", textAlign:"left", border:`1px solid ${avatarColor}22` }}>
             <div style={{ width:36, height:36, borderRadius:10, background:`linear-gradient(135deg, ${avatarColor}66, ${avatarColor}33)`, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:6, boxShadow:`0 4px 12px ${avatarColor}33`, fontSize:20 }}>
               <AnimIcon icon={Sprout} size={22} color={avatarColor} delay="0.5s"/>
@@ -1704,6 +1772,7 @@ const res = await fetch("/api/chat", {
             <div style={{ color:C.stoneMid, fontSize:11 }}>{badges.length} badge{badges.length !== 1 ? "s" : ""}</div>
           </button>
         </div>
+
 
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:11, marginBottom:20, animation:"staggerUp 0.5s ease 0.42s both" }}>
           {[[FlaskConical,"The Science","Why it works","science"],[BookOpen,"Our Sources","Foundations","sources"]].map(([Icon,t,d,s]) => (
@@ -1714,6 +1783,7 @@ const res = await fetch("/api/chat", {
             </button>
           ))}
         </div>
+
 
         {comparisonCount >= 5 && (
           <button onClick={() => setScreen("myprofile")} className="glass card btn"
@@ -1727,6 +1797,7 @@ const res = await fetch("/api/chat", {
             </div>
           </button>
         )}
+
 
         <button onClick={() => setScreen("donate")} className="glass card btn"
           style={{ width:"100%", borderRadius:18, padding:"14px 20px", cursor:"pointer", border:`1px solid ${avatarColor}22`, textAlign:"center", marginBottom:10 }}>
@@ -1749,6 +1820,7 @@ const res = await fetch("/api/chat", {
   )}
 
 
+
   {/* ── CHAT ─────────────────────────────────────────────────── */}
   {screen === "chat" && (
     <div style={{ position:"fixed", inset:0, display:"flex", flexDirection:"column", fontFamily:"'Cabinet Grotesk', sans-serif", color:C.ink, overflow:"hidden" }}>
@@ -1757,6 +1829,7 @@ const res = await fetch("/api/chat", {
         {av?.shape === "nebula" && <div style={{ position:"absolute", inset:0, background:`conic-gradient(from 0deg, ${av.mesh[2]}18, ${av.mesh[0]}14, ${av.mesh[1]}11, ${av.mesh[2]}18)`, animation:"nebulaDrift 32s ease-in-out infinite", opacity:0.5 }}/>}
         {av?.shape === "blob" && <div style={{ position:"absolute", inset:0, background:`radial-gradient(ellipse 80% 55% at 50% 18%, ${av.mesh[0]}18, transparent 68%)`, animation:"orbPulse 6s ease-in-out infinite" }}/>}
       </div>
+
 
       <div className="glass" style={{ padding:"max(14px, calc(env(safe-area-inset-top) + 10px)) 20px 14px", display:"flex", alignItems:"center", gap:13, borderBottom:"1px solid rgba(255,235,200,0.28)", flexShrink:0, position:"relative", zIndex:10, borderRadius:0, background:`rgba(245,236,220,0.85)`, backdropFilter:"blur(22px)", WebkitBackdropFilter:"blur(22px)" }}>        <button onClick={() => setScreen("home")} style={{ background:"transparent", border:"none", color:avatarColor, cursor:"pointer", padding:"4px 2px", display:"flex", alignItems:"center" }}>
           <ChevronLeft size={22} strokeWidth={2}/>
@@ -1777,6 +1850,7 @@ const res = await fetch("/api/chat", {
           {usageMeta?.tier || "free"}
         </div>
       </div>
+
 
       <div
         ref={chatScrollRef}
@@ -1804,8 +1878,10 @@ const res = await fetch("/api/chat", {
   ))}
   {loading && <Bubble role="assistant" content="" avatar={av} isTypingIndicator/>}
 </div>
+
         <div ref={endRef}/>
       </div>
+
 
       {/* Scroll-to-bottom button */}
       {!atBottom && (
@@ -1818,6 +1894,7 @@ const res = await fetch("/api/chat", {
         </div>
       )}
 
+
       {usageMeta && !limitReached && usageMeta.remaining <= 3 && (
         <div style={{ padding:"6px 20px", background:`${avatarColor}14`, borderTop:`1px solid ${avatarColor}22`, textAlign:"center", zIndex:10, position:"relative", flexShrink:0 }}>
           <p style={{ color:avatarColor, fontSize:11, fontWeight:600 }}>
@@ -1825,6 +1902,7 @@ const res = await fetch("/api/chat", {
           </p>
         </div>
       )}
+
       {limitReached && (
         <div style={{ padding:"18px 20px", background:`rgba(245,236,220,0.97)`, backdropFilter:"blur(20px)", borderTop:`1px solid ${avatarColor}33`, zIndex:10, position:"relative", flexShrink:0, textAlign:"center", animation:"fadeIn 0.3s ease" }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:12 }}>
@@ -1847,6 +1925,7 @@ const res = await fetch("/api/chat", {
         </div>
       )}
 
+
       <div className="glass chat-input-bar" style={{ padding:`12px 16px calc(12px + env(safe-area-inset-bottom))`, paddingBottom:`calc(12px + env(safe-area-inset-bottom))`, borderTop:"1px solid rgba(255,235,200,0.28)", flexShrink:0, position:"relative", zIndex:10, borderRadius:0, background:`rgba(245,236,220,0.85)`, backdropFilter:"blur(22px)", WebkitBackdropFilter:"blur(22px)" }}>        <div style={{ maxWidth:680, margin:"0 auto" }}>
           <div style={{ display:"flex", gap:9, alignItems:"center" }}>
               <textarea ref={inputRef} value={input} onChange={e => !limitReached && setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && !e.shiftKey && input.trim() && (e.preventDefault(), send(input))} placeholder={limitReached ? "Today's conversations are complete." : "What's on your mind..."} rows={3} style={{ flex:1, background:"rgba(255,248,235,0.55)", border:"1.5px solid rgba(255,235,200,0.6)", outline:"none", backdropFilter:"blur(12px)", borderRadius:16, padding:"13px 18px", color:C.ink, fontSize:14, boxShadow:"0 2px 8px rgba(40,28,16,0.06)", resize:"none", overflowY:"auto", lineHeight:"1.5", fontFamily:"inherit", maxHeight:120, minHeight:46 }} onInput={e => { e.target.style.height = "auto"; e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px"; }}/>            <button onClick={() => input.trim() && !limitReached && send(input)} disabled={loading || !input.trim() || limitReached} className="btn"
@@ -1864,6 +1943,7 @@ const res = await fetch("/api/chat", {
       </div>
     </div>
   )}
+
 
 
   {/* ── MISSIONS ────────────────────────────────────────────── */}
@@ -1884,9 +1964,11 @@ const res = await fetch("/api/chat", {
             </button>
           </div>
 
+
           <div style={{ borderRadius:16, padding:"14px 18px", marginBottom:20, background:`${avatarColor}10`, border:`1.5px solid ${avatarColor}33`, backdropFilter:"blur(20px)", WebkitBackdropFilter:"blur(20px)", boxShadow:`0 0 20px ${avatarColor}18, inset 0 0 12px ${avatarColor}08` }}>
             <p style={{ color:C.forest, fontSize:14, fontFamily:"'Fraunces', Georgia, serif", fontStyle:"italic", lineHeight:1.70, fontWeight:300 }}>Here are a few things worth trying. Pick the one that feels least impossible.</p>
           </div>
+
 
           {activities.length === 0 && (
             <div style={{ textAlign:"center", padding:44 }}>
@@ -1897,6 +1979,7 @@ const res = await fetch("/api/chat", {
               </button>
             </div>
           )}
+
 
           {activities.map((a, i) => {
             const isExpanded = expandedCard === a.id;
@@ -1923,6 +2006,7 @@ const res = await fetch("/api/chat", {
             );
           })}
 
+
           <button onClick={() => { setBreathOn(false); setScreen("breathe"); }} className="glass btn"
             style={{ width:"100%", border:`1px solid rgba(255,235,200,0.35)`, color:C.stone, borderRadius:18, padding:"13px 20px", cursor:"pointer", marginTop:10, fontSize:14 }}>
             Need a breathing break instead?
@@ -1932,6 +2016,8 @@ const res = await fetch("/api/chat", {
       <Dock screen={screen} setScreen={setScreen} onMissions={onMissions} avatarColor={avatarColor}/>
     </div>
   )}
+
+
 
 
   {/* ── BREATHE ──────────────────────────────────────────────── */}
@@ -1963,6 +2049,7 @@ const res = await fetch("/api/chat", {
   )}
 
 
+
   {/* ── SCIENCE ──────────────────────────────────────────────── */}
   {screen === "science" && (
     <div style={{ ...BG, paddingBottom:100, overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
@@ -1982,6 +2069,7 @@ const res = await fetch("/api/chat", {
   )}
 
 
+
   {/* ── SOURCES ──────────────────────────────────────────────── */}
   {screen === "sources" && (
     <div style={{ ...BG, paddingBottom:100, overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
@@ -1999,6 +2087,7 @@ const res = await fetch("/api/chat", {
       <Dock screen={screen} setScreen={setScreen} onMissions={onMissions} avatarColor={avatarColor}/>
     </div>
   )}
+
 
   {/* ── PROGRESS ────────────────────────────────────────────── */}
   {screen === "progress" && (
@@ -2138,7 +2227,9 @@ const res = await fetch("/api/chat", {
     <Dock screen={screen} setScreen={setScreen} onMissions={onMissions} avatarColor={avatarColor}/>
   </div>
 )}
+
   {/* ── DONATE ──────────────────────────────────────────── */}
+
   {screen === "knowme" && (
   <div style={{ ...BG, overflowY:"auto", WebkitOverflowScrolling:"touch", paddingBottom:100 }}>
     <LivingBg intensity={3} avatarColor={avatarColor}/>
@@ -2228,6 +2319,7 @@ const res = await fetch("/api/chat", {
     </div>
   </div>
 </button>
+
           <p style={{ color:C.stoneMid, fontSize:11, textAlign:"center", marginTop:24, lineHeight:1.6 }}>
             All data stays with you. You can clear it anytime.
           </p>
@@ -2238,11 +2330,13 @@ const res = await fetch("/api/chat", {
   </div>
 )}
 
+
 {screen === "comparisons" && (
   <div style={{ position:"relative", zIndex:1, minHeight:"100vh", background:C.cream }}>
     <ComparisonEngine setScreen={setScreen} avatarColor={avatarColor} C={C} />
   </div>
 )}
+
 
 {screen === "myprofile" && (
   <div style={{ position:"relative", zIndex:1, minHeight:"100vh", background:C.cream }}>
@@ -2250,11 +2344,13 @@ const res = await fetch("/api/chat", {
   </div>
 )}
 
+
 {screen === "wordgame" && (
   <div style={{ position:"relative", zIndex:1, minHeight:"100vh", background:C.cream }}>
     <WordGame setScreen={setScreen} avatarColor={avatarColor} C={C} />
   </div>
 )}
+
 
 {screen === "writingprompt" && (
   <div style={{ position:"relative", zIndex:1, minHeight:"100vh", background:C.cream }}>
@@ -2262,11 +2358,14 @@ const res = await fetch("/api/chat", {
   </div>
 )}
 
+
 {screen === "feedback" && (
   <div style={{ position:"relative", zIndex:1, minHeight:"100vh", background:C.cream }}>
     <Feedback setScreen={setScreen} avatarColor={avatarColor} C={C} />
   </div>
 )}
+
+
 
   {screen === "donate" && (
     <div style={{ ...BG, paddingBottom:100, overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
@@ -2310,6 +2409,7 @@ const res = await fetch("/api/chat", {
   />
 </PayPalScriptProvider>
 
+
         <p style={{ color:C.stoneMid, fontSize:12, textAlign:"center", lineHeight:1.65 }}>
           No account needed. Any amount helps. Thank you for believing in this.
         </p>
@@ -2336,6 +2436,9 @@ const res = await fetch("/api/chat", {
     </div>
   )}
 
+
     </div>
+
   );
+
 }
