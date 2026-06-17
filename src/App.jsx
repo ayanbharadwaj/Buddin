@@ -927,53 +927,33 @@ export default function App() {
   const bgDuckedRef = useRef(false); // true while breathing is active, suppresses timeupdate vol
   const bgStartedRef = useRef(false); // true once BG has actually begun playing (buffered & started)
 
-  // ── Web Audio gain graph — smooth, click-free volume ramps ───
-  // Stepping <audio>.volume directly (the old approach) causes audible
-  // "zipper" clicks/stutter on every step of a fade, especially on a slow
-  // ramp. Routing through a GainNode and ramping it sample-accurately
-  // avoids that entirely.
-  const audioCtxRef = useRef(null);
-  const bgGainRef   = useRef(null);
-  const brGainRef   = useRef(null);
+  // ── Smooth volume ramps — requestAnimationFrame, not setInterval ──
+  // Stepping <audio>.volume in coarse setInterval ticks (every 40-50ms) is
+  // audible as a stutter/click on some browsers. rAF gives ~60 tiny steps/sec
+  // instead of ~20-25, which is smooth enough to not be audible, without the
+  // fragility of routing through Web Audio (which requires AudioContext.resume()
+  // to run inside a direct user gesture — doing it from a deferred rAF/promise
+  // callback leaves the context permanently suspended and silent).
+  const bgRampRef = useRef(null);
+  const brRampRef = useRef(null);
 
-  const ensureAudioGraph = useCallback(() => {
-    if (audioCtxRef.current) return audioCtxRef.current;
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    if (!Ctx || !bgRef.current || !brRef.current) return null;
-    try {
-      const ctx = new Ctx();
-      const bgGain = ctx.createGain();
-      const brGain = ctx.createGain();
-      bgGain.gain.value = 0;
-      brGain.gain.value = 0;
-      ctx.createMediaElementSource(bgRef.current).connect(bgGain).connect(ctx.destination);
-      ctx.createMediaElementSource(brRef.current).connect(brGain).connect(ctx.destination);
-      bgRef.current.volume = 1; // the gain node now controls loudness
-      brRef.current.volume = 1;
-      audioCtxRef.current = ctx;
-      bgGainRef.current = bgGain;
-      brGainRef.current = brGain;
-    } catch {
-      return null;
-    }
-    return audioCtxRef.current;
-  }, []);
-
-  // Smoothly ramp a track's volume to `value` over `seconds` (sample-accurate,
-  // no clicks). Falls back to stepping <audio>.volume if Web Audio is unavailable.
-  const rampVolume = useCallback((which, value, seconds = 0.08) => {
-    const ctx = audioCtxRef.current;
-    const gainRef = which === 'bg' ? bgGainRef : brGainRef;
-    const elRef = which === 'bg' ? bgRef : brRef;
-    if (ctx && gainRef.current) {
-      const now = ctx.currentTime;
-      const param = gainRef.current.gain;
-      param.cancelScheduledValues(now);
-      param.setValueAtTime(param.value, now);
-      param.linearRampToValueAtTime(Math.max(0.0001, value), now + Math.max(0, seconds));
-    } else if (elRef.current) {
-      elRef.current.volume = Math.max(0, Math.min(1, value));
-    }
+  const rampVolume = useCallback((which, target, seconds = 0.08) => {
+    const elRef  = which === 'bg' ? bgRef : brRef;
+    const rafRef = which === 'bg' ? bgRampRef : brRampRef;
+    const el = elRef.current;
+    if (!el) return;
+    cancelAnimationFrame(rafRef.current);
+    target = Math.max(0, Math.min(1, target));
+    if (seconds <= 0) { el.volume = target; return; }
+    const start = el.volume;
+    const startTime = performance.now();
+    const durMs = seconds * 1000;
+    const step = (now) => {
+      const t = Math.min(1, (now - startTime) / durMs);
+      el.volume = start + (target - start) * t;
+      if (t < 1) rafRef.current = requestAnimationFrame(step);
+    };
+    rafRef.current = requestAnimationFrame(step);
   }, []);
 
   // ── Derived values (not hooks, just computations) ────────────
@@ -989,9 +969,6 @@ export default function App() {
       const br = brRef.current;
       if (!bg || !br) return;
 
-      ensureAudioGraph();
-      const ctx = audioCtxRef.current;
-      if (ctx && ctx.state === 'suspended') ctx.resume().catch(() => {});
       rampVolume('bg', 0, 0);
       rampVolume('br', 0, 0);
 
@@ -1012,7 +989,7 @@ export default function App() {
       // BR: prime — silent play then immediate pause unlocks .play() for gesture policy
       br.play().then(() => { br.pause(); br.currentTime = 0; }).catch(() => {});
     });
-  }, [ensureAudioGraph, rampVolume]);
+  }, [rampVolume]);
 
   const disableMusic = useCallback(() => {
     setMusicEnabled(false);
