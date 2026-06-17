@@ -925,6 +925,56 @@ export default function App() {
   const bgRef      = useRef(null);
   const brRef      = useRef(null);
   const bgDuckedRef = useRef(false); // true while breathing is active, suppresses timeupdate vol
+  const bgStartedRef = useRef(false); // true once BG has actually begun playing (buffered & started)
+
+  // ── Web Audio gain graph — smooth, click-free volume ramps ───
+  // Stepping <audio>.volume directly (the old approach) causes audible
+  // "zipper" clicks/stutter on every step of a fade, especially on a slow
+  // ramp. Routing through a GainNode and ramping it sample-accurately
+  // avoids that entirely.
+  const audioCtxRef = useRef(null);
+  const bgGainRef   = useRef(null);
+  const brGainRef   = useRef(null);
+
+  const ensureAudioGraph = useCallback(() => {
+    if (audioCtxRef.current) return audioCtxRef.current;
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx || !bgRef.current || !brRef.current) return null;
+    try {
+      const ctx = new Ctx();
+      const bgGain = ctx.createGain();
+      const brGain = ctx.createGain();
+      bgGain.gain.value = 0;
+      brGain.gain.value = 0;
+      ctx.createMediaElementSource(bgRef.current).connect(bgGain).connect(ctx.destination);
+      ctx.createMediaElementSource(brRef.current).connect(brGain).connect(ctx.destination);
+      bgRef.current.volume = 1; // the gain node now controls loudness
+      brRef.current.volume = 1;
+      audioCtxRef.current = ctx;
+      bgGainRef.current = bgGain;
+      brGainRef.current = brGain;
+    } catch {
+      return null;
+    }
+    return audioCtxRef.current;
+  }, []);
+
+  // Smoothly ramp a track's volume to `value` over `seconds` (sample-accurate,
+  // no clicks). Falls back to stepping <audio>.volume if Web Audio is unavailable.
+  const rampVolume = useCallback((which, value, seconds = 0.08) => {
+    const ctx = audioCtxRef.current;
+    const gainRef = which === 'bg' ? bgGainRef : brGainRef;
+    const elRef = which === 'bg' ? bgRef : brRef;
+    if (ctx && gainRef.current) {
+      const now = ctx.currentTime;
+      const param = gainRef.current.gain;
+      param.cancelScheduledValues(now);
+      param.setValueAtTime(param.value, now);
+      param.linearRampToValueAtTime(Math.max(0.0001, value), now + Math.max(0, seconds));
+    } else if (elRef.current) {
+      elRef.current.volume = Math.max(0, Math.min(1, value));
+    }
+  }, []);
 
   // ── Derived values (not hooks, just computations) ────────────
   const getMinutes  = () => (Date.now() - sessionStart.current) / 60000;
@@ -938,18 +988,23 @@ export default function App() {
       const bg = bgRef.current;
       const br = brRef.current;
       if (!bg || !br) return;
-      bg.volume = 0;
-      br.volume = 0;
+
+      ensureAudioGraph();
+      const ctx = audioCtxRef.current;
+      if (ctx && ctx.state === 'suspended') ctx.resume().catch(() => {});
+      rampVolume('bg', 0, 0);
+      rampVolume('br', 0, 0);
 
       // Don't start playback until the file has buffered enough to play through
       // without stalling — starting on a half-loaded file is what caused the
       // audible stutter. Fall back to starting anyway after 1.5s on slow connections.
       const startBg = () => bg.play().catch(() => {});
       if (bg.readyState >= 4 || bg._ready) {
+        bgStartedRef.current = true;
         startBg();
       } else {
         let started = false;
-        const go = () => { if (started) return; started = true; startBg(); };
+        const go = () => { if (started) return; started = true; bgStartedRef.current = true; startBg(); };
         bg.addEventListener('canplaythrough', go, { once: true });
         setTimeout(go, 1500);
       }
@@ -957,7 +1012,7 @@ export default function App() {
       // BR: prime — silent play then immediate pause unlocks .play() for gesture policy
       br.play().then(() => { br.pause(); br.currentTime = 0; }).catch(() => {});
     });
-  }, []); // eslint-disable-line
+  }, [ensureAudioGraph, rampVolume]);
 
   const disableMusic = useCallback(() => {
     setMusicEnabled(false);
@@ -1029,15 +1084,12 @@ export default function App() {
 
   // BG screen routing: pause when entering breathe, resume on all other screens
   useEffect(() => {
-    if (!musicEnabled || !bgRef.current) return;
+    if (!musicEnabled || !bgRef.current || !bgStartedRef.current) return;
     const bg = bgRef.current;
     if (screen === 'breathe') {
-      let n = 0, steps = 20, from = bg.volume;
-      const iv = setInterval(() => {
-        n++;
-        bg.volume = Math.max(0, from * (1 - n / steps));
-        if (n >= steps) { clearInterval(iv); bg.pause(); }
-      }, 40);
+      rampVolume('bg', 0, 0.8);
+      const t = setTimeout(() => { if (bgRef.current) bgRef.current.pause(); }, 850);
+      return () => clearTimeout(t);
     } else {
       if (bg.paused) bg.play().catch(() => {});
     }
@@ -1050,25 +1102,16 @@ export default function App() {
       setBreathPhase('rest');
       bgDuckedRef.current = false;
       if (!musicEnabled) return;
-      // Fade out breath track
+      // Fade out breath track, then stop it
       const br = brRef.current;
       if (br) {
-        let n = 0, steps = 30, from = br.volume;
-        const iv = setInterval(() => {
-          n++;
-          br.volume = Math.max(0, from * (1 - n / steps));
-          if (n >= steps) { clearInterval(iv); br.pause(); br.currentTime = 0; }
-        }, 50);
+        rampVolume('br', 0, 1.5);
+        setTimeout(() => { if (brRef.current) { brRef.current.pause(); brRef.current.currentTime = 0; } }, 1550);
       }
       // Restore BG from duck
       const bg = bgRef.current;
       if (bg) {
-        let n = 0, steps = 30, from = bg.volume;
-        const iv = setInterval(() => {
-          n++;
-          bg.volume = Math.min(0.2, from + (0.2 - from) * (n / steps));
-          if (n >= steps) clearInterval(iv);
-        }, 50);
+        rampVolume('bg', 0.2, 1.5);
         if (bg.paused) bg.play().catch(() => {});
       }
       return;
@@ -1077,21 +1120,12 @@ export default function App() {
     // breathOn = true
     if (musicEnabled) {
       bgDuckedRef.current = true;
-      // Duck BG to 0.05
-      const bg = bgRef.current;
-      if (bg) {
-        let n = 0, steps = 30, from = bg.volume;
-        const iv = setInterval(() => {
-          n++;
-          bg.volume = Math.max(0.05, from - (from - 0.05) * (n / steps));
-          if (n >= steps) clearInterval(iv);
-        }, 50);
-      }
+      rampVolume('bg', 0.05, 1.5); // duck BG
       // Start breath track
       const br = brRef.current;
       if (br) {
         br.currentTime = 0;
-        br.volume = 0.1;
+        rampVolume('br', 0.1, 0);
         br.play().catch(() => {});
       }
     }
@@ -1099,22 +1133,13 @@ export default function App() {
     // Phase sequencer: inhale→hold→exhale→hold, repeat
     const seq    = [['inhale',4000],['hold_high',4000],['exhale',4000],['hold_low',4000]];
     const volMap = { inhale:0.5, hold_high:0.5, exhale:0.1, hold_low:0.1 };
-    let idx = 0, swellIv = null;
+    let idx = 0;
 
     const tick = () => {
       const [ph, dur] = seq[idx];
       setBreathPhase(ph);
       if (musicEnabled && brRef.current) {
-        clearInterval(swellIv);
-        const br = brRef.current;
-        const target = volMap[ph], from = br.volume;
-        const steps = Math.round(dur / 50);
-        let n = 0;
-        swellIv = setInterval(() => {
-          n++;
-          br.volume = Math.min(1, Math.max(0, from + (target - from) * (n / steps)));
-          if (n >= steps) clearInterval(swellIv);
-        }, 50);
+        rampVolume('br', volMap[ph], dur / 1000);
       }
       breathTimerRef.current = setTimeout(() => {
         idx = (idx + 1) % seq.length;
@@ -1125,7 +1150,6 @@ export default function App() {
 
     return () => {
       clearTimeout(breathTimerRef.current);
-      clearInterval(swellIv);
     };
   }, [breathOn, musicEnabled]); // eslint-disable-line
 
@@ -1852,7 +1876,7 @@ const res = await fetch("/api/chat", {
     </div>
   )}
 
-  {/* ── MISSIONS ─────────────────────────────────────────────── */}
+  {/* ── MISSIONS ────────────────────────────────────────────── */}
   {screen === "missions" && (
     <div style={{ ...BG, paddingBottom:100, background:`linear-gradient(180deg, ${avatarColor}08 0%, ${C.cream} 160px)` }}>
       <LivingBg intensity={mood?.intensity || 3} avatarColor={avatarColor}/>
