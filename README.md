@@ -43,6 +43,10 @@ Guest mode (`/try` and the homepage demo) calls `/api/chat`, which only runs on 
 
 Copy `.env.example` to `.env.local` and fill in your own Supabase and Anthropic keys.
 
+## Tools
+
+Tried a few AI coding tools along the way — Claude Code, Google Labs' Jules — and landed on Claude Code for most of the build.
+
 ## Contact
 
 Questions or feedback: **getbuddin@gmail.com**
