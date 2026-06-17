@@ -1372,14 +1372,14 @@ const res = await fetch("/api/chat", {
       {/* Global audio elements — live outside all screen conditionals,
           never destroyed on screen switch, refs stay valid always */}
       <audio
-        ref={bgRef}
+        ref={el => { bgRef.current = el; if (el) el.volume = 0; }}
         src={BG_URL}
         preload="auto"
         onCanPlayThrough={() => { if (bgRef.current) bgRef.current._ready = true; }}
         style={{display:"none"}}
       />
       <audio
-        ref={brRef}
+        ref={el => { brRef.current = el; if (el) el.volume = 0; }}
         src={BR_URL}
         preload="auto"
         loop
