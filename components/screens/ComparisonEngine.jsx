@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronLeft } from "lucide-react";
 import { supabase } from '../../lib/supabase.js';
+import IntensityInput, { getRandomScale } from '../IntensityInput.jsx';
 
 const COMPARISONS = [
   {id: 1, category: "everyday", a: "Pen", b: "Pencil", insight: "organization_style"},
@@ -155,12 +156,6 @@ const COMPARISONS = [
   {id: 150, category: "social", a: "Flirtatious", b: "Reserved", insight: "romantic_approach"}
 ];
 
-const PRIME_SCALES = [97, 107, 113, 127, 151];
-
-function getRandomScale() {
-  return PRIME_SCALES[Math.floor(Math.random() * PRIME_SCALES.length)];
-}
-
 function shuffle(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -175,6 +170,7 @@ export default function ComparisonEngine({ setScreen, avatarColor, C, onSave }) 
   const [idx, setIdx] = useState(0);
   const [chosen, setChosen] = useState(null);
   const [intensity, setIntensity] = useState(null);
+  const [rating, setRating] = useState(false);
   const [scale, setScale] = useState(getRandomScale());
   const [saved, setSaved] = useState(0);
   const [totalAnswered, setTotalAnswered] = useState(0);  const [phase, setPhase] = useState("pick"); // pick | rate | next
@@ -224,6 +220,8 @@ useEffect(() => {
   };
 
   const handleRate = async (val) => {
+    if (rating) return;
+    setRating(true);
     setIntensity(val);
     const responseTime = Date.now() - startTime.current;
 
@@ -245,6 +243,7 @@ useEffect(() => {
             chosen: chosen,
             intensity: val,
             scale_max: scale,
+            input_method: "continuous",
             insight: current.insight,
             response_time_ms: responseTime
           })
@@ -261,6 +260,7 @@ useEffect(() => {
       setIdx(i => i + 1);
       setChosen(null);
       setIntensity(null);
+      setRating(false);
       setScale(getRandomScale());
       setPhase("pick");
       setExiting(false);
@@ -351,38 +351,27 @@ useEffect(() => {
 
           {phase === "rate" && (
             <div style={{ textAlign: "center" }}>
-              <div style={{ background: `${avatarColor}15`, border: `1.5px solid ${avatarColor}33`, borderRadius: 18, padding: "24px 20px", marginBottom: 28 }}>
-                <p style={{ color: avatarColor, fontWeight: 700, fontSize: 18, fontFamily: "'Fraunces', Georgia, serif", marginBottom: 4 }}>{chosen}</p>
-                <p style={{ color: C.stone, fontSize: 13 }}>How strongly do you feel about this?</p>
+              <div style={{ background: `${avatarColor}15`, border: `1.5px solid ${avatarColor}33`, borderRadius: 18, padding: "24px 20px", marginBottom: 24 }}>
+                <p style={{ color: avatarColor, fontWeight: 700, fontSize: 18, fontFamily: "'Fraunces', Georgia, serif", margin: 0 }}>{chosen}</p>
               </div>
-              <p style={{ color: C.stoneMid, fontSize: 12, marginBottom: 16 }}>1 = not really · {scale} = absolutely</p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
-                {[1, Math.round(scale * 0.2), Math.round(scale * 0.4), Math.round(scale * 0.6), Math.round(scale * 0.8), scale].map(val => (
-                  <button
-                    key={val}
-                    onClick={() => handleRate(val)}
-                    style={{
-                      background: "rgba(255,248,235,0.7)",
-                      border: `1.5px solid ${avatarColor}44`,
-                      borderRadius: 12,
-                      padding: "12px 20px",
-                      cursor: "pointer",
-                      fontSize: 15,
-                      fontWeight: 600,
-                      color: C.ink,
-                      fontFamily: "inherit",
-                      minWidth: 60,
-                      transition: "all 0.15s ease",
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.background = `${avatarColor}18`; e.currentTarget.style.transform = "translateY(-2px)"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,248,235,0.7)"; e.currentTarget.style.transform = "translateY(0)"; }}
-                  >
-                    {val}
-                  </button>
-                ))}
-              </div>
-              <button onClick={() => handleRate(Math.round(scale * 0.5))} style={{ marginTop: 20, background: "transparent", border: "none", color: C.stoneMid, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
-                Skip rating →
+
+              {/* key={current.id} remounts the input per question so the previous
+                  answer's value never carries over as a default. */}
+              <IntensityInput
+                key={current.id}
+                scale={scale}
+                avatarColor={avatarColor}
+                C={C}
+                onCommit={handleRate}
+                disabled={rating}
+              />
+
+              <button
+                onClick={() => { setChosen(null); setPhase("pick"); }}
+                disabled={rating}
+                style={{ marginTop: 14, background: "transparent", border: "none", color: C.stoneMid, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}
+              >
+                ← Pick the other one
               </button>
             </div>
           )}

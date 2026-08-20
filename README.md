@@ -6,9 +6,10 @@ Teens are more connected than ever and lonelier than ever, and most of that scre
 
 - **Chat** — a companion built to be a bridge back to real life, not a replacement for it. Nudges you toward your actual friends instead of keeping you talking to it forever. Free guest mode included, no signup required to try it.
 - **Do** — an activity generator for when you know you should do something other than scroll but can't think of what.
-- **Comparisons** — quick, low-stakes "pick A or B" rounds that double as a way to learn what you actually value.
 - **Breathe** — a paced, animated breathing exercise with calming background music, for when you need to physically calm down, not just distract yourself.
 - **Growth** — a tracker for activities completed and badges earned, so the effort is visible instead of disappearing the moment you close the tab.
+- **Know Me** — seven ways of building a picture of someone without ever asking them to describe themselves: forced A/B choices rated on an unfamiliar prime-number scale, word association with adaptive difficulty, open writing prompts, direct preferences, name recognition, number reactions, and a synthesis that suggests directions their working life might take. Everything feeds one inference engine that only asks for the parts it actually has data for.
+- **Learn It** — five scenario-based skill modules for the practical things school skips and families teach unevenly: etiquette, grammar and writing, financial self-control, reading people, and staying composed under pressure.
 
 Buddin isn't therapy and isn't a social feed. It's a judgment-free place to think out loud and a nudge toward doing one small real thing.
 
@@ -22,12 +23,14 @@ Buddin isn't therapy and isn't a social feed. It's a judgment-free place to thin
 ## Project structure
 
 ```
-api/            serverless functions (chat, mood/profile inference, sessions)
-components/     marketing site, auth, guest chat, legal pages
-src/            the authenticated app (chat, missions, progress, etc.)
-lib/            shared client-side helpers
-public/         static assets (audio, images, sitemap)
-scripts/        one-off maintenance scripts
+api/                serverless functions (chat, mood/profile inference, module saves, sessions)
+components/         marketing site, auth, guest chat, legal pages
+components/screens/ the Know Me and Learn It module screens
+src/                the authenticated app (chat, missions, progress, screen router)
+src/data/           question banks and scenario content for every module
+lib/                shared client-side helpers
+public/             static assets (audio, images, sitemap)
+scripts/            one-off maintenance scripts
 ```
 
 ## Local development
@@ -42,6 +45,8 @@ npm run preview   # preview the production build
 Guest mode (`/try` and the homepage demo) calls `/api/chat`, which only runs on Vercel — use `vercel dev` instead of `npm run dev` to test it locally.
 
 Copy `.env.example` to `.env.local` and fill in your own Supabase and Anthropic keys.
+
+Database setup: run `supabase-fixes.sql` and then `supabase-schema-v2.sql` in the Supabase SQL editor. Both are idempotent and safe to re-run.
 
 ## Tools
 

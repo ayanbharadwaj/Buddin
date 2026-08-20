@@ -18,6 +18,7 @@
     { "source": "/do", "destination": "/index.html" },
     { "source": "/growth", "destination": "/index.html" },
     { "source": "/me", "destination": "/index.html" },
+    { "source": "/learn", "destination": "/index.html" },
     { "source": "/plans", "destination": "/index.html" },
     { "source": "/breathe", "destination": "/index.html" }
   ]

@@ -4,7 +4,8 @@ import {
   VolumeX, Wind, ChevronLeft, ChevronDown, ChevronRight,
   RotateCw, Send, FlaskConical, BookOpen, Heart,
   Star, Trophy, Users, Check, Music, Leaf, Zap, Sparkles,
-  Globe, Brain, BatteryLow, Flame, Shuffle, User, UserPlus, Crown, HeartHandshake
+  Globe, Brain, BatteryLow, Flame, Shuffle, User, UserPlus, Crown, HeartHandshake,
+  GraduationCap, Compass, Hash, SlidersHorizontal
 } from "lucide-react";
 import { InstagramIcon, YoutubeIcon } from '../components/SocialIcons.jsx';
 import { toneToSystemInstruction } from './boom/memorySchema.js';
@@ -15,6 +16,12 @@ import MyProfile from '../components/screens/MyProfile.jsx';
 import WordGame from '../components/screens/WordGame.jsx';
 import WritingPrompt from '../components/screens/WritingPrompt.jsx';
 import Feedback from '../components/screens/Feedback.jsx';
+import Preferences from '../components/screens/Preferences.jsx';
+import PopCulture from '../components/screens/PopCulture.jsx';
+import NumberSense from '../components/screens/NumberSense.jsx';
+import CareerDiscovery from '../components/screens/CareerDiscovery.jsx';
+import LearnItHub from '../components/screens/LearnItHub.jsx';
+import LearnItModule from '../components/screens/LearnItModule.jsx';
 
 /* ═══════════════════════════════════════════════════════════════
    HIDDEN MATHEMATICAL ENGINE
@@ -298,6 +305,9 @@ const CSS = `
 
   @keyframes rise      { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
   @keyframes fadeIn    { from{opacity:0} to{opacity:1} }
+  /* MyProfile's refresh icon and Directions' compass both reference this and
+     it was never defined — the spinners have been sitting still. */
+  @keyframes spin      { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
   @keyframes sway      { 0%,100%{transform:rotate(-4deg) scale(1)} 50%{transform:rotate(4deg) scale(1.04) translateY(-4px)} }
   @keyframes leafFloat { 0%,100%{transform:rotate(var(--r,0deg)) scale(1)} 50%{transform:rotate(calc(var(--r,0deg)+8deg)) scale(1.05) translateY(-5px)} }
   @keyframes particle  { 0%,100%{transform:translateY(0) scale(1);opacity:0.25} 50%{transform:translateY(-18px) scale(1.15);opacity:0.55} }
@@ -747,7 +757,7 @@ function Dock({ screen, setScreen, onMissions, avatarColor }) {
     { icon: Target,        label:"Do",     key:"missions" },
     { icon: Sprout,        label:"Growth", key:"progress" },
     { icon: Brain,         label:"Me",     key: "knowme" },
-    { icon: Sparkles,      label:"Pricing", key:"upgrade" },
+    { icon: GraduationCap, label:"Learn",  key:"learn"    },
   ];
   const activeIdx = items.findIndex(item => item.key === screen);
   const g = avatarColor || C.sage;
@@ -872,6 +882,7 @@ const SCREEN_PATHS = {
   missions: "/do",
   progress: "/growth",
   knowme:   "/me",
+  learn:    "/learn",
   upgrade:  "/plans",
   breathe:  "/breathe",
 };
@@ -910,6 +921,7 @@ export default function App() {
   const [adaptiveTone, setAdaptiveTone] = useState(null);
   const [activeQuestion, setActiveQuestion] = useState(null);
   const [comparisonCount, setComparisonCount] = useState(0);
+  const [learnModule, setLearnModule] = useState(null);
   const questionAskedRef = useRef(false);
   const [usageMeta, setUsageMeta]         = useState(null);
   const [limitReached, setLimitReached]   = useState(false);
@@ -1799,6 +1811,20 @@ const res = await fetch("/api/chat", {
         )}
 
 
+        {/* Learn It gets a Home entry point as well as its dock slot — it's the
+            half of the app people won't discover by looking for it. */}
+        <button onClick={() => setScreen("learn")} className="glass card btn"
+          style={{ width:"100%", borderRadius:18, padding:"16px 20px", cursor:"pointer", border:`1px solid ${avatarColor}33`, textAlign:"left", marginBottom:12, display:"flex", alignItems:"center", gap:14 }}>
+          <div style={{ width:38, height:38, borderRadius:12, background:`linear-gradient(135deg, ${avatarColor}55, ${avatarColor}22)`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+            <GraduationCap size={20} color={avatarColor} strokeWidth={1.8}/>
+          </div>
+          <div style={{ flex:1 }}>
+            <div style={{ color:C.ink, fontWeight:700, fontSize:13, fontFamily:"'Fraunces', Georgia, serif", marginBottom:2 }}>Learn It</div>
+            <div style={{ color:C.stoneMid, fontSize:11 }}>Etiquette, writing, money, reading people, staying calm →</div>
+          </div>
+        </button>
+
+
         <button onClick={() => setScreen("donate")} className="glass card btn"
           style={{ width:"100%", borderRadius:18, padding:"14px 20px", cursor:"pointer", border:`1px solid ${avatarColor}22`, textAlign:"center", marginBottom:10 }}>
           <span style={{ color:avatarColor, fontSize:13, fontWeight:600, display:"flex", alignItems:"center", justifyContent:"center", gap:7 }}>
@@ -2291,20 +2317,54 @@ const res = await fetch("/api/chat", {
             </div>
           </button>
 
-          <div className="glass" style={{ borderRadius:18, padding:"18px 20px", marginBottom:12, opacity:0.5, border:`1.5px solid ${C.stoneLight}` }}>
+          {/* Every Know Me module, all live. Card order follows the build order
+              in the spec: the queue-based collectors first, then the lighter
+              ones, then Directions — which only works once the others have fed
+              it something to synthesise from. */}
+          {[
+            { screen:"preferences", icon:SlidersHorizontal, title:"Preferences",
+              desc:"The few things worth just asking you straight." },
+            { screen:"popculture",  icon:Globe,             title:"Names",
+              desc:"What you know — and what you've never heard of." },
+            { screen:"numbersense", icon:Hash,              title:"Numbers",
+              desc:"One number at a time. Takes a few seconds." },
+          ].map(f => {
+            const Icon = f.icon;
+            return (
+              <button
+                key={f.screen}
+                onClick={() => setScreen(f.screen)}
+                className="glass card"
+                style={{ width:"100%", borderRadius:18, padding:"18px 20px", cursor:"pointer", textAlign:"left", border:`1.5px solid ${avatarColor}33`, marginBottom:12, display:"block" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+                  <div style={{ width:40, height:40, borderRadius:12, background:`${avatarColor}18`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                    <Icon size={19} color={avatarColor} strokeWidth={2}/>
+                  </div>
+                  <div>
+                    <p style={{ fontWeight:700, fontSize:15, color:C.ink, margin:0 }}>{f.title}</p>
+                    <p style={{ color:C.stone, fontSize:13, margin:"3px 0 0" }}>{f.desc}</p>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+
+          <div style={{ height:1, background:C.stoneLight, margin:"20px 0 16px" }}/>
+
+          <button
+            onClick={() => setScreen("career")}
+            className="glass card"
+            style={{ width:"100%", borderRadius:18, padding:"18px 20px", cursor:"pointer", textAlign:"left", border:`1.5px solid ${avatarColor}33`, marginBottom:12, display:"block" }}>
             <div style={{ display:"flex", alignItems:"center", gap:14 }}>
-              <div style={{ width:40, height:40, borderRadius:12, background:`${C.stoneLight}44`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                <Brain size={19} color={C.stoneMid} strokeWidth={2}/>
+              <div style={{ width:40, height:40, borderRadius:12, background:`${avatarColor}18`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <Compass size={19} color={avatarColor} strokeWidth={2}/>
               </div>
               <div>
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                  <p style={{ fontWeight:700, fontSize:15, color:C.ink, margin:0 }}>Preferences</p>
-                  <span style={{ fontSize:10, color:C.stoneMid, background:C.stoneLight, borderRadius:6, padding:"2px 8px" }}>Coming soon</span>
-                </div>
-                <p style={{ color:C.stone, fontSize:13, margin:"3px 0 0" }}>Your habits and preferences reveal your personality.</p>
+                <p style={{ fontWeight:700, fontSize:15, color:C.ink, margin:0 }}>Directions</p>
+                <p style={{ color:C.stone, fontSize:13, margin:"3px 0 0" }}>Where all of this might point. Best once you've done a few of the above.</p>
               </div>
             </div>
-          </div>
+          </button>
           <button
   onClick={() => setScreen("myprofile")}
   className="glass card"
@@ -2362,6 +2422,57 @@ const res = await fetch("/api/chat", {
 {screen === "feedback" && (
   <div style={{ position:"relative", zIndex:1, minHeight:"100vh", background:C.cream }}>
     <Feedback setScreen={setScreen} avatarColor={avatarColor} C={C} />
+  </div>
+)}
+
+
+{screen === "preferences" && (
+  <div style={{ position:"relative", zIndex:1, minHeight:"100vh", background:C.cream }}>
+    <Preferences setScreen={setScreen} avatarColor={avatarColor} C={C} />
+  </div>
+)}
+
+
+{screen === "popculture" && (
+  <div style={{ position:"relative", zIndex:1, minHeight:"100vh", background:C.cream }}>
+    <PopCulture setScreen={setScreen} avatarColor={avatarColor} C={C} />
+  </div>
+)}
+
+
+{screen === "numbersense" && (
+  <div style={{ position:"relative", zIndex:1, minHeight:"100vh", background:C.cream }}>
+    <NumberSense setScreen={setScreen} avatarColor={avatarColor} C={C} />
+  </div>
+)}
+
+
+{screen === "career" && (
+  <div style={{ position:"relative", zIndex:1, minHeight:"100vh", background:C.cream }}>
+    <CareerDiscovery setScreen={setScreen} avatarColor={avatarColor} C={C} />
+  </div>
+)}
+
+
+{/* Learn It — its own top-level area, with the dock still visible on the hub
+    because it's a destination rather than a flow. The sub-module screens hide
+    the dock the same way the Know Me modules do. */}
+{screen === "learn" && (
+  <div style={{ ...BG, overflowY:"auto", WebkitOverflowScrolling:"touch", paddingBottom:100 }}>
+    <LivingBg intensity={3} avatarColor={avatarColor}/>
+    <div style={{ position:"relative", zIndex:1 }}>
+      <div style={W}>
+        <LearnItHub setScreen={setScreen} setLearnModule={setLearnModule} avatarColor={avatarColor} C={C} />
+      </div>
+    </div>
+    <Dock screen={screen} setScreen={setScreen} onMissions={onMissions} avatarColor={avatarColor}/>
+  </div>
+)}
+
+
+{screen === "learnmodule" && (
+  <div style={{ position:"relative", zIndex:1, minHeight:"100vh", background:C.cream }}>
+    <LearnItModule setScreen={setScreen} moduleId={learnModule} avatarColor={avatarColor} C={C} />
   </div>
 )}
 

@@ -17,11 +17,29 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'POST') {
-    const { comparison_id, category, option_a, option_b, chosen, intensity, scale_max, insight, response_time_ms } = req.body
-    const { error: insertError } = await supabase.from('comparison_responses').insert({
+    const {
+      comparison_id, category, option_a, option_b, chosen,
+      intensity, scale_max, insight, response_time_ms, input_method
+    } = req.body
+
+    const row = {
       user_id: user.id, comparison_id, category, option_a, option_b,
-      chosen, intensity, scale_max, insight, response_time_ms
-    })
+      chosen, intensity, scale_max, insight, response_time_ms,
+      // Answers collected before the continuous slider shipped came from a
+      // six-button grid and are far coarser. Tagging them keeps the two
+      // generations of data from being treated as equally precise.
+      input_method: input_method || 'buttons',
+    }
+
+    let { error: insertError } = await supabase.from('comparison_responses').insert(row)
+
+    // input_method is added by supabase-schema-v2.sql. If that hasn't been run
+    // yet the column is missing — retry without it so the answer still saves.
+    if (insertError && /input_method/.test(insertError.message || '')) {
+      const { input_method: _drop, ...rest } = row
+      ;({ error: insertError } = await supabase.from('comparison_responses').insert(rest))
+    }
+
     if (insertError) {
       console.error('Insert error:', insertError)
       return res.status(500).json({ error: insertError.message })

@@ -55,7 +55,10 @@ function Root() {
     </div>
   )
   if (!session) return <Landing />
-  return <App session={session} supabase={supabase} />
+  // App() takes no props and imports supabase directly, like every other screen
+  // in the app (the screen-component contract). These two props were being
+  // passed and silently ignored — spec 2.2 flagged it; this is the cleanup.
+  return <App />
 }
 
 createRoot(document.getElementById('root')).render(

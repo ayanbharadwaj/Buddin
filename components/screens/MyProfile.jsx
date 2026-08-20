@@ -2,6 +2,20 @@ import { useState, useEffect } from "react";
 import { ChevronLeft, RefreshCw } from "lucide-react";
 import { supabase } from '../../lib/supabase.js';
 
+// Maps the data_sources keys the inference engine reports back into language a
+// user would actually recognise from the Know Me hub.
+const SOURCE_LABELS = {
+  comparisons: "This or That",
+  words: "Word Association",
+  writings: "Writing Prompts",
+  popCulture: "Names",
+  numbers: "Numbers",
+  preferences: "Preferences",
+  training: "Learn It",
+};
+
+const MODULE_ORDER = ["comparisons", "words", "writings", "preferences", "popCulture", "numbers", "training"];
+
 export default function MyProfile({ setScreen, avatarColor, C }) {
   const [traits, setTraits] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -47,7 +61,27 @@ export default function MyProfile({ setScreen, avatarColor, C }) {
         .select('*', { count: 'exact', head: true })
         .eq('user_id', session.user.id);
 
-      setTotalResponses((compCount || 0) + (wordCount || 0) + (writingCount || 0));
+      // Newer tables. A count query against a table whose migration hasn't run
+      // yet returns null rather than throwing, so these just contribute zero.
+      const { count: popCount } = await supabase
+        .from('pop_culture_responses')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', session.user.id);
+
+      const { count: numberCount } = await supabase
+        .from('number_responses')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', session.user.id);
+
+      const { count: trainingCount } = await supabase
+        .from('training_progress')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', session.user.id);
+
+      setTotalResponses(
+        (compCount || 0) + (wordCount || 0) + (writingCount || 0) +
+        (popCount || 0) + (numberCount || 0) + (trainingCount || 0)
+      );
     } catch (e) {
       console.error(e);
     }
@@ -143,7 +177,11 @@ export default function MyProfile({ setScreen, avatarColor, C }) {
               { label: "VOCABULARY PROFILE", value: traits.vocabulary_profile },
               { label: "WRITING VOICE", value: traits.writing_voice },
               { label: "EMOTIONAL VOCABULARY", value: traits.emotional_vocabulary },
-            ].filter(t => t.value && t.value !== "null").map(trait => (
+              { label: "WHERE YOUR ATTENTION GOES", value: traits.cultural_orientation },
+              { label: "DAILY RHYTHM", value: traits.daily_rhythm },
+              { label: "PATTERN INSTINCT", value: traits.pattern_instinct },
+              { label: "PRACTICAL INSTINCTS", value: traits.practical_instincts },
+            ].filter(t => t.value && t.value !== "null" && typeof t.value === "string" && t.value.trim()).map(trait => (
               <div key={trait.label} style={{ background: "rgba(255,248,235,0.7)", border: "1px solid rgba(255,235,200,0.5)", borderRadius: 16, padding: "16px 20px", marginBottom: 12, backdropFilter: "blur(12px)" }}>
                 <p style={{ color: avatarColor, fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", marginBottom: 6 }}>{trait.label}</p>
                 <p style={{ color: C.ink, fontSize: 14, lineHeight: 1.7, margin: 0 }}>{trait.value}</p>
@@ -189,6 +227,23 @@ export default function MyProfile({ setScreen, avatarColor, C }) {
                     <p style={{ color: C.ink, fontSize: 13, lineHeight: 1.6, margin: 0 }}>{signal}</p>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* What actually fed this, and what hasn't yet. A profile that names
+                its own gaps is more trustworthy than one that quietly omits them. */}
+            {traits.data_sources?.length > 0 && (
+              <div style={{ background: "rgba(255,248,235,0.5)", border: `1px dashed ${C.stoneLight}`, borderRadius: 16, padding: "14px 18px", marginTop: 16 }}>
+                <p style={{ color: C.stoneMid, fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", marginBottom: 8 }}>BUILT FROM</p>
+                <p style={{ color: C.stone, fontSize: 12, lineHeight: 1.7, margin: 0 }}>
+                  {traits.data_sources.map(s => SOURCE_LABELS[s] || s).join(" · ")}
+                </p>
+                {MODULE_ORDER.filter(m => !traits.data_sources.includes(m)).length > 0 && (
+                  <p style={{ color: C.stoneMid, fontSize: 12, lineHeight: 1.7, margin: "8px 0 0" }}>
+                    Still untouched: {MODULE_ORDER.filter(m => !traits.data_sources.includes(m)).map(m => SOURCE_LABELS[m]).join(" · ")}.
+                    Each one you do makes this sharper.
+                  </p>
+                )}
               </div>
             )}
 
