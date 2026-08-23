@@ -25,7 +25,7 @@ export default function LearnItModule({ setScreen, moduleId, avatarColor, C }) {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-          const res = await fetch('/api/training', {
+          const res = await fetch('/api/knowme?route=training', {
             headers: { 'Authorization': `Bearer ${session.access_token}` },
           });
           if (res.ok) {
@@ -79,7 +79,7 @@ export default function LearnItModule({ setScreen, moduleId, avatarColor, C }) {
         setSaving(false);
         return;
       }
-      const res = await fetch('/api/training', {
+      const res = await fetch('/api/knowme?route=training', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

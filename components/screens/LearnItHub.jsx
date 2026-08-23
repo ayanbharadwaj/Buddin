@@ -16,7 +16,7 @@ export default function LearnItHub({ setScreen, setLearnModule, avatarColor, C }
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-          const res = await fetch('/api/training', {
+          const res = await fetch('/api/knowme?route=training', {
             headers: { 'Authorization': `Bearer ${session.access_token}` },
           });
           if (res.ok) {

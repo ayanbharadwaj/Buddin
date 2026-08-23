@@ -63,7 +63,7 @@ export default function NumberSense({ setScreen, avatarColor, C }) {
         setSaving(false);
         return;
       }
-      const res = await fetch('/api/number-responses', {
+      const res = await fetch('/api/knowme?route=numbers', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

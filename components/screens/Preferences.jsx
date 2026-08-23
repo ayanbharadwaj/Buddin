@@ -54,7 +54,7 @@ export default function Preferences({ setScreen, avatarColor, C }) {
         setSaving(false);
         return;
       }
-      const res = await fetch('/api/preferences', {
+      const res = await fetch('/api/knowme?route=preferences', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

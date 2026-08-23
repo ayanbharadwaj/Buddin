@@ -71,7 +71,7 @@ export default function PopCulture({ setScreen, avatarColor, C }) {
         setSaving(false);
         return false;
       }
-      const res = await fetch('/api/pop-culture', {
+      const res = await fetch('/api/knowme?route=pop-culture', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

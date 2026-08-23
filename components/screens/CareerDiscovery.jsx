@@ -19,7 +19,7 @@ export default function CareerDiscovery({ setScreen, avatarColor, C }) {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-          const res = await fetch('/api/career', {
+          const res = await fetch('/api/knowme?route=career', {
             headers: { 'Authorization': `Bearer ${session.access_token}` },
           });
           if (res.ok) {
@@ -64,7 +64,7 @@ export default function CareerDiscovery({ setScreen, avatarColor, C }) {
         setPhase("questions");
         return;
       }
-      const res = await fetch('/api/career', {
+      const res = await fetch('/api/knowme?route=career', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
