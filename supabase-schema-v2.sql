@@ -141,3 +141,20 @@ UNION ALL SELECT 'number_responses', EXISTS (
   SELECT 1 FROM information_schema.tables WHERE table_name = 'number_responses')
 UNION ALL SELECT 'training_progress', EXISTS (
   SELECT 1 FROM information_schema.tables WHERE table_name = 'training_progress');
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- v2.1 — Learn It coaching chat
+-- ════════════════════════════════════════════════════════════════════════════
+
+-- Coaching questions get their own daily allowance rather than sharing the
+-- companion chat's. Spending your ten conversation messages to finish a lesson
+-- would make Learn It unusable on the free tier.
+ALTER TABLE usage ADD COLUMN IF NOT EXISTS coach_count INTEGER DEFAULT 0;
+
+-- The coach route upserts on (user_id, date); chat.js already assumes one row
+-- per user per day, so this just makes that assumption enforceable.
+CREATE UNIQUE INDEX IF NOT EXISTS usage_user_date_key ON usage (user_id, date);
+
+SELECT 'usage.coach_count' AS check, EXISTS (
+  SELECT 1 FROM information_schema.columns
+  WHERE table_name = 'usage' AND column_name = 'coach_count') AS ok;

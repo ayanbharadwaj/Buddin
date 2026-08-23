@@ -30,8 +30,131 @@ export default async function handler(req, res) {
     case 'numbers':      return numbers(req, res, user)
     case 'training':     return training(req, res, user)
     case 'career':       return career(req, res, user)
+    case 'coach':        return coach(req, res, user)
     default:
       return res.status(400).json({ error: `Unknown route: ${route || '(none)'}` })
+  }
+}
+
+// ── Learn It coach ──────────────────────────────────────────────────────────
+// Deliberately kept in the same voice the user already picked in the main chat.
+// These strings mirror the AVATARS table in src/App.jsx; they're duplicated here
+// rather than imported so this serverless function has no dependency on the
+// frontend bundle.
+const COACH_VOICES = {
+  mochi: "Warm and gentle. Say 'we' more than 'you'. Take the pressure out of it before explaining anything. Never make them feel behind.",
+  sage:  "Philosophical and Socratic. Where a question would teach more than an answer, ask it — but never leave them with nothing.",
+  zap:   "Direct and clear. Short sentences. Give the answer first, then the reason. Cut every hedge and every bit of filler.",
+  nova:  "Curious and imaginative. Reframe it — a comparison, a pattern, an angle they hadn't considered. Find the interesting part.",
+}
+
+// Its own allowance, separate from the companion chat's daily limit. Making
+// someone spend their ten conversation messages to finish a lesson would make
+// the whole feature unusable on the free tier.
+const COACH_LIMITS = { free: 25, supporter: 80, max: 200 }
+
+async function coach(req, res, user) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' })
+
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) return res.status(500).json({ error: 'Missing API key' })
+
+  const { avatar_id, module_title, situation, options, chose, messages } = req.body
+  if (!situation || !Array.isArray(messages) || messages.length === 0) {
+    return res.status(400).json({ error: 'Missing required fields' })
+  }
+
+  // Tier + daily coaching count. If the coach_count column hasn't been migrated
+  // yet, fail open — a missing column should never lock someone out of learning.
+  const today = new Date().toISOString().slice(0, 10)
+  let tier = 'free'
+  try {
+    const { data: p } = await supabase.from('profiles').select('tier').eq('id', user.id).limit(1)
+    tier = p?.[0]?.tier || 'free'
+  } catch { /* default free */ }
+
+  const limit = COACH_LIMITS[tier] ?? COACH_LIMITS.free
+  let used = 0
+  let countable = true
+  try {
+    const { data: u, error: uErr } = await supabase
+      .from('usage').select('coach_count').eq('user_id', user.id).eq('date', today).limit(1)
+    if (uErr) countable = false
+    else used = u?.[0]?.coach_count || 0
+  } catch { countable = false }
+
+  if (countable && used >= limit) {
+    return res.status(429).json({ error: 'COACH_LIMIT_REACHED', remaining: 0 })
+  }
+
+  const voice = COACH_VOICES[avatar_id] || COACH_VOICES.zap
+
+  const system = `You are the user's companion inside Buddin's "Learn It" section, helping a teenager actually understand a real-world situation rather than memorise an answer.
+
+YOUR VOICE: ${voice}
+
+THE SITUATION THEY'RE WORKING THROUGH${module_title ? ` (module: ${module_title})` : ''}:
+"${situation}"
+
+THE OPTIONS THEY WERE SHOWN:
+${(options || []).map((o, i) => `${i + 1}. ${o}`).join('\n')}
+${chose
+  ? `\nWHAT THEY PICKED: "${chose}" — they have already committed, so you can be fully open about what each option costs.`
+  : `\nTHEY HAVE NOT PICKED YET. Help them think it through — what to weigh, what the situation is really about, what they'd want afterwards. Do NOT tell them which option is best or hint at it. If they push for the answer, say plainly that picking it themselves first is the part that makes it stick, and that everything opens up right after.`}
+
+HOW TO ANSWER:
+- Two to four sentences. This is a conversation, not an article.
+- Ask at most ONE question per reply, and only when it genuinely moves them forward.
+- Be concrete. Name what actually happens in the room, not abstract principles.
+- If they describe a variation the options didn't cover, engage with THEIR version — that curiosity is the whole point of this feature.
+- Never tell them they got it wrong. Explain what each choice costs and let them draw the line.
+- No lists, no headers, no bold. Plain conversational text.
+- You are a peer who has thought about this, not a teacher, therapist, or life coach. Never clinical.
+- Stay on this situation and the skill behind it. If they steer somewhere unrelated, say so warmly in one line and point them back to the main chat.
+
+CRISIS: if there are genuine signs of self-harm or crisis, drop everything else, lead with warmth, and give the 988 Lifeline and Crisis Text Line (text HOME to 741741).`
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 400,
+        system,
+        messages: messages
+          .filter(m => m && (m.role === 'user' || m.role === 'assistant') && m.content)
+          .map(m => ({ role: m.role, content: String(m.content).slice(0, 1500) })),
+      }),
+    })
+
+    const data = await response.json()
+    if (!response.ok) {
+      console.error('Coach upstream error:', data)
+      return res.status(502).json({ error: 'Coach unavailable' })
+    }
+
+    const reply = data.content?.[0]?.text?.trim()
+    if (!reply) return res.status(502).json({ error: 'Empty reply' })
+
+    if (countable) {
+      await supabase.from('usage').upsert(
+        { user_id: user.id, date: today, coach_count: used + 1 },
+        { onConflict: 'user_id,date' }
+      )
+    }
+
+    return res.status(200).json({
+      reply,
+      remaining: countable ? Math.max(0, limit - (used + 1)) : null,
+    })
+  } catch (e) {
+    console.error('Coach error:', e)
+    return res.status(500).json({ error: 'Failed to reach coach' })
   }
 }
 

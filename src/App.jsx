@@ -2472,7 +2472,7 @@ const res = await fetch("/api/chat", {
 
 {screen === "learnmodule" && (
   <div style={{ position:"relative", zIndex:1, minHeight:"100vh", background:C.cream }}>
-    <LearnItModule setScreen={setScreen} moduleId={learnModule} avatarColor={avatarColor} C={C} />
+    <LearnItModule setScreen={setScreen} moduleId={learnModule} avatar={av} avatarColor={avatarColor} C={C} />
   </div>
 )}
 

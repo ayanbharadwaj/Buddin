@@ -198,8 +198,20 @@ export default function MyProfile({ setScreen, avatarColor, C }) {
                   </div>
                   <p style={{ color: C.ink, fontSize: 14, fontWeight: 700, margin: 0 }}>{traits.contrarian_score}/100</p>
                 </div>
-                <p style={{ color: C.stoneMid, fontSize: 12, marginTop: 6, margin: "6px 0 0" }}>
-                  {traits.contrarian_score > 70 ? "You consistently pick the unexpected choice." : traits.contrarian_score > 40 ? "You mix conventional and unconventional picks." : "You tend toward popular, proven choices."}
+                {/* Three coarse buckets meant a 28 and a 38 read back identically,
+                    which made the number look broken even though it wasn't.
+                    Narrower bands, and the score is named in the sentence. */}
+                <p style={{ color: C.stoneMid, fontSize: 12, lineHeight: 1.65, margin: "6px 0 0" }}>
+                  {(() => {
+                    const n = traits.contrarian_score;
+                    if (n >= 85) return `At ${n}, you almost never take the expected option — even when it's the reasonable one.`;
+                    if (n >= 70) return `At ${n}, you reach for the unexpected choice far more often than most people do.`;
+                    if (n >= 55) return `At ${n}, you lean unconventional, but you'll take the obvious answer when it's genuinely better.`;
+                    if (n >= 45) return `At ${n}, you're near the middle — conventional and unconventional picks in roughly equal measure.`;
+                    if (n >= 30) return `At ${n}, you lean toward proven choices, with a clear streak of picking against the grain.`;
+                    if (n >= 15) return `At ${n}, you mostly take the well-worn option, and you're not conflicted about it.`;
+                    return `At ${n}, you consistently pick what's popular and proven. That's a real preference, not a lack of one.`;
+                  })()}
                 </p>
               </div>
             )}

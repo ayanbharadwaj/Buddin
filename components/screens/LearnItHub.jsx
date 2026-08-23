@@ -63,8 +63,11 @@ export default function LearnItHub({ setScreen, setLearnModule, avatarColor, C }
         {LEARN_MODULES.map(m => {
           const p = progress[m.id] || { done: 0, score: 0 };
           const level = Math.floor(p.done / SCENARIOS_PER_LEVEL) + 1;
-          const intoLevel = p.done % SCENARIOS_PER_LEVEL;
           const complete = p.done >= m.scenarios.length;
+          // Progress across the whole module, not position within a level. The
+          // modulo version reset to empty on every sixth scenario, which reads
+          // as having lost your progress rather than having gained a level.
+          const pct = Math.round((p.done / m.scenarios.length) * 100);
           return (
             <button
               key={m.id}
@@ -86,12 +89,12 @@ export default function LearnItHub({ setScreen, setLearnModule, avatarColor, C }
                   <p style={{ color: C.stone, fontSize: 13, margin: "3px 0 0" }}>{m.blurb}</p>
                   {p.done > 0 && !complete && (
                     <div style={{ marginTop: 9, background: C.stoneLight, borderRadius: 4, height: 3 }}>
-                      <div style={{ height: "100%", width: `${(intoLevel / SCENARIOS_PER_LEVEL) * 100}%`, background: avatarColor, borderRadius: 4, transition: "width 0.4s ease" }} />
+                      <div style={{ height: "100%", width: `${pct}%`, background: avatarColor, borderRadius: 4, transition: "width 0.4s ease" }} />
                     </div>
                   )}
                   {p.done > 0 && (
                     <p style={{ color: C.stoneMid, fontSize: 11, margin: "7px 0 0" }}>
-                      {p.done} of {m.scenarios.length} scenarios
+                      {p.done} of {m.scenarios.length} scenarios · {pct}%
                     </p>
                   )}
                 </div>
