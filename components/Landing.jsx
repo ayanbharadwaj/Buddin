@@ -39,7 +39,7 @@ export default function Landing() {
               padding: '6px 14px', borderRadius: 999, fontSize: 13, fontWeight: 600,
               border: '1px solid #ead8bb', marginBottom: 20
             }}>
-              For teens · Free · Built by a student
+              Built by a student
             </div>
             <h1 style={{
               fontSize: 'clamp(34px, 5vw, 56px)', lineHeight: 1.08, margin: '0 0 20px',

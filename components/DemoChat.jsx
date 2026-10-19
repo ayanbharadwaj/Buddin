@@ -15,7 +15,7 @@ const saved = loadGuest('demo')
 
 export default function DemoChat() {
   const [messages, setMessages] = useState(
-    saved?.messages?.length ? saved.messages : [{ role: 'assistant', content: "hey, i'm buddin. what's on your mind? pick something below or just type." }]
+    saved?.messages?.length ? saved.messages : [{ role: 'assistant', content: "Hey, I'm Buddin. What's on your mind? Pick something below, or just type." }]
   )
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)

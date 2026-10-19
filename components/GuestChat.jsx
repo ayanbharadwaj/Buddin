@@ -9,7 +9,7 @@ const saved = loadGuest('try')
 
 export default function GuestChat() {
   const [messages, setMessages] = useState(
-    saved?.messages?.length ? saved.messages : [{ role: 'assistant', content: "hey, i'm buddin. what's going on?" }]
+    saved?.messages?.length ? saved.messages : [{ role: 'assistant', content: "Hey, I'm Buddin. What's going on?" }]
   )
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
