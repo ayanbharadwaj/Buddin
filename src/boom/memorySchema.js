@@ -35,7 +35,7 @@ export function addSnapshot(memoryStore, inference) {
  * Detects multi-session emotional decline.
  * @param {Object} memoryStore
  */
-export function detectDrift(memoryStore) {
+function detectDrift(memoryStore) {
   const snapshots = memoryStore.snapshots;
   if (snapshots.length < 3) return;
 

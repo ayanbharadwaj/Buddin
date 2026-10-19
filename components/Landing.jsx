@@ -190,14 +190,14 @@ export default function Landing() {
 
 const FEATURES = [
   { icon: 'chat', title: 'A companion, not a therapist', body: "Buddin listens and asks real questions. It's not a counselor or a crisis line — it's the friend you wish you could text at 1 AM." },
-  { icon: 'brain', title: 'It remembers you', body: 'Buddin builds a quiet picture of who you are over time, so conversations get more personal the longer you talk — not more generic.' },
+  { icon: 'brain', title: 'It gets to know you', body: 'Answer a few quick things in Know Me — this or that, a word, a short piece of writing — and Buddin builds a lasting picture of how you think, saved to your account rather than a browser.' },
   { icon: 'lock', title: 'Private by design', body: 'No social feed. No likes. No followers. Nothing you say gets posted, ranked, or shown to anyone else.' },
 ]
 
 const FAQS = [
   { q: 'Is Buddin a replacement for therapy?', a: "No. Buddin is a conversational companion — somewhere between a journal and a friend. If you're in crisis or working through something serious, please reach out to a counselor or a trusted adult." },
-  { q: 'What does Buddin do with what I say?', a: 'Your conversations help Buddin remember you better over time. They aren’t shared, posted, or sold. There’s no social feed.' },
-  { q: 'Who built this?', a: 'I did — Ayan Bharadwaj, a high school student in Georgia. I found myself doom-scrolling into a worse mood every night and wanted to build the opposite of that.' },
+  { q: 'What does Buddin do with what I say?', a: 'Your conversations stay between you and Buddin — never shared, posted, or sold, and there’s no social feed. The profile Buddin builds comes from what you choose to answer in Know Me, not from reading your chats back later.' },
+  { q: 'Who built this?', a: 'I did — Ayan Bharadwaj, a sophomore at South Forsyth High School in Cumming, Georgia. I found myself doom-scrolling into a worse mood every night and wanted to build the opposite of that.' },
   { q: 'Is it free?', a: 'Yes — the core experience is free, and you can start without even making an account.' },
   { q: "I'm a school counselor — can I share this?", a: <>Please do. Buddin is meant to <em>support</em> the work counselors already do, not replace it. Reach out at {EMAIL} for a counselor-friendly overview.</> },
 ]

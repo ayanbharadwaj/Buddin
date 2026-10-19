@@ -921,6 +921,9 @@ export default function App() {
   const [activeQuestion, setActiveQuestion] = useState(null);
   const [comparisonCount, setComparisonCount] = useState(0);
   const [learnModule, setLearnModule] = useState(null);
+  // True until we've checked whether this user already picked a companion.
+  // Without it the app flashes onboarding before the restore lands.
+  const [restoring, setRestoring] = useState(true);
   const questionAskedRef = useRef(false);
   const [usageMeta, setUsageMeta]         = useState(null);
   const [limitReached, setLimitReached]   = useState(false);
@@ -933,6 +936,9 @@ export default function App() {
   const endRef        = useRef(null);
   const inputRef      = useRef(null);
   const chatScrollRef = useRef(null);
+  // The screen the URL asked for on this load, held across onboarding so a
+  // deep link to /chat lands on chat rather than dumping them on home.
+  const intendedScreenRef = useRef(PATH_TO_SCREEN[window.location.pathname] || null);
 
 
 
@@ -1013,6 +1019,40 @@ export default function App() {
     setMusicEnabled(false);
     if (bgRef.current) { bgRef.current.pause(); bgRef.current.currentTime = 0; }
     if (brRef.current) { brRef.current.pause(); brRef.current.currentTime = 0; }
+  }, []);
+
+  // ── Restore the chosen companion ──────────────────────────────
+  // The choice used to live only in component state, so every reload — and
+  // every bookmarked app URL — dropped the user back into onboarding, even
+  // signed in. It now persists in user_profile.preferences alongside the other
+  // settings, which is what makes "pick up where you left off" actually work.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data: { session: s } } = await supabase.auth.getSession();
+        if (s?.user?.id) {
+          const { data } = await supabase
+            .from('user_profile')
+            .select('preferences')
+            .eq('user_id', s.user.id)
+            .limit(1);
+          const savedId = data?.[0]?.preferences?.companion;
+          const found = savedId ? AVATARS.find(a => a.id === savedId) : null;
+          if (found && !cancelled) {
+            setAvatar(found);
+            setColorWash({ color1: found.glow, color2: found.glowDark });
+            setScreen(intendedScreenRef.current || "home");
+            intendedScreenRef.current = null;
+          }
+        }
+      } catch (e) {
+        // A failed restore just means onboarding — never a blocked app.
+        console.error('Companion restore failed:', e);
+      }
+      if (!cancelled) setRestoring(false);
+    })();
+    return () => { cancelled = true; };
   }, []);
 
   // ── Pretty URLs ───────────────────────────────────────────────
@@ -1357,6 +1397,25 @@ const res = await fetch("/api/chat", {
   const selectAvatar = (chosen) => {
     setAvatar(chosen);
     setColorWash({ color1: chosen.glow, color2: chosen.glowDark });
+
+    // Fire-and-forget: a failed save costs them a re-pick next visit, which is
+    // exactly today's behaviour, so it must never block choosing a companion.
+    (async () => {
+      try {
+        const { data: { session: s } } = await supabase.auth.getSession();
+        if (!s) return;
+        await fetch('/api/knowme?route=preferences', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${s.access_token}`,
+          },
+          body: JSON.stringify({ preferences: { companion: chosen.id } }),
+        });
+      } catch (e) {
+        console.error('Could not save companion choice:', e);
+      }
+    })();
     // Welcome chord — pure local sine waves, no external fetch, no CORS
 
     try {
@@ -1429,6 +1488,14 @@ const res = await fetch("/api/chat", {
 
 
   {/* ── Single persistent return — audio tags never unmount ────── */}
+  if (restoring) return (
+    <div style={{ minHeight:"100dvh", background:C.cream, display:"flex", alignItems:"center", justifyContent:"center" }}>
+      <img src="/imagebuddin.png" alt="" width={44} height={44}
+        style={{ borderRadius:11, animation:"buddinPulse 1.4s ease-in-out infinite" }}/>
+      <style>{`@keyframes buddinPulse { 0%,100% { opacity:0.5; transform:scale(0.96); } 50% { opacity:1; transform:scale(1); } }`}</style>
+    </div>
+  );
+
   return (
     <div style={{position:"relative", background:"#F5ECDC", minHeight:"100dvh"}}>
       <style>{CSS}</style>
@@ -1657,7 +1724,8 @@ const res = await fetch("/api/chat", {
           <button
             onClick={() => {
               setMessages([{ role:"assistant", content:`Good — you're here.\n\nI'm ${av?.name}. ${av?.intro}\n\nBefore we dive in — quick, honest question: if you had an unexpected free hour right now, what's the first thing that comes to mind?` }]);
-              setScreen("home");
+              setScreen(intendedScreenRef.current || "home");
+              intendedScreenRef.current = null;
             }}
             className="btn"
             style={{ width:"100%", padding:"19px 24px", marginTop:10, background:`linear-gradient(135deg, ${avatarColor}, ${avatarColor}cc)`, color:"#fff", border:"none", borderRadius:20, fontSize:16, fontWeight:700, cursor:"pointer", boxShadow:`0 10px 32px ${avatarColor}48` }}>
@@ -1921,7 +1989,7 @@ const res = await fetch("/api/chat", {
       {usageMeta && !limitReached && usageMeta.remaining <= 3 && (
         <div style={{ padding:"6px 20px", background:`${avatarColor}14`, borderTop:`1px solid ${avatarColor}22`, textAlign:"center", zIndex:10, position:"relative", flexShrink:0 }}>
           <p style={{ color:avatarColor, fontSize:11, fontWeight:600 }}>
-            {usageMeta.remaining} message{usageMeta.remaining===1?"":"s"} left today · <span style={{ textDecoration:"underline", cursor:"pointer" }} onClick={() => setScreen("upgrade")}>Upgrade for more</span>
+            {usageMeta.remaining} message{usageMeta.remaining===1?"":"s"} left today · <span style={{ textDecoration:"underline", cursor:"pointer" }} onClick={() => setScreen("upgrade")}>See your limits</span>
           </p>
         </div>
       )}
@@ -1931,7 +1999,7 @@ const res = await fetch("/api/chat", {
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:12 }}>
             <div style={{ flex:1 }}>
               <p style={{ color:C.ink, fontWeight:600, fontSize:14, marginBottom:6, fontFamily:"'Fraunces', Georgia, serif" }}>You've reached today's limit.</p>
-              <p style={{ color:C.stone, fontSize:12, lineHeight:1.6, marginBottom:14 }}>Free conversations reset at midnight. If Buddin has been helpful, consider upgrading — it keeps this running for everyone.</p>
+              <p style={{ color:C.stone, fontSize:12, lineHeight:1.6, marginBottom:14 }}>Free conversations reset at midnight. If you've genuinely run out and need more, email getbuddin@gmail.com and I'll raise your limit by hand — no charge.</p>
               <div style={{ display:"flex", gap:9, justifyContent:"center", flexWrap:"wrap" }}>
                 <button onClick={() => setScreen("upgrade")} className="btn"
                   style={{ padding:"10px 20px", background:`linear-gradient(135deg, ${avatarColor}, ${avatarColor}cc)`, color:"#fff", border:"none", borderRadius:14, fontSize:13, fontWeight:700, cursor:"pointer" }}>
@@ -2160,13 +2228,13 @@ const res = await fetch("/api/chat", {
       <Dock screen={screen} setScreen={setScreen} onMissions={onMissions} avatarColor={avatarColor}/>
     </div>
   )}
-    {/* ── UPGRADE─────────────────────────────────────── */}
+    {/* ── UPGRADE ─────────────────────────────────────── */}
 {screen === "upgrade" && (
   <div style={{ ...BG, paddingBottom:100, overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
     <LivingBg intensity={3} avatarColor={avatarColor}/>
     <div style={W}>
       <SectionHeader onBack={() => setScreen("home")} title="Plans"/>
-      <p style={{ color:C.stone, fontSize:13, lineHeight:1.76, marginBottom:16 }}>Buddin is a non-profit passion project. Every conversation costs real money — your support keeps it free for everyone who needs it.</p>
+      <p style={{ color:C.stone, fontSize:13, lineHeight:1.76, marginBottom:16 }}>Buddin is a personal project, not a business. Every conversation costs real money to run, and right now I pay for it myself — so the limits below are about what I can afford, not about selling you anything.</p>
 
       <div className="glass card" style={{ borderRadius:22, padding:22, marginBottom:14, border:`1px solid ${C.stoneLight}` }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
@@ -2235,13 +2303,11 @@ const res = await fetch("/api/chat", {
         </p>
       </div>
 
-      <p style={{ color:C.stoneMid, fontSize:11, textAlign:"center", lineHeight:1.65 }}>Built by a high school student. Every dollar I spend goes to API costs.</p>
+      <p style={{ color:C.stoneMid, fontSize:11, textAlign:"center", lineHeight:1.65 }}>Built by a high-school student. Every dollar I spend goes to API costs.</p>
     </div>
     <Dock screen={screen} setScreen={setScreen} onMissions={onMissions} avatarColor={avatarColor}/>
   </div>
 )}
-
-  {/* ── DONATE ──────────────────────────────────────────── */}
 
   {screen === "knowme" && (
   <div style={{ ...BG, overflowY:"auto", WebkitOverflowScrolling:"touch", paddingBottom:100 }}>
@@ -2465,6 +2531,7 @@ const res = await fetch("/api/chat", {
 
 
 
+  {/* ── DONATE ──────────────────────────────────────────── */}
   {screen === "donate" && (
     <div style={{ ...BG, paddingBottom:100, overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
       <LivingBg intensity={3} avatarColor={avatarColor}/>
@@ -2480,7 +2547,7 @@ const res = await fetch("/api/chat", {
   There were nights I wished an app like this existed for me. So I built it."
           </p>
           <p style={{ color:C.stone, fontSize:13, lineHeight:1.75, marginBottom:10 }}>
-            Every conversation on Buddin costs real money — AI inference, servers, bandwidth. Right now I'm funding it myself, on a student's budget. Your support, no matter how small, keeps this running for everyone who needs it.
+            Every conversation on Buddin costs real money — AI inference, servers, bandwidth. Right now I'm funding it myself, on a student's budget, and I've turned off donations until I can process them properly.
           </p>
           <p style={{ color:C.stone, fontSize:13, lineHeight:1.75 }}>
             This is a passion project. There are no investors, no ads, no data selling. Just a teenager who coded this from scratch and wants it to stay free for people who need it.
@@ -2488,7 +2555,7 @@ const res = await fetch("/api/chat", {
         </div>
 
         <div className="glass" style={{ borderRadius:18, padding:20, marginBottom:14, background:`${avatarColor}0a`, border:`1px solid ${avatarColor}22` }}>
-          <p style={{ color:C.forest, fontSize:13, fontWeight:600, marginBottom:6 }}>Your donation helps pay for:</p>
+          <p style={{ color:C.forest, fontSize:13, fontWeight:600, marginBottom:6 }}>What running Buddin actually costs:</p>
           {["API costs for every conversation","Vercel hosting & bandwidth","Future features (voice, mobile app)","Keeping Buddin free for everyone"].map((item, i) => (
             <div key={i} style={{ display:"flex", gap:10, alignItems:"center", marginBottom:7 }}>
               <div style={{ width:6, height:6, borderRadius:"50%", background:avatarColor, flexShrink:0 }}/>

@@ -69,6 +69,12 @@ export function useRouteMeta(path) {
     if (link) {
       const indexable = INDEXABLE.has(path) || path.startsWith('/blog/')
       link.href = SITE + (indexable ? path : '/')
+
+      // The host serves index.html with HTTP 200 for unknown paths, so without
+      // this the 404 page is an indexable soft-404 at unlimited URLs — which
+      // would undo the canonical work above.
+      const robots = document.querySelector('meta[name="robots"]')
+      if (robots) robots.content = indexable ? 'index, follow' : 'noindex, follow'
     }
   }, [path])
 }

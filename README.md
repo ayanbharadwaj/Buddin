@@ -15,7 +15,7 @@ Buddin isn't therapy and isn't a social feed. It's a judgment-free place to thin
 
 ## Stack
 
-- **Frontend** — React 18 + Vite, no React Router (hand-rolled routing via `components/SiteShell.jsx`)
+- **Frontend** — React 18 + Vite, no React Router. `main.jsx` is the top-level router; `components/SiteShell.jsx` holds the history helpers, nav, footer and per-route title/canonical hook.
 - **Auth & DB** — Supabase
 - **Hosting** — Vercel, serverless functions in `/api`
 - **AI** — Anthropic API, called server-side only (the key never reaches the browser). Three routes call it: `api/chat.js` for conversation, `api/infer-profile.js` for the Know Me personality synthesis, and `api/knowme.js` for Career Discovery and the Learn It coach.
@@ -58,8 +58,27 @@ variables and where each one comes from.
 
 ### Database setup
 
-Run these in the Supabase SQL editor, **in this order**, because the second
-depends on the `UNIQUE(user_id)` constraint the first adds:
+> **Heads up — the base schema is not in this repo yet.** The code reads 11
+> tables; only 4 of them (`feedback`, `pop_culture_responses`,
+> `number_responses`, `training_progress`) have a `CREATE TABLE` here. The other
+> seven — `profiles`, `user_profile`, `usage`, `user_memory`,
+> `comparison_responses`, `word_responses`, `writing_samples` — were created by
+> hand in the Supabase dashboard and have no DDL checked in. On a **fresh**
+> Supabase project the scripts below abort on their first statement.
+>
+> To fix this properly, export the live schema and commit it as
+> `supabase-schema-base.sql`, to run before the two below:
+>
+> ```bash
+> supabase db dump --schema public --data-only=false -f supabase-schema-base.sql
+> ```
+>
+> (or Supabase dashboard → Database → Schema Visualizer → export). Until that
+> lands, this repo is not reproducible from a clean checkout.
+
+Against the **existing** project, run these in the Supabase SQL editor, **in
+this order**, because the second depends on the `UNIQUE(user_id)` constraint
+the first adds:
 
 1. `supabase-fixes.sql` — adds the missing `writing_samples` column, de-duplicates
    `user_profile` and adds its unique constraint, creates the `feedback` table.

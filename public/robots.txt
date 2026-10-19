@@ -10,5 +10,7 @@ Disallow: /me
 Disallow: /learn
 Disallow: /breathe
 Disallow: /plans
+Disallow: /login
+Disallow: /signup
 
 Sitemap: https://getbuddin.org/sitemap.xml

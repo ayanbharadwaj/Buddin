@@ -3,14 +3,38 @@
   "outputDirectory": "dist",
   "installCommand": "npm install",
   "framework": "vite",
-  "rewrites": [
-    {
-      "source": "/api/feedback",
-      "destination": "/api/profile?_route=feedback"
-    },
+
+  "redirects": [
     {
       "source": "/(.*)",
-      "destination": "/index.html"
+      "has": [{ "type": "host", "value": "www.getbuddin.org" }],
+      "destination": "https://getbuddin.org/$1",
+      "permanent": true
+    }
+  ],
+
+  "rewrites": [
+    { "source": "/api/feedback", "destination": "/api/profile?_route=feedback" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ],
+
+  "functions": {
+    "api/chat.js": { "maxDuration": 60 },
+    "api/infer-profile.js": { "maxDuration": 60 },
+    "api/knowme.js": { "maxDuration": 60 }
+  },
+
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "Content-Security-Policy", "value": "frame-ancestors 'none'" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=(), interest-cohort=()" },
+        { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains" }
+      ]
     }
   ]
 }
