@@ -67,7 +67,7 @@ function Root() {
   if (session === undefined) return (
     <div style={{ minHeight: '100vh', background: '#F5ECDC',
       display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <img src="/imagebuddin.png" alt="Buddin" width={44} height={44}
+      <img src="/imagebuddin.png" alt="GetBuddin" width={44} height={44}
         style={{ borderRadius: 11, animation: 'buddinPulse 1.4s ease-in-out infinite' }} />
       <style>{`@keyframes buddinPulse { 0%,100% { opacity: 0.5; transform: scale(0.96); } 50% { opacity: 1; transform: scale(1); } }`}</style>
     </div>

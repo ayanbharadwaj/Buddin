@@ -12,11 +12,11 @@ export default function About() {
           fontSize: 'clamp(32px, 4.5vw, 46px)', lineHeight: 1.1, margin: '0 0 20px',
           color: '#2c2018', letterSpacing: -1
         }}>
-          I built Buddin because I needed it first.
+          I built GetBuddin because I needed it first.
         </h1>
         <p style={{ fontSize: 19, color: '#5a4634', marginBottom: 30 }}>
           I'm Ayan Bharadwaj — a sophomore at South Forsyth High School in
-          Cumming, Georgia. This is the story behind Buddin, in my own words.
+          Cumming, Georgia. This is the story behind GetBuddin, in my own words.
         </p>
 
         <h2 style={h2}>How it started</h2>
@@ -40,20 +40,20 @@ export default function About() {
           took a real toll on me.
         </p>
 
-        <h2 style={h2}>Why Buddin exists</h2>
+        <h2 style={h2}>Why GetBuddin exists</h2>
         <p>
-          Buddin is the thing I wish I'd had on those nights: somewhere quiet to think out
+          GetBuddin is the thing I wish I'd had on those nights: somewhere quiet to think out
           loud. Not a feed. Not a place to perform for an audience. Just a single, private
           conversation with something that listens, remembers you, and never screenshots you.
         </p>
         <p>
           I think the next version of "social" technology for teens won't be social at all.
-          It'll be quiet, private, and one-to-one. Less performing, more thinking. Buddin is
+          It'll be quiet, private, and one-to-one. Less performing, more thinking. GetBuddin is
           my bet on that.
         </p>
 
-        <h2 style={h2}>The crisis Buddin sits inside</h2>
-        <p>Buddin is built where three things collide, all of them accelerating:</p>
+        <h2 style={h2}>The crisis GetBuddin sits inside</h2>
+        <p>GetBuddin is built where three things collide, all of them accelerating:</p>
         <ul style={ul}>
           <li><strong>A real teen mental-health crisis</strong> — loneliness and anxiety keep climbing across every major US study.</li>
           <li><strong>The rise of AI companions</strong> — millions of teens already talk to AI daily, often through products never designed with them in mind.</li>
@@ -67,24 +67,24 @@ export default function About() {
           friends, and rewrites.
         </p>
         <p>
-          And Buddin has been anything but a straight line. My very first prototype got wiped
+          And GetBuddin has been anything but a straight line. My very first prototype got wiped
           out by a Google Drive sync error before it really even ran — just gone. The version
           you're using now is the third real rebuild. Every time something broke, it taught me
           what the next version had to do better. I'm fine with that. That's how it's supposed
           to go.
         </p>
 
-        <h2 style={h2}>What I believe Buddin should be</h2>
+        <h2 style={h2}>What I believe GetBuddin should be</h2>
         <ul style={ul}>
           <li><strong>A companion, not a clinician.</strong> It's not trying to diagnose or treat anyone. It's trying to be there.</li>
           <li><strong>Boring on purpose.</strong> No streaks, no comparison, no dopamine slot machine. You should feel better after using it, not addicted during.</li>
-          <li><strong>Honest about limits.</strong> If you need a real human — a counselor, a hotline, a parent — Buddin should say so, clearly.</li>
+          <li><strong>Honest about limits.</strong> If you need a real human — a counselor, a hotline, a parent — GetBuddin should say so, clearly.</li>
           <li><strong>Built with counselors, not around them.</strong> It should make their job easier, never threaten it.</li>
         </ul>
 
         <h2 style={h2}>What's next</h2>
         <p>
-          I'm working on making Buddin's memory more useful so conversations feel personal
+          I'm working on making GetBuddin's memory more useful so conversations feel personal
           over weeks, writing up what I'm learning on the{' '}
           <a href="/blog" onClick={lnk('/blog')} style={inlineLink}>blog</a>, and reaching out
           to digital-wellness researchers who study exactly what I'm trying to build.
@@ -102,7 +102,7 @@ export default function About() {
           <div style={{ fontWeight: 700, color: '#2c2018', marginBottom: 12, fontSize: 18 }}>
             Want to see what I'm building?
           </div>
-          <button onClick={() => navigate('/try')} style={primaryBtn}>Try Buddin — no signup</button>
+          <button onClick={() => navigate('/try')} style={primaryBtn}>Try GetBuddin — no signup</button>
         </div>
 
         <div style={{ height: 48 }} />

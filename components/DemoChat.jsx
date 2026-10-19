@@ -65,7 +65,7 @@ export default function DemoChat() {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#5fbf8f' }} />
-          <span style={{ fontSize: 14, fontWeight: 700, color: '#2c2018' }}>Buddin · live preview</span>
+          <span style={{ fontSize: 14, fontWeight: 700, color: '#2c2018' }}>GetBuddin · live preview</span>
         </div>
         <button onClick={() => navigate('/try')} style={{
           background: 'transparent', border: 'none', color: '#b87840',
@@ -106,7 +106,7 @@ export default function DemoChat() {
             That's the preview.
           </div>
           <div style={{ color: '#5a4634', fontSize: 13.5, marginBottom: 12, lineHeight: 1.5 }}>
-            Keep this conversation going — and have Buddin actually remember you — by starting
+            Keep this conversation going — and have GetBuddin actually remember you — by starting
             for real. It's free.
           </div>
           <button onClick={() => navigate('/try')} style={ctaBtn}>

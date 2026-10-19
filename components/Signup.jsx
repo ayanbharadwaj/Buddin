@@ -57,7 +57,7 @@ export default function Signup({ onSwitch }) {
       justifyContent: 'center', background: '#F5ECDC', fontFamily: 'Georgia, serif' }}>
       <div style={{ background: 'white', borderRadius: 20, padding: 40,
         width: 360, boxShadow: '0 8px 32px rgba(40,28,16,0.13)' }}>
-        <h1 style={{ textAlign: 'center', color: '#2c2018', marginBottom: 8 }}>Join Buddin</h1>
+        <h1 style={{ textAlign: 'center', color: '#2c2018', marginBottom: 8 }}>Join GetBuddin</h1>
         <p style={{ textAlign: 'center', color: '#786858', marginBottom: 28, fontSize: 14 }}>
           Your companion is waiting
         </p>

@@ -49,7 +49,7 @@ export default function Landing() {
               <span style={{ color: '#b87840' }}> and lonelier than ever.</span>
             </h1>
             <p style={{ fontSize: 19, lineHeight: 1.55, color: '#46382c', maxWidth: 520, margin: '0 0 30px' }}>
-              Buddin is a quiet, private place to think out loud — a friend that's
+              GetBuddin is a quiet, private place to think out loud — a friend that's
               there when school, family, or your own head feel like too much.
             </p>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 18 }}>
@@ -82,16 +82,16 @@ export default function Landing() {
             <span style={{ fontSize: 15, color: '#46382c', lineHeight: 1.5 }}>
               In 2025, nearly half of US teens said social media is making people their
               age worse off
-              <span style={{ color: '#a89888' }}> (Pew Research)</span>. Buddin is one
+              <span style={{ color: '#a89888' }}> (Pew Research)</span>. GetBuddin is one
               teenager's attempt at something better.
             </span>
           </div>
         </Reveal>
       </section>
 
-      {/* What Buddin is — 3 cards, line icons */}
+      {/* What GetBuddin is — 3 cards, line icons */}
       <section style={{ maxWidth: 1160, margin: '0 auto', padding: '64px 36px 0' }}>
-        <Reveal><h2 style={sectionH2}>What Buddin is</h2></Reveal>
+        <Reveal><h2 style={sectionH2}>What GetBuddin is</h2></Reveal>
         <div style={{
           display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 18
         }}>
@@ -129,7 +129,7 @@ export default function Landing() {
             </div>
             <p style={{ fontSize: 17.5, lineHeight: 1.62, color: '#3a2d22', margin: 0 }}>
               "I found myself going down a rabbit hole of doom-scrolling every night and
-              feeling lonelier for it. Buddin is what I wish I'd had back then — somewhere
+              feeling lonelier for it. GetBuddin is what I wish I'd had back then — somewhere
               quiet to think out loud, that actually listens and doesn't perform for an
               audience."
             </p>
@@ -162,7 +162,7 @@ export default function Landing() {
             borderRadius: 24, padding: '48px 32px', textAlign: 'center', color: 'white'
           }}>
             <h2 style={{ fontSize: 32, margin: '0 0 10px', letterSpacing: -0.6 }}>
-              Try Buddin tonight.
+              Try GetBuddin tonight.
             </h2>
             <p style={{ fontSize: 17, opacity: 0.92, margin: '0 0 24px' }}>
               Free. No signup to start. No feed, no algorithm, no audience.
@@ -189,17 +189,17 @@ export default function Landing() {
 }
 
 const FEATURES = [
-  { icon: 'chat', title: 'A companion, not a therapist', body: "Buddin listens and asks real questions. It's not a counselor or a crisis line — it's the friend you wish you could text at 1 AM." },
-  { icon: 'brain', title: 'It gets to know you', body: 'Answer a few quick things in Know Me — this or that, a word, a short piece of writing — and Buddin builds a lasting picture of how you think, saved to your account rather than a browser.' },
+  { icon: 'chat', title: 'A companion, not a therapist', body: "GetBuddin listens and asks real questions. It's not a counselor or a crisis line — it's the friend you wish you could text at 1 AM." },
+  { icon: 'brain', title: 'It gets to know you', body: 'Answer a few quick things in Know Me — this or that, a word, a short piece of writing — and GetBuddin builds a lasting picture of how you think, saved to your account rather than a browser.' },
   { icon: 'lock', title: 'Private by design', body: 'No social feed. No likes. No followers. Nothing you say gets posted, ranked, or shown to anyone else.' },
 ]
 
 const FAQS = [
-  { q: 'Is Buddin a replacement for therapy?', a: "No. Buddin is a conversational companion — somewhere between a journal and a friend. If you're in crisis or working through something serious, please reach out to a counselor or a trusted adult. If you need someone right now: call or text 988 (Suicide & Crisis Lifeline), or text HOME to 741741 (Crisis Text Line). Both are free, 24/7, and confidential." },
-  { q: 'What does Buddin do with what I say?', a: 'Your conversations stay between you and Buddin — never shared, posted, or sold, and there’s no social feed. The profile Buddin builds comes from what you choose to answer in Know Me, not from reading your chats back later.' },
+  { q: 'Is GetBuddin a replacement for therapy?', a: "No. GetBuddin is a conversational companion — somewhere between a journal and a friend. If you're in crisis or working through something serious, please reach out to a counselor or a trusted adult. If you need someone right now: call or text 988 (Suicide & Crisis Lifeline), or text HOME to 741741 (Crisis Text Line). Both are free, 24/7, and confidential." },
+  { q: 'What does GetBuddin do with what I say?', a: 'Your conversations stay between you and GetBuddin — never shared, posted, or sold, and there’s no social feed. The profile GetBuddin builds comes from what you choose to answer in Know Me, not from reading your chats back later.' },
   { q: 'Who built this?', a: 'I did — Ayan Bharadwaj, a sophomore at South Forsyth High School in Cumming, Georgia. I found myself doom-scrolling into a worse mood every night and wanted to build the opposite of that.' },
   { q: 'Is it free?', a: 'Yes — the core experience is free, and you can start without even making an account.' },
-  { q: "I'm a school counselor — can I share this?", a: <>Please do. Buddin is meant to <em>support</em> the work counselors already do, not replace it. Reach out at {EMAIL} for a counselor-friendly overview.</> },
+  { q: "I'm a school counselor — can I share this?", a: <>Please do. GetBuddin is meant to <em>support</em> the work counselors already do, not replace it. Reach out at {EMAIL} for a counselor-friendly overview.</> },
 ]
 
 function Faq({ q, children }) {

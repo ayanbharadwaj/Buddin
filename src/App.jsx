@@ -200,7 +200,7 @@ const moodAck = (mood) => ({
   5: "Let's go. Ride that wave.",
 }[mood?.intensity] || "");
 
-// Mood-aware opener Buddin shows when you enter the chat (UI only — it doesn't
+// Mood-aware opener GetBuddin shows when you enter the chat (UI only — it doesn't
 // get sent to the model, but the mood is already woven into the system prompt).
 const moodGreeting = (mood, name) => ({
   1: `Seems like today's been rough. I'm here — what happened?`,
@@ -208,7 +208,7 @@ const moodGreeting = (mood, name) => ({
   3: `What's going on today?`,
   4: `Good day so far? Tell me about it.`,
   5: `You're feeling great — what's good?`,
-}[mood?.intensity] || `${name || "Buddin"} is listening.`);
+}[mood?.intensity] || `${name || "GetBuddin"} is listening.`);
 
 const SOURCES = [
   {authors:"Berridge, K.C., & Robinson, T.E.", year:"1998", title:"What is the role of dopamine in reward?", journal:"Brain Research Reviews"},
@@ -1513,14 +1513,14 @@ const res = await fetch("/api/chat", {
         <div style={{ paddingTop:72, paddingBottom:56, animation:"rise 0.7s cubic-bezier(0.34,1.56,0.64,1)" }}>
           <div style={{ textAlign:"center", marginBottom:48 }}>
             <div style={{ display:"flex", justifyContent:"center", marginBottom:20 }}>
-              <img src="/imagebuddin.png" alt="Buddin"
+              <img src="/imagebuddin.png" alt="GetBuddin"
                 style={{ width:88, height:88, objectFit:"contain",
                   filter:`drop-shadow(0 6px 18px ${C.sage}55)`,
                   animation:"sway 5s ease-in-out infinite",
                   transformOrigin:"50% 100%" }}
               />
             </div>
-            <h1 style={{ fontFamily:"'Fraunces', Georgia, serif", fontSize:50, fontWeight:300, color:C.forest, letterSpacing:"-1px", lineHeight:1.06, marginBottom:16 }}>Buddin</h1>
+            <h1 style={{ fontFamily:"'Fraunces', Georgia, serif", fontSize:50, fontWeight:300, color:C.forest, letterSpacing:"-1px", lineHeight:1.06, marginBottom:16 }}>GetBuddin</h1>
             <div style={{ width:40, height:2, background:`linear-gradient(90deg, ${C.sage}, ${C.clay})`, margin:"0 auto 18px", borderRadius:2 }}/>
             <p style={{ color:C.stone, fontSize:16, lineHeight:1.76, fontFamily:"'Fraunces', Georgia, serif", fontStyle:"italic", fontWeight:300 }}>
               Not another app.<br/>A way back to the roots.
@@ -1716,7 +1716,7 @@ const res = await fetch("/api/chat", {
             }}
             className="btn"
             style={{ width:"100%", padding:"19px 24px", marginTop:10, background:`linear-gradient(135deg, ${avatarColor}, ${avatarColor}cc)`, color:"#fff", border:"none", borderRadius:20, fontSize:16, fontWeight:700, cursor:"pointer", boxShadow:`0 10px 32px ${avatarColor}48` }}>
-            Step into Buddin →
+            Step into GetBuddin →
           
           </button>
 
@@ -1737,7 +1737,7 @@ const res = await fetch("/api/chat", {
       <div style={W}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", paddingTop:40, marginBottom:24, animation:"staggerUp 0.5s ease 0.1s both" }}>
           <div>
-            <h1 style={{ fontFamily:"'Fraunces', Georgia, serif", fontSize:30, color:C.forest, fontWeight:400, letterSpacing:"-0.5px" }}>Buddin</h1>
+            <h1 style={{ fontFamily:"'Fraunces', Georgia, serif", fontSize:30, color:C.forest, fontWeight:400, letterSpacing:"-0.5px" }}>GetBuddin</h1>
             <p style={{ color:C.stoneMid, fontSize:12, marginTop:2 }}>with {av?.name} {av?.emoji}</p>
           </div>
           <div style={{ display:"flex", gap:8, alignItems:"center" }}>
@@ -1856,7 +1856,7 @@ const res = await fetch("/api/chat", {
               <Brain size={20} color={avatarColor} strokeWidth={1.8}/>
             </div>
             <div style={{ flex:1 }}>
-              <div style={{ color:C.ink, fontWeight:700, fontSize:13, fontFamily:"'Fraunces', Georgia, serif", marginBottom:2 }}>Buddin is starting to figure you out</div>
+              <div style={{ color:C.ink, fontWeight:700, fontSize:13, fontFamily:"'Fraunces', Georgia, serif", marginBottom:2 }}>GetBuddin is starting to figure you out</div>
               <div style={{ color:C.stoneMid, fontSize:11 }}>{comparisonCount} answers so far · see what it found →</div>
             </div>
           </button>
@@ -1881,7 +1881,7 @@ const res = await fetch("/api/chat", {
           style={{ width:"100%", borderRadius:18, padding:"14px 20px", cursor:"pointer", border:`1px solid ${avatarColor}22`, textAlign:"center", marginBottom:10 }}>
           <span style={{ color:avatarColor, fontSize:13, fontWeight:600, display:"flex", alignItems:"center", justifyContent:"center", gap:7 }}>
             <Heart size={14} color={avatarColor} strokeWidth={2} style={{ fill:avatarColor }}/>
-            Support Buddin
+            Support GetBuddin
           </span>
         </button>
 
@@ -1914,7 +1914,7 @@ const res = await fetch("/api/chat", {
         </button>
         <AvatarCore avatar={av} size={40} pulse/>
         <div>
-          <div style={{ fontWeight:600, fontSize:14, color:C.ink }}>{av?.name || "Buddin"}</div>
+          <div style={{ fontWeight:600, fontSize:14, color:C.ink }}>{av?.name || "GetBuddin"}</div>
           <div style={{ color:avatarColor, fontSize:11 }}>{av?.vibe}</div>
         </div>
         <button onClick={musicEnabled ? disableMusic : enableMusic} className="glass btn"
@@ -2134,7 +2134,7 @@ const res = await fetch("/api/chat", {
       <LivingBg intensity={4} avatarColor={avatarColor}/>
       <div style={W}>
         <SectionHeader onBack={() => setScreen("home")} title="The Science"/>
-        <p style={{ color:C.stone, fontSize:13, marginBottom:24, lineHeight:1.76 }}>The activities Buddin suggests are grounded in neuroscience, psychology, and sociology.</p>
+        <p style={{ color:C.stone, fontSize:13, marginBottom:24, lineHeight:1.76 }}>The activities GetBuddin suggests are grounded in neuroscience, psychology, and sociology.</p>
         {SEED_INSIGHTS.map((f, i) => (
           <div key={i} className="glass card" style={{ borderRadius:20, padding:22, marginBottom:13 }}>
             <p style={{ color:avatarColor, fontSize:11, fontWeight:700, letterSpacing:"0.08em", marginBottom:8 }}>{f.source}</p>
@@ -2154,7 +2154,7 @@ const res = await fetch("/api/chat", {
       <LivingBg intensity={4} avatarColor={avatarColor}/>
       <div style={W}>
         <SectionHeader onBack={() => setScreen("home")} title="Our Sources"/>
-        <p style={{ color:C.stone, fontSize:13, marginBottom:24, lineHeight:1.76 }}>Every suggestion Buddin makes comes from somewhere real.</p>
+        <p style={{ color:C.stone, fontSize:13, marginBottom:24, lineHeight:1.76 }}>Every suggestion GetBuddin makes comes from somewhere real.</p>
         {SOURCES.map((s, i) => (
           <div key={i} className="glass" style={{ borderLeft:`3px solid ${avatarColor}`, borderRadius:"0 16px 16px 0", padding:"15px 20px", marginBottom:11 }}>
             <p style={{ color:C.ink, fontSize:13, lineHeight:1.65, marginBottom:5 }}><span style={{ fontWeight:600 }}>{s.authors}</span> ({s.year}). {s.title}.</p>
@@ -2221,7 +2221,7 @@ const res = await fetch("/api/chat", {
     <LivingBg intensity={3} avatarColor={avatarColor}/>
     <div style={W}>
       <SectionHeader onBack={() => setScreen("home")} title="Plans"/>
-      <p style={{ color:C.stone, fontSize:13, lineHeight:1.76, marginBottom:16 }}>Buddin is a personal project, not a business. Every conversation costs real money to run, and right now I pay for it myself — so the limits below are about what I can afford, not about selling you anything.</p>
+      <p style={{ color:C.stone, fontSize:13, lineHeight:1.76, marginBottom:16 }}>GetBuddin is a personal project, not a business. Every conversation costs real money to run, and right now I pay for it myself — so the limits below are about what I can afford, not about selling you anything.</p>
 
       <div className="glass card" style={{ borderRadius:22, padding:22, marginBottom:14, border:`1px solid ${C.stoneLight}` }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
@@ -2248,7 +2248,7 @@ const res = await fetch("/api/chat", {
           </div>
           <p style={{ fontSize:22, fontWeight:700, color:avatarColor, fontFamily:"'Fraunces', Georgia, serif" }}>40<span style={{ fontSize:13, fontWeight:400 }}>/day</span></p>
         </div>
-        {["40 messages per day","Claude Sonnet 4.5 — longer, more nuanced replies","Everything in Free","Keeps Buddin running"].map(f => (
+        {["40 messages per day","Claude Sonnet 4.5 — longer, more nuanced replies","Everything in Free","Keeps GetBuddin running"].map(f => (
           <div key={f} style={{ display:"flex", gap:10, alignItems:"center", marginBottom:7 }}>
             <Check size={13} color={avatarColor} strokeWidth={2.5}/>
             <p style={{ color:C.stone, fontSize:13 }}>{f}</p>
@@ -2308,7 +2308,7 @@ const res = await fetch("/api/chat", {
             </div>
             <div>
               <h1 style={{ fontFamily:"'Fraunces', Georgia, serif", fontSize:26, fontWeight:400, color:C.ink, margin:0 }}>Know Me</h1>
-              <p style={{ color:C.stoneMid, fontSize:13, margin:0 }}>Help Buddin understand how you think.</p>
+              <p style={{ color:C.stoneMid, fontSize:13, margin:0 }}>Help GetBuddin understand how you think.</p>
             </div>
           </div>
 
@@ -2352,7 +2352,7 @@ const res = await fetch("/api/chat", {
               </div>
               <div>
                 <p style={{ fontWeight:700, fontSize:15, color:C.ink, margin:0 }}>Writing Prompts</p>
-                <p style={{ color:C.stone, fontSize:13, margin:"3px 0 0" }}>Show Buddin how you express yourself.</p>
+                <p style={{ color:C.stone, fontSize:13, margin:"3px 0 0" }}>Show GetBuddin how you express yourself.</p>
               </div>
             </div>
           </button>
@@ -2415,7 +2415,7 @@ const res = await fetch("/api/chat", {
     </div>
     <div>
       <p style={{ fontWeight:700, fontSize:15, color:C.ink, margin:0 }}>My Profile</p>
-      <p style={{ color:C.stone, fontSize:13, margin:"3px 0 0" }}>See what Buddin has figured out about you.</p>
+      <p style={{ color:C.stone, fontSize:13, margin:"3px 0 0" }}>See what GetBuddin has figured out about you.</p>
     </div>
   </div>
 </button>
@@ -2523,18 +2523,18 @@ const res = await fetch("/api/chat", {
     <div style={{ ...BG, paddingBottom:100, overflowY:"auto", WebkitOverflowScrolling:"touch" }}>
       <LivingBg intensity={3} avatarColor={avatarColor}/>
       <div style={W}>
-        <SectionHeader onBack={() => setScreen("home")} title="Support Buddin"/>
+        <SectionHeader onBack={() => setScreen("home")} title="Support GetBuddin"/>
 
         <div className="glass card" style={{ borderRadius:22, padding:24, marginBottom:16, border:`1.5px solid ${avatarColor}33` }}>
           <p style={{ color:avatarColor, fontSize:11, fontWeight:700, letterSpacing:"0.12em", marginBottom:10 }}>THE STORY</p>
           <p style={{ color:C.ink, fontSize:15, lineHeight:1.88, fontFamily:"'Fraunces', Georgia, serif", fontStyle:"italic", fontWeight:300, marginBottom:14 }}>
-            "I built Buddin because I know what it feels like to need someone to talk to and have no one around.
+            "I built GetBuddin because I know what it feels like to need someone to talk to and have no one around.
   I'm a sophomore at South Forsyth High School in Cumming, Georgia, and I coded this entirely from scratch
   — not for a class, not for a grade, but because I genuinely wanted it to exist.
   There were nights I wished an app like this existed for me. So I built it."
           </p>
           <p style={{ color:C.stone, fontSize:13, lineHeight:1.75, marginBottom:10 }}>
-            Every conversation on Buddin costs real money — AI inference, servers, bandwidth. Right now I'm funding it myself, on a student's budget, and I've turned off donations until I can process them properly.
+            Every conversation on GetBuddin costs real money — AI inference, servers, bandwidth. Right now I'm funding it myself, on a student's budget, and I've turned off donations until I can process them properly.
           </p>
           <p style={{ color:C.stone, fontSize:13, lineHeight:1.75 }}>
             This is a passion project. There are no investors, no ads, no data selling. Just a teenager who coded this from scratch and wants it to stay free for people who need it.
@@ -2542,8 +2542,8 @@ const res = await fetch("/api/chat", {
         </div>
 
         <div className="glass" style={{ borderRadius:18, padding:20, marginBottom:14, background:`${avatarColor}0a`, border:`1px solid ${avatarColor}22` }}>
-          <p style={{ color:C.forest, fontSize:13, fontWeight:600, marginBottom:6 }}>What running Buddin actually costs:</p>
-          {["API costs for every conversation","Vercel hosting & bandwidth","Future features (voice, mobile app)","Keeping Buddin free for everyone"].map((item, i) => (
+          <p style={{ color:C.forest, fontSize:13, fontWeight:600, marginBottom:6 }}>What running GetBuddin actually costs:</p>
+          {["API costs for every conversation","Vercel hosting & bandwidth","Future features (voice, mobile app)","Keeping GetBuddin free for everyone"].map((item, i) => (
             <div key={i} style={{ display:"flex", gap:10, alignItems:"center", marginBottom:7 }}>
               <div style={{ width:6, height:6, borderRadius:"50%", background:avatarColor, flexShrink:0 }}/>
               <p style={{ color:C.stone, fontSize:13 }}>{item}</p>
@@ -2570,7 +2570,7 @@ const res = await fetch("/api/chat", {
         </div>
 
         <div className="glass" style={{ borderRadius:18, padding:20, marginTop:16, border:`1px solid ${avatarColor}22` }}>
-          <p style={{ color:C.forest, fontSize:13, fontWeight:600, marginBottom:12 }}>Follow Buddin</p>
+          <p style={{ color:C.forest, fontSize:13, fontWeight:600, marginBottom:12 }}>Follow GetBuddin</p>
           <div style={{ display:"flex", gap:10, marginBottom:12 }}>
             <a href="https://www.youtube.com/channel/UClXPubvuKuWSYKkRwBqwo1Q" target="_blank" rel="noopener noreferrer"
               style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:7, padding:"11px 12px", borderRadius:12, border:`1px solid ${C.stoneLight}`, color:C.stone, fontSize:13, fontWeight:600, textDecoration:"none", background:"rgba(255,248,235,0.55)" }}>

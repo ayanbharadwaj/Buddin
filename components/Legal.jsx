@@ -21,7 +21,7 @@ function LegalShell({ title, children }) {
           background: '#fff5e6', border: '1px solid #f0c8a0', borderRadius: 12,
           padding: '14px 18px', marginBottom: 28, fontSize: 14, color: '#5a4634', lineHeight: 1.55
         }}>
-          Buddin is built by a student founder and written in plain English so you can
+          GetBuddin is built by a student founder and written in plain English so you can
           actually read it. It's offered in good faith and isn't a substitute for legal
           advice. If anything here is unclear, email{' '}
           <a href="mailto:getbuddin@gmail.com" style={inlineLink}>getbuddin@gmail.com</a>.
@@ -37,14 +37,14 @@ export function Privacy() {
   return (
     <LegalShell title="Privacy Policy">
       <p style={p}>
-        This policy explains what information Buddin ("we," "us") collects, why, and what
-        we do with it. Buddin is operated by Ayan Bharadwaj, an independent student founder.
+        This policy explains what information GetBuddin ("we," "us") collects, why, and what
+        we do with it. GetBuddin is operated by Ayan Bharadwaj, an independent student founder.
       </p>
 
       <h2 style={h2}>The short version</h2>
       <ul style={ul}>
-        <li>We collect the minimum we need to run Buddin: your account info and your conversations.</li>
-        <li>We use your conversations to give you replies and to help Buddin remember you over time.</li>
+        <li>We collect the minimum we need to run GetBuddin: your account info and your conversations.</li>
+        <li>We use your conversations to give you replies and to help GetBuddin remember you over time.</li>
         <li>We do <strong>not</strong> sell your data. We don't run ads. There's no social feed.</li>
         <li>You can delete your account and data at any time by emailing us.</li>
       </ul>
@@ -52,26 +52,26 @@ export function Privacy() {
       <h2 style={h2}>What we collect</h2>
       <ul style={ul}>
         <li><strong>Account information:</strong> your name (if you give one) and email address, used to sign you in and keep your account secure.</li>
-        <li><strong>Conversation content:</strong> the messages you send to Buddin and Buddin's replies, so the experience works and can feel personal over time.</li>
-        <li><strong>Basic usage data:</strong> anonymous, aggregate analytics (e.g. page views) to understand whether Buddin is helping. We don't tie this to your conversations to identify you.</li>
+        <li><strong>Conversation content:</strong> the messages you send to GetBuddin and GetBuddin's replies, so the experience works and can feel personal over time.</li>
+        <li><strong>Basic usage data:</strong> anonymous, aggregate analytics (e.g. page views) to understand whether GetBuddin is helping. We don't tie this to your conversations to identify you.</li>
       </ul>
 
       <h2 style={h2}>How we use it</h2>
       <ul style={ul}>
-        <li>To provide the core service — generating Buddin's responses.</li>
-        <li>To let Buddin remember context so conversations get more personal, not more generic.</li>
+        <li>To provide the core service — generating GetBuddin's responses.</li>
+        <li>To let GetBuddin remember context so conversations get more personal, not more generic.</li>
         <li>To keep your account secure and prevent abuse.</li>
-        <li>To improve Buddin in aggregate (e.g. "are people coming back?"), never by selling or publishing your individual conversations.</li>
+        <li>To improve GetBuddin in aggregate (e.g. "are people coming back?"), never by selling or publishing your individual conversations.</li>
       </ul>
 
       <h2 style={h2}>Who we share it with</h2>
       <p style={p}>
-        We use a small number of trusted service providers to run Buddin. They only process
+        We use a small number of trusted service providers to run GetBuddin. They only process
         data on our behalf to provide their service:
       </p>
       <ul style={ul}>
         <li><strong>Supabase</strong> — secure account login and database storage.</li>
-        <li><strong>Anthropic</strong> — generates Buddin's AI responses from your messages. Anthropic does not train its models on data sent through its API.</li>
+        <li><strong>Anthropic</strong> — generates GetBuddin's AI responses from your messages. Anthropic does not train its models on data sent through its API.</li>
         <li><strong>Vercel</strong> — hosting and privacy-friendly, aggregate analytics.</li>
       </ul>
       <p style={p}>
@@ -81,10 +81,10 @@ export function Privacy() {
 
       <h2 style={h2}>Your age</h2>
       <p style={p}>
-        Buddin is designed for teenagers and is intended for users <strong>13 and older</strong>.
-        Buddin is not directed to children under 13, and we do not knowingly collect personal
+        GetBuddin is designed for teenagers and is intended for users <strong>13 and older</strong>.
+        GetBuddin is not directed to children under 13, and we do not knowingly collect personal
         information from anyone under 13. If you believe a child under 13 has created an
-        account, email us and we will delete it. If you are under 18, please use Buddin with
+        account, email us and we will delete it. If you are under 18, please use GetBuddin with
         the awareness and permission of a parent or guardian.
       </p>
 
@@ -95,9 +95,9 @@ export function Privacy() {
         <li><strong>Stop using:</strong> you can stop and request deletion at any time — no hoops.</li>
       </ul>
 
-      <h2 style={h2}>Buddin is not a crisis or medical service</h2>
+      <h2 style={h2}>GetBuddin is not a crisis or medical service</h2>
       <p style={p}>
-        Buddin is a supportive companion, not a doctor, therapist, or emergency service. If
+        GetBuddin is a supportive companion, not a doctor, therapist, or emergency service. If
         you are in crisis or worried about your safety or someone else's, please reach a real
         human: in the US, text <strong>HOME</strong> to <strong>741741</strong>, or call or
         text <strong>988</strong>.
@@ -122,27 +122,27 @@ export function Terms() {
   return (
     <LegalShell title="Terms of Service">
       <p style={p}>
-        These terms are the agreement between you and Buddin (operated by Ayan Bharadwaj) when
-        you use getbuddin.org. By using Buddin, you agree to them.
+        These terms are the agreement between you and GetBuddin (operated by Ayan Bharadwaj) when
+        you use getbuddin.org. By using GetBuddin, you agree to them.
       </p>
 
-      <h2 style={h2}>Who can use Buddin</h2>
+      <h2 style={h2}>Who can use GetBuddin</h2>
       <p style={p}>
-        You must be at least <strong>13 years old</strong> to use Buddin. If you're under 18,
+        You must be at least <strong>13 years old</strong> to use GetBuddin. If you're under 18,
         you should use it with the awareness and permission of a parent or guardian.
       </p>
 
-      <h2 style={h2}>What Buddin is — and isn't</h2>
+      <h2 style={h2}>What GetBuddin is — and isn't</h2>
       <p style={p}>
-        Buddin is a conversational companion designed to listen and help you think things
-        through. <strong>Buddin is not therapy, medical or mental-health treatment, a
+        GetBuddin is a conversational companion designed to listen and help you think things
+        through. <strong>GetBuddin is not therapy, medical or mental-health treatment, a
         counselor, or a crisis service</strong>, and nothing it says is professional advice.
         If you're in crisis, contact a real human immediately: in the US, text
         <strong> HOME</strong> to <strong>741741</strong> or call/text <strong>988</strong>.
       </p>
 
-      <h2 style={h2}>Using Buddin responsibly</h2>
-      <p style={p}>Please don't use Buddin to:</p>
+      <h2 style={h2}>Using GetBuddin responsibly</h2>
+      <p style={p}>Please don't use GetBuddin to:</p>
       <ul style={ul}>
         <li>Break the law or harm yourself or others.</li>
         <li>Harass, abuse, or impersonate anyone.</li>
@@ -160,7 +160,7 @@ export function Terms() {
 
       <h2 style={h2}>Payments</h2>
       <p style={p}>
-        Buddin is free, and right now there is no way to pay for it at all — we don't accept
+        GetBuddin is free, and right now there is no way to pay for it at all — we don't accept
         payments or donations and we have no payment processor connected. If that ever changes,
         the terms and the price will be shown to you clearly before you pay anything, and we
         still won't store your card details.
@@ -168,23 +168,23 @@ export function Terms() {
 
       <h2 style={h2}>Your content</h2>
       <p style={p}>
-        Your conversations are yours. By using Buddin you give us permission to process them
+        Your conversations are yours. By using GetBuddin you give us permission to process them
         only as described in the <a href="/privacy" onClick={lnk('/privacy')} style={inlineLink}>Privacy Policy</a> —
         to run the service and personalize your experience.
       </p>
 
       <h2 style={h2}>No guarantees</h2>
       <p style={p}>
-        Buddin is provided "as is." We work hard to make it helpful and available, but we can't
+        GetBuddin is provided "as is." We work hard to make it helpful and available, but we can't
         guarantee it will always be accurate, uninterrupted, or right for every situation. To
-        the fullest extent allowed by law, Buddin and its founder aren't liable for damages
-        arising from your use of the service. Because Buddin can be wrong, don't rely on it for
+        the fullest extent allowed by law, GetBuddin and its founder aren't liable for damages
+        arising from your use of the service. Because GetBuddin can be wrong, don't rely on it for
         decisions that need a qualified professional.
       </p>
 
       <h2 style={h2}>Changes &amp; ending use</h2>
       <p style={p}>
-        We may update these terms (we'll change the date above). You can stop using Buddin
+        We may update these terms (we'll change the date above). You can stop using GetBuddin
         anytime, and we may suspend access for violations of these terms.
       </p>
 

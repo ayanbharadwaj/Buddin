@@ -187,10 +187,10 @@ export default function WordGame({ setScreen, avatarColor, C }) {
           <div style={{ fontSize: 48, marginBottom: 16 }}>🧠</div>
           <h2 style={{ fontFamily: "'Fraunces', Georgia, serif", color: C.ink, fontWeight: 400, marginBottom: 8 }}>You've explored all the words!</h2>
           <p style={{ color: C.stone, fontSize: 14, lineHeight: 1.7, marginBottom: 24 }}>
-            {answered} words explored. Buddin now understands your vocabulary and associations.
+            {answered} words explored. GetBuddin now understands your vocabulary and associations.
           </p>
           <button onClick={() => setScreen("myprofile")} style={{ background: `linear-gradient(135deg, ${avatarColor}, ${avatarColor}cc)`, color: "#fff", border: "none", borderRadius: 16, padding: "14px 28px", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
-            See what Buddin knows →
+            See what GetBuddin knows →
           </button>
         </div>
       </div>

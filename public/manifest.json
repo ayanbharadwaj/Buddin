@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "Buddin",
-  "short_name": "Buddin",
+  "name": "GetBuddin",
+  "short_name": "GetBuddin",
   "description": "A conversational buddy you can talk to about anything, anytime.",
   "start_url": "/",
   "scope": "/",

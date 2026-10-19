@@ -33,7 +33,7 @@ export default function Login({ onSwitch }) {
       }}>
         <h1 style={{ textAlign: 'center', color: '#2c2018', marginBottom: 8 }}>Welcome back</h1>
         <p style={{ textAlign: 'center', color: '#786858', marginBottom: 28, fontSize: 14 }}>
-          Buddin remembers you
+          GetBuddin remembers you
         </p>
 
         {error && (

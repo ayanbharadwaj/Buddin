@@ -18,7 +18,7 @@ export default class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, info) {
-    console.error('Buddin crashed:', error, info?.componentStack)
+    console.error('GetBuddin crashed:', error, info?.componentStack)
   }
 
   render() {
@@ -50,7 +50,7 @@ export default class ErrorBoundary extends Component {
               fontFamily: 'inherit',
             }}
           >
-            Reload Buddin
+            Reload GetBuddin
           </button>
           <p style={{ color: '#a89888', fontSize: 12.5, lineHeight: 1.6, marginTop: 20 }}>
             If it keeps happening, tell me at{' '}

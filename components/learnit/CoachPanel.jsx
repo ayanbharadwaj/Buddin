@@ -30,7 +30,7 @@ export default function CoachPanel({
   const endRef = useRef(null);
   const inputRef = useRef(null);
 
-  const name = avatar?.name || "Buddin";
+  const name = avatar?.name || "GetBuddin";
 
   // A conversation belongs to one scenario. Moving on starts a fresh one rather
   // than dragging the last situation's context into the next.

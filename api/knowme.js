@@ -93,7 +93,7 @@ async function coach(req, res, user) {
   }
   const voice = COACH_VOICES[avatar_id] || COACH_VOICES.zap
 
-  const system = `You are the user's companion inside Buddin's "Learn It" section, helping a teenager actually understand a real-world situation rather than memorise an answer.
+  const system = `You are the user's companion inside GetBuddin's "Learn It" section, helping a teenager actually understand a real-world situation rather than memorise an answer.
 
 YOUR VOICE: ${voice}
 

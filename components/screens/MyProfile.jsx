@@ -129,7 +129,7 @@ export default function MyProfile({ setScreen, avatarColor, C }) {
           <ChevronLeft size={22} strokeWidth={2} />
         </button>
         <div style={{ flex: 1 }}>
-          <p style={{ fontWeight: 700, fontSize: 14, color: C.ink, margin: 0 }}>How Buddin Sees You</p>
+          <p style={{ fontWeight: 700, fontSize: 14, color: C.ink, margin: 0 }}>How GetBuddin Sees You</p>
           <p style={{ color: C.stoneMid, fontSize: 11, margin: 0 }}>{totalResponses} responses collected</p>
         </div>
         <button onClick={generateProfile} disabled={generating} style={{ background: `${avatarColor}18`, border: `1px solid ${avatarColor}44`, borderRadius: 10, padding: "6px 12px", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: avatarColor, fontWeight: 600 }}>
@@ -150,7 +150,7 @@ export default function MyProfile({ setScreen, avatarColor, C }) {
             <div style={{ fontSize: 48, marginBottom: 16 }}>🧠</div>
             <h2 style={{ fontFamily: "'Fraunces', Georgia, serif", color: C.ink, fontWeight: 400, marginBottom: 8 }}>No profile yet</h2>
             <p style={{ color: C.stone, fontSize: 14, lineHeight: 1.7, marginBottom: 24, maxWidth: 300, margin: "0 auto 24px" }}>
-              Answer some questions in the Know Me section first, then come back here to see what Buddin has figured out about you.
+              Answer some questions in the Know Me section first, then come back here to see what GetBuddin has figured out about you.
             </p>
             <button onClick={() => setScreen("knowme")} style={{ background: `linear-gradient(135deg, ${avatarColor}, ${avatarColor}cc)`, color: "#fff", border: "none", borderRadius: 16, padding: "14px 28px", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
               Go to Know Me →

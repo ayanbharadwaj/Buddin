@@ -1,4 +1,4 @@
-# Buddin — how tiers actually work
+# GetBuddin — how tiers actually work
 
 Rewritten October 18, 2026. The previous version of this file described a
 `/data/tiers.json` file-based system, file-backed rate limiting in

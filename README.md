@@ -1,8 +1,8 @@
-# Buddin
+# GetBuddin
 
 [getbuddin.org](https://getbuddin.org) — a free, private mental wellness app for teens. Built solo by a high-school student founder.
 
-Teens are more connected than ever and lonelier than ever, and most of that screen time goes into feeds that don't actually help. Buddin is a small set of tools aimed at the other direction:
+Teens are more connected than ever and lonelier than ever, and most of that screen time goes into feeds that don't actually help. GetBuddin is a small set of tools aimed at the other direction:
 
 - **Chat** — a companion built to be a bridge back to real life, not a replacement for it. Nudges you toward your actual friends instead of keeping you talking to it forever. Free guest mode included, no signup required to try it.
 - **Do** — an activity generator for when you know you should do something other than scroll but can't think of what.
@@ -11,7 +11,7 @@ Teens are more connected than ever and lonelier than ever, and most of that scre
 - **Know Me** — seven ways of building a picture of someone without ever asking them to describe themselves: forced A/B choices rated on an unfamiliar prime-number scale, word association with adaptive difficulty, open writing prompts, direct preferences, name recognition, number reactions, and a synthesis that suggests directions their working life might take. Everything feeds one inference engine that only asks for the parts it actually has data for.
 - **Learn It** — five scenario-based skill modules for the practical things school skips and families teach unevenly: etiquette, grammar and writing, financial self-control, reading people, and staying composed under pressure.
 
-Buddin isn't therapy and isn't a social feed. It's a judgment-free place to think out loud and a nudge toward doing one small real thing.
+GetBuddin isn't therapy and isn't a social feed. It's a judgment-free place to think out loud and a nudge toward doing one small real thing.
 
 ## Stack
 

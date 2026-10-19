@@ -278,7 +278,7 @@ export default async function handler(req, res) {
     const apiData = await response.json();
     if (!response.ok) {
       console.error('Anthropic error:', apiData);
-      return res.status(502).json({ error: "Couldn't reach Buddin right now. Try again in a moment." });
+      return res.status(502).json({ error: "Couldn't reach GetBuddin right now. Try again in a moment." });
     }
 
     return res.status(200).json({

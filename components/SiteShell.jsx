@@ -13,47 +13,47 @@ export function navigate(path) {
 }
 
 const SITE = 'https://getbuddin.org'
-const DEFAULT_TITLE = 'Buddin — The quiet companion for teens. Free.'
+const DEFAULT_TITLE = 'GetBuddin — The quiet companion for teens. Free.'
 
 // One static index.html serves every route, so without this every page shared
 // a single <title> and declared the homepage as its canonical — which tells
 // Google to drop the sub-pages from the index entirely, defeating the sitemap.
 const ROUTE_TITLES = {
   '/': DEFAULT_TITLE,
-  '/about': 'About Buddin — why a high-schooler built it',
-  '/blog': 'Buddin Blog — on loneliness, focus and screen time',
-  '/try': 'Try Buddin free — no signup needed',
-  '/privacy': 'Privacy Policy — Buddin',
-  '/terms': 'Terms of Use — Buddin',
-  '/login': 'Sign in — Buddin',
-  '/signup': 'Create your account — Buddin',
+  '/about': 'About GetBuddin — why a high-schooler built it',
+  '/blog': 'GetBuddin Blog — on loneliness, focus and screen time',
+  '/try': 'Try GetBuddin free — no signup needed',
+  '/privacy': 'Privacy Policy — GetBuddin',
+  '/terms': 'Terms of Use — GetBuddin',
+  '/login': 'Sign in — GetBuddin',
+  '/signup': 'Create your account — GetBuddin',
 }
 
 const POST_TITLES = {
-  'why-i-built-buddin': 'Buddin started at 1am, after a talk with my mom. — Buddin',
-  'waiting-for-the-perfect-time': 'I keep waiting for the perfect time to say things. — Buddin',
-  'forgot-how-to-stop': "I didn't scroll to escape. I forgot how to stop. — Buddin",
-  'my-brain-runs-too-fast': 'My brain runs too fast, and it makes the small stuff hard. — Buddin',
+  'why-i-built-buddin': 'GetBuddin started at 1am, after a talk with my mom. — GetBuddin',
+  'waiting-for-the-perfect-time': 'I keep waiting for the perfect time to say things. — GetBuddin',
+  'forgot-how-to-stop': "I didn't scroll to escape. I forgot how to stop. — GetBuddin",
+  'my-brain-runs-too-fast': 'My brain runs too fast, and it makes the small stuff hard. — GetBuddin',
 }
 
 // The authenticated app's own screens. Without these, every signed-in user got
 // a browser tab reading "Page not found" on a perfectly working screen.
 const APP_TITLES = {
-  '/home': 'Home — Buddin',
-  '/chat': 'Chat — Buddin',
-  '/do': 'Do something — Buddin',
-  '/growth': 'Your growth — Buddin',
-  '/me': 'Know Me — Buddin',
-  '/learn': 'Learn It — Buddin',
-  '/plans': 'Plans — Buddin',
-  '/breathe': 'Breathe — Buddin',
+  '/home': 'Home — GetBuddin',
+  '/chat': 'Chat — GetBuddin',
+  '/do': 'Do something — GetBuddin',
+  '/growth': 'Your growth — GetBuddin',
+  '/me': 'Know Me — GetBuddin',
+  '/learn': 'Learn It — GetBuddin',
+  '/plans': 'Plans — GetBuddin',
+  '/breathe': 'Breathe — GetBuddin',
 }
 
 export function titleForPath(path) {
   if (path.startsWith('/blog/')) {
     return POST_TITLES[path.slice('/blog/'.length)] || ROUTE_TITLES['/blog']
   }
-  return ROUTE_TITLES[path] || APP_TITLES[path] || 'Page not found — Buddin'
+  return ROUTE_TITLES[path] || APP_TITLES[path] || 'Page not found — GetBuddin'
 }
 
 // Only the public marketing and content pages belong in a search index. App
@@ -154,7 +154,7 @@ export function SiteNav() {
         style={{ display: 'flex', alignItems: 'center', gap: 11, textDecoration: 'none' }}>
         <img src="/imagebuddin.png" alt="" width={38} height={38} style={{ borderRadius: 9 }} />
         <span style={{ fontSize: 'clamp(20px, 5vw, 24px)', fontWeight: 700, color: '#2c2018', letterSpacing: -0.5 }}>
-          Buddin
+          GetBuddin
         </span>
       </a>
 
@@ -216,7 +216,7 @@ export function SiteFooter() {
         display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap',
         gap: 16, fontSize: 14, color: '#786858', alignItems: 'center'
       }}>
-        <div>© {new Date().getFullYear()} Buddin · Built by Ayan Bharadwaj</div>
+        <div>© {new Date().getFullYear()} GetBuddin · Built by Ayan Bharadwaj</div>
         <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
           <a href="/about" onClick={e => { e.preventDefault(); navigate('/about') }} style={footerLink}>About</a>
           <a href="/blog" onClick={e => { e.preventDefault(); navigate('/blog') }} style={footerLink}>Blog</a>

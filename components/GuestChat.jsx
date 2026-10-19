@@ -88,7 +88,7 @@ export default function GuestChat() {
         }} aria-label="Back"><Icon name="arrow" size={20} /></button>
         <img src="/imagebuddin.png" alt="" width={34} height={34} style={{ borderRadius: 8, transform: 'scaleX(-1)' }} />
         <div>
-          <div style={{ fontWeight: 700, fontSize: 15, color: '#2c2018' }}>Buddin</div>
+          <div style={{ fontWeight: 700, fontSize: 15, color: '#2c2018' }}>GetBuddin</div>
           <div style={{ fontSize: 12, color: '#5fbf8f', fontWeight: 600 }}>guest preview</div>
         </div>
       </div>
@@ -142,7 +142,7 @@ export default function GuestChat() {
             </div>
             <div style={{ fontSize: 14, color: '#5a4634', lineHeight: 1.5, marginBottom: 14 }}>
               You've got {remaining} preview message{remaining === 1 ? '' : 's'} left. Make a
-              free account to keep going and have Buddin remember you.
+              free account to keep going and have GetBuddin remember you.
             </div>
             <div style={cardBtns}>
               <button onClick={() => navigate('/signup')} style={cardPrimary}>Sign up free</button>
@@ -158,7 +158,7 @@ export default function GuestChat() {
             </div>
             <div style={{ fontSize: 14, color: '#5a4634', lineHeight: 1.5, marginBottom: 14 }}>
               Create a free account to keep this conversation going, save your history, and
-              have Buddin actually remember you next time.
+              have GetBuddin actually remember you next time.
             </div>
             <div style={cardBtns}>
               <button onClick={() => navigate('/signup')} style={cardPrimary}>Sign up free</button>

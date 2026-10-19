@@ -147,10 +147,10 @@ export default function WritingPrompt({ setScreen, avatarColor, C }) {
           <div style={{ fontSize: 48, marginBottom: 16 }}>✍️</div>
           <h2 style={{ fontFamily: "'Fraunces', Georgia, serif", color: C.ink, fontWeight: 400, marginBottom: 8 }}>All prompts completed!</h2>
           <p style={{ color: C.stone, fontSize: 14, lineHeight: 1.7, marginBottom: 24 }}>
-            {totalAnswered} writing samples collected. Buddin now has a deep sense of how you express yourself.
+            {totalAnswered} writing samples collected. GetBuddin now has a deep sense of how you express yourself.
           </p>
           <button onClick={() => setScreen("myprofile")} style={{ background: `linear-gradient(135deg, ${avatarColor}, ${avatarColor}cc)`, color: "#fff", border: "none", borderRadius: 16, padding: "14px 28px", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
-            See what Buddin knows →
+            See what GetBuddin knows →
           </button>
         </div>
       </div>

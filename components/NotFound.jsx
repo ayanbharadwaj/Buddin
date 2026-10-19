@@ -15,7 +15,7 @@ const C = {
 
 const DESTINATIONS = [
   { to: '/try',   title: 'Try the chat',  desc: 'No account, no signup. Just start talking.' },
-  { to: '/',      title: 'Home',          desc: 'What Buddin is and who it is for.' },
+  { to: '/',      title: 'Home',          desc: 'What GetBuddin is and who it is for.' },
   { to: '/about', title: 'About',         desc: 'Why a high-schooler built this.' },
   { to: '/blog',  title: 'Blog',          desc: 'Writing on loneliness, focus and screens.' },
 ]

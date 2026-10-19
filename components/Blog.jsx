@@ -3,7 +3,7 @@ import { PageShell, navigate, usePath } from './SiteShell.jsx'
 const posts = [
   {
     slug: 'why-i-built-buddin',
-    title: 'Buddin started at 1am, after a talk with my mom.',
+    title: 'GetBuddin started at 1am, after a talk with my mom.',
     date: '2026-06-12',
     minutes: 4,
     summary:
@@ -16,7 +16,7 @@ const posts = [
     date: '2026-06-08',
     minutes: 5,
     summary:
-      "A cricket teammate batted perfectly against everything I bowled. I wanted to tell him. I froze, kept waiting for the perfect moment, and the moment never came. Here's what that taught me — and what it has to do with Buddin.",
+      "A cricket teammate batted perfectly against everything I bowled. I wanted to tell him. I froze, kept waiting for the perfect moment, and the moment never came. Here's what that taught me — and what it has to do with GetBuddin.",
     body: perfectTimeBody
   },
   {
@@ -58,7 +58,7 @@ function Index() {
         fontSize: 'clamp(32px, 4.5vw, 46px)', lineHeight: 1.1, margin: '0 0 14px',
         color: '#2c2018', letterSpacing: -1
       }}>
-        Notes from building Buddin.
+        Notes from building GetBuddin.
       </h1>
       <p style={{ fontSize: 18, color: '#5a4634', marginBottom: 32, lineHeight: 1.55 }}>
         Honest writing about doom-scrolling, overthinking, freezing up, and what it's
@@ -124,12 +124,12 @@ function PostView({ post }) {
         border: '1px solid #ead8bb', borderRadius: 16
       }}>
         <div style={{ fontWeight: 700, color: '#2c2018', marginBottom: 6 }}>
-          Buddin is the thing behind this writing.
+          GetBuddin is the thing behind this writing.
         </div>
         <div style={{ color: '#5a4634', marginBottom: 14, fontSize: 16 }}>
           A quiet, private place to think out loud. Free, no signup to start.
         </div>
-        <button onClick={() => navigate('/try')} style={primaryBtn}>Try Buddin — no signup →</button>
+        <button onClick={() => navigate('/try')} style={primaryBtn}>Try GetBuddin — no signup →</button>
       </div>
       <div style={{ height: 40 }} />
     </article>
@@ -190,7 +190,7 @@ function originBody() {
         with school.
       </p>
       <p style={p}>
-        I'll be honest: sometimes I just stopped doing schoolwork to work on Buddin. Not
+        I'll be honest: sometimes I just stopped doing schoolwork to work on GetBuddin. Not
         because I'm some disciplined founder, but because fixing one stubborn error and
         getting it to work <em>perfectly</em> was the most fun I'd had all day.
       </p>
@@ -199,11 +199,11 @@ function originBody() {
       <p style={p}>
         I'm a perfectionist. If I'm going to do something, I want it done right. That's a
         strength when I'm debugging at midnight and a real problem when it wrecks my time
-        management. A lot of building Buddin wasn't even "building Buddin" — it was chasing
+        management. A lot of building GetBuddin wasn't even "building GetBuddin" — it was chasing
         the small, clean hit of fixing something exactly.
       </p>
       <p style={p}>
-        Buddin came out of a fast brain, a perfectionist streak, and one ordinary
+        GetBuddin came out of a fast brain, a perfectionist streak, and one ordinary
         conversation with my mom. I think the best things usually start that quietly.
       </p>
     </>
@@ -213,7 +213,7 @@ function originBody() {
 function perfectTimeBody() {
   return (
     <>
-      <p style={p}>I have a confession that explains a lot about why I built Buddin: I freeze.</p>
+      <p style={p}>I have a confession that explains a lot about why I built GetBuddin: I freeze.</p>
       <p style={p}>
         There's a guy in my cricket coaching group. One session, every single ball I bowled,
         he defended perfectly — clean, calm, textbook. I genuinely wanted to tell him after.
@@ -249,7 +249,7 @@ function perfectTimeBody() {
         teacher's pet than the people-pleaser. One of those is better for your actual life.
       </p>
       <p style={p}>
-        This is the exact muscle Buddin is meant to rebuild. Not the gambling for a flawless
+        This is the exact muscle GetBuddin is meant to rebuild. Not the gambling for a flawless
         moment — just the plain ability to say the thing while the moment's still here. If you
         can practice that somewhere low-stakes, maybe you don't freeze when it counts.
       </p>
@@ -289,7 +289,7 @@ function scrollHabitBody() {
         you stop paying attention.
       </p>
       <p style={p}>
-        That's a big reason Buddin is boring on purpose: no streaks, no feed, nothing
+        That's a big reason GetBuddin is boring on purpose: no streaks, no feed, nothing
         engineered to quietly become your new default. The goal was never to swap one
         compulsion for another. It's to give you a few honest minutes and then let you go.
       </p>
@@ -330,7 +330,7 @@ function fastBrainBody() {
         people my age have the same overactive engine and feel alone in it. You're not.
       </p>
       <p style={p}>
-        Part of what Buddin is, honestly, is me trying to build a calmer place to think —
+        Part of what GetBuddin is, honestly, is me trying to build a calmer place to think —
         somewhere the branches slow down just enough that you can actually pick one.
       </p>
     </>

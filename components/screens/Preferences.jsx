@@ -159,7 +159,7 @@ export default function Preferences({ setScreen, avatarColor, C }) {
               {allAnswered ? "That's all of them — saved." : "Saved. Come back and finish the rest whenever."}
             </p>
             <button onClick={() => setScreen("myprofile")} aria-label="Go back" style={{ background: "transparent", border: `1px solid ${avatarColor}44`, borderRadius: 10, padding: "7px 15px", fontSize: 12, color: avatarColor, cursor: "pointer", fontFamily: "inherit" }}>
-              See what Buddin knows →
+              See what GetBuddin knows →
             </button>
           </div>
         )}
