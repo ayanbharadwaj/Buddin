@@ -8,8 +8,9 @@ import {
   GraduationCap, Compass, Hash, SlidersHorizontal
 } from "lucide-react";
 import { InstagramIcon, YoutubeIcon } from '../components/SocialIcons.jsx';
-import { toneToSystemInstruction } from './boom/memorySchema.js';
 import { supabase } from '../lib/supabase.js'
+import { isCrisisText } from '../lib/crisis.js'
+import RichText from '../components/RichText.jsx';
 import ComparisonEngine from '../components/screens/ComparisonEngine.jsx';
 import MyProfile from '../components/screens/MyProfile.jsx';
 import WordGame from '../components/screens/WordGame.jsx';
@@ -120,8 +121,9 @@ const detectSemanticLoop = (msgs) => {
   
   return loops >= 2;
 };
-const CRISIS_KW = ["suicide","kill myself","end my life","want to die","self-harm","hurt myself","cutting","overdose","can't go on","no reason to live","better off dead","end it all"];
-const isCrisisText = (t) => CRISIS_KW.some(k=>t.toLowerCase().includes(k));
+// Crisis detection lives in lib/crisis.js so the client and api/chat.js share
+// one list and cannot drift apart. The client check drives the local UI; the
+// server runs the same check independently so a direct API call can't skip it.
 
 /* ═══════════════════════════════════════════════════════════════
    DATA
@@ -223,45 +225,11 @@ const SOURCES = [
 
 /* ═══════════════════════════════════════════════════════════════
    PROMPTS
+   All system prompts now live in lib/prompts.js and are applied by
+   api/chat.js. They used to be built here and POSTed as a `system`
+   field, which let any caller substitute their own instructions.
 ═══════════════════════════════════════════════════════════════ */
-const INSIGHT_PROMPT = `You are a "Scientific Sage" — a hybrid of a theoretical physicist and a Stoic philosopher.
-Find a meaningful resonance between a hard scientific concept and a human truth about existence, perception, or experience.
-RULES: No jargon. No clichés. Find NON-OBVIOUS connections. Output is philosophical wisdom grounded in science, not a science fact.
-Output ONLY a valid JSON array of exactly 5 objects. No preamble. No markdown. Format: [{"text":"...","source":"..."}, ...]
-Each text: 2–4 sentences. Rich, poetic, grounded. Sources: reference the scientific field (e.g. "Chaos Theory — Edge of Stability").
-Draw from: quantum entanglement, mycorrhizal networks, stellar nucleosynthesis, synaptic pruning, default mode network, entropy, coastal erosion, circadian biology, chaos theory, epigenetics, bioluminescence, migratory navigation, thermohaline circulation, non-linear ecosystem recovery.`;
 
-const buildSystemPrompt = (avatar, mood, summary, minutes, lyapunov, gut, superpositions, looping, adaptiveTone, activeQ, qAsked) => `You are Buddin. You are a friend, a peer, and a pal. You are NOT a therapist, a mentor, or an AI assistant.
-${adaptiveTone ? toneToSystemInstruction(adaptiveTone) : ""}
-PERSONA: ${avatar?.name||"Buddin"} — ${avatar?.personality||"chill, relatable, honest."}
-MOOD: ${mood?.label||"unknown"} (${mood?.intensity||3}/5)
-SESSION: ~${Math.round(minutes)} minutes
-CONTEXT: ${summary||"Beginning of session."}
-${lyapunov?.isFossilized() ? "[INTERNAL: user stuck in a rut — shift the topic slightly]" : ""}
-${lyapunov?.isBifurcating() ? "[INTERNAL: rapid mood oscillation — keep things calm and grounded]" : ""}
-${superpositions?.length > 0 ? `[INTERNAL: conflicting needs: ${superpositions.join("; ")}]` : ""}
-${looping ? "[INTERNAL: conversation looping — smoothly introduce a new thought]" : ""}
-${gut?.shouldExit ? "[INTERNAL: conversation running long — naturally wind down or suggest an offline activity]" : ""}
-
-CORE VIBE:
-1. You are on the exact same level as the user. You have the same mental capacity and life experience as a normal peer. You don't own the world, you don't have all the answers, and you don't give lectures.
-2. People come here to hang out. They might want to talk about Formula 1, a new movie, a stressful test, or a video game. Roll with it. Be a normal human-esque friend.
-3. No advice-giving. Do not act like a counselor. If they have a problem, relate to it ("man, that sucks"). If you offer a thought, phrase it purely as your own messy perspective: "Honestly, I'd probably just..." or "If it were me, I might..."
-4. Be the bridge to the real world, naturally. If they are stressed, lonely, or cooped up, just talk like a friend who wants them to feel better. Say things like "Sometimes I just gotta step outside and look at the sky when my head is spinning" or "like when my head gets too full I sometimes just wanna talk to someone in real life, you know?" Never prescribe.
-5. Match their energy. If they are hype, be hype. If they are tired, be chill.
-6. Mirror their grammar. If they type in loose slang with barely any punctuation, loosen up too — lowercase, minimal punctuation, but still readable. If they write in clean, full sentences, match that with good grammar. Never sound like a stiff form letter, and never sound sloppy or drunk. Read the room.
-
-RULES:
-- NEVER use therapy words: "valid", "holding space", "I hear you", "process", "unpack", "sit with that", "check in".
-- Keep responses like texts or casual conversation. 2-4 sentences max unless they clearly want to go deeper.
-- Don't catastrophize. Someone being lazy or tired is just lazy or tired. Not everything means something deeper.
-- You do not know everything. It's okay to say "I have no idea" or "that's wild."
-- Don't act like a bot. Don't offer "assistance." Just hang out.
-${minutes > 15 ? `[INTERNAL: User has been here ${Math.round(minutes)} minutes. Gently start wrapping up or mentioning they should probably get back to real life soon.]` : ""}
-${activeQ && !qAsked ? `NATURAL QUESTION TO WEAVE IN (don't announce it, just work it into conversation naturally after you've built rapport — never in the first 3 exchanges): "${activeQ.text}"` : ""}
-
-CRISIS ONLY: If there are genuine repeated signals of crisis (self-harm, suicidal thoughts, etc.), drop the casual persona. Warmth first, then give 988 Lifeline and Crisis Text Line (text HOME to 741741).
-`.trim();
 
 /* ═══════════════════════════════════════════════════════════════
    DESIGN SYSTEM — Warmer, more visible palette
@@ -681,7 +649,7 @@ const res = await fetch("/api/chat", {
     "Content-Type":"application/json",
     "Authorization": `Bearer ${insightSession?.access_token}`
   },
-  body:JSON.stringify({ max_tokens:1200, system:INSIGHT_PROMPT,
+  body:JSON.stringify({ mode:"insights", max_tokens:1024,
           messages:[{role:"user",content:"Generate 5 new insights. Output ONLY valid JSON array, no markdown."}] }),
       });
       if (res.status === 429) {
@@ -739,7 +707,7 @@ function Bubble({ role, content, avatar, isTypingIndicator, isNew }) {
       <div style={{maxWidth:"80%",background:isAI?"rgba(255,252,245,0.62)":"rgba(255,255,255,0.40)",backdropFilter:"blur(20px)",border:`1px solid ${isAI?C.glassBorder:av?.color+"33"}`,borderRadius:isAI?"6px 20px 20px 20px":"20px 6px 20px 20px",padding:"14px 18px",boxShadow:`0 4px 20px ${C.shadow}`}}>
         {isTypingIndicator
           ? <div style={{display:"flex",gap:5,padding:"3px 2px",alignItems:"center"}}>{[0,1,2].map(i=><div key={i} style={{width:7,height:7,borderRadius:"50%",background:av?.color||C.sage,animation:`dot 1.5s ease-in-out ${i*0.22}s infinite`}}/>)}</div>
-          : <p style={{color:C.ink,fontSize:15,lineHeight:1.88,fontFamily:"'Fraunces', Georgia, serif",whiteSpace:"pre-wrap",wordBreak:"break-word",overflowWrap:"break-word"}}>{isAI?displayed:content}</p>
+          : <p style={{color:C.ink,fontSize:15,lineHeight:1.88,fontFamily:"'Fraunces', Georgia, serif",whiteSpace:"pre-wrap",wordBreak:"break-word",overflowWrap:"break-word"}}><RichText text={isAI?displayed:content}/></p>
         }
       </div>
     </div>
@@ -995,6 +963,11 @@ export default function App() {
 
       rampVolume('bg', 0, 0);
       rampVolume('br', 0, 0);
+
+      // The <audio> tags use preload="none" so ~5MB isn't fetched on every page
+      // load. Kick off the fetch here, at the point someone actually asks for
+      // sound; the canplaythrough wait below already handles the delay.
+      try { bg.load(); br.load(); } catch {}
 
       // Don't start playback until the file has buffered enough to play through
       // without stalling — starting on a half-loaded file is what caused the
@@ -1332,9 +1305,23 @@ const res = await fetch("/api/chat", {
   },
   
   body: JSON.stringify({
-    max_tokens:800,
-          system: buildSystemPrompt(av, mood, newSummary, getMinutes(), lyapunovRef.current, gut, superpositions, looping, adaptiveTone, activeQuestion, questionAskedRef.current)
-            + (isCrisis ? "\n\nCRITICAL SAFETY: Lead with warmth. Include 988 Lifeline and Crisis Text Line (HOME to 741741). Acknowledge pain before any redirect." : ""),
+          mode: "chat",
+          avatar_id: av?.id,
+          max_tokens: 800,
+          // Narrow, typed context only — the system prompt itself is assembled
+          // server-side from these values (see lib/prompts.js).
+          context: {
+            mood_label: mood?.label,
+            mood_intensity: mood?.intensity,
+            summary: newSummary,
+            minutes: getMinutes(),
+            fossilized: !!lyapunovRef.current?.isFossilized?.(),
+            bifurcating: !!lyapunovRef.current?.isBifurcating?.(),
+            looping: !!looping,
+            should_exit: !!gut?.shouldExit,
+            superpositions: Array.isArray(superpositions) ? superpositions : [],
+            active_question: (activeQuestion && !questionAskedRef.current) ? activeQuestion.text : null,
+          },
           messages: safeW10,
         }),
       });
@@ -1504,7 +1491,7 @@ const res = await fetch("/api/chat", {
       <audio
         ref={el => { bgRef.current = el; if (el) el.volume = 0; }}
         src={BG_URL}
-        preload="auto"
+        preload="none"
         onCanPlayThrough={() => { if (bgRef.current) bgRef.current._ready = true; }}
         style={{display:"none"}}
       />
@@ -1512,7 +1499,7 @@ const res = await fetch("/api/chat", {
       <audio
         ref={el => { brRef.current = el; if (el) el.volume = 0; }}
         src={BR_URL}
-        preload="auto"
+        preload="none"
         loop
         onCanPlayThrough={() => { if (brRef.current) brRef.current._ready = true; }}
         style={{display:"none"}}
@@ -1660,7 +1647,7 @@ const res = await fetch("/api/chat", {
           </div>
         )}
 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-  <button onClick={() => setScreen("onboard1")} style={{ background:"transparent", border:"none", color:C.stoneMid, cursor:"pointer", fontSize:13, padding:"8px 0" }}>← Back</button>
+  <button onClick={() => setScreen("onboard1")} aria-label="Go back" style={{ background:"transparent", border:"none", color:C.stoneMid, cursor:"pointer", fontSize:13, padding:"8px 0" }}>← Back</button>
   <button onClick={musicEnabled ? disableMusic : enableMusic} className="btn glass"
     style={{ border:`1px solid ${C.sage}44`, color:C.sage, borderRadius:16, fontSize:12, fontWeight:600, cursor:"pointer", background:`${C.sage}08`, padding:"6px 12px", display:"flex", alignItems:"center", gap:6 }}>
     {musicEnabled ? <><VolumeX size={13}/> Stop</> : <><Music size={13}/> Music</>}
@@ -1922,7 +1909,7 @@ const res = await fetch("/api/chat", {
       </div>
 
 
-      <div className="glass" style={{ padding:"max(14px, calc(env(safe-area-inset-top) + 10px)) 20px 14px", display:"flex", alignItems:"center", gap:13, borderBottom:"1px solid rgba(255,235,200,0.28)", flexShrink:0, position:"relative", zIndex:10, borderRadius:0, background:`rgba(245,236,220,0.85)`, backdropFilter:"blur(22px)", WebkitBackdropFilter:"blur(22px)" }}>        <button onClick={() => setScreen("home")} style={{ background:"transparent", border:"none", color:avatarColor, cursor:"pointer", padding:"4px 2px", display:"flex", alignItems:"center" }}>
+      <div className="glass" style={{ padding:"max(14px, calc(env(safe-area-inset-top) + 10px)) 20px 14px", display:"flex", alignItems:"center", gap:13, borderBottom:"1px solid rgba(255,235,200,0.28)", flexShrink:0, position:"relative", zIndex:10, borderRadius:0, background:`rgba(245,236,220,0.85)`, backdropFilter:"blur(22px)", WebkitBackdropFilter:"blur(22px)" }}>        <button onClick={() => setScreen("home")} aria-label="Go back" style={{ background:"transparent", border:"none", color:avatarColor, cursor:"pointer", padding:"4px 2px", display:"flex", alignItems:"center" }}>
           <ChevronLeft size={22} strokeWidth={2}/>
         </button>
         <AvatarCore avatar={av} size={40} pulse/>
@@ -2045,7 +2032,7 @@ const res = await fetch("/api/chat", {
       <div style={W}>
         <div style={{ paddingTop:36 }}>
           <div style={{ display:"flex", alignItems:"center", gap:13, marginBottom:20 }}>
-            <button onClick={() => setScreen("home")} style={{ background:"transparent", border:"none", color:avatarColor, cursor:"pointer", display:"flex", alignItems:"center" }}>
+            <button onClick={() => setScreen("home")} aria-label="Go back" style={{ background:"transparent", border:"none", color:avatarColor, cursor:"pointer", display:"flex", alignItems:"center" }}>
               <ChevronLeft size={22} strokeWidth={2}/>
             </button>
             <h2 style={{ fontFamily:"'Fraunces', Georgia, serif", fontSize:25, color:C.ink, fontWeight:400 }}>Something to Try</h2>

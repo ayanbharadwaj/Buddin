@@ -62,7 +62,7 @@ export default function Feedback({ setScreen, avatarColor, C }) {
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", fontFamily: "'Cabinet Grotesk', sans-serif", background: C.cream }}>
       {/* Header */}
       <div style={{ padding: "max(14px, calc(env(safe-area-inset-top) + 10px)) 20px 14px", display: "flex", alignItems: "center", gap: 12, background: "rgba(245,236,220,0.85)", backdropFilter: "blur(22px)", borderBottom: "1px solid rgba(255,235,200,0.28)" }}>
-        <button onClick={() => setScreen("home")} style={{ background: "transparent", border: "none", cursor: "pointer", color: avatarColor, padding: "4px 2px", display: "flex", alignItems: "center" }}>
+        <button onClick={() => setScreen("home")} aria-label="Go back" style={{ background: "transparent", border: "none", cursor: "pointer", color: avatarColor, padding: "4px 2px", display: "flex", alignItems: "center" }}>
           <ChevronLeft size={22} strokeWidth={2} />
         </button>
         <div style={{ flex: 1 }}>

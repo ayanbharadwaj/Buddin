@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { requireUser } from '../lib/auth.js'
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY)
 const supabaseAuth = createClient(process.env.SUPABASE_URL, process.env.VITE_SUPABASE_ANON_KEY)
@@ -20,9 +21,9 @@ const supabaseAuth = createClient(process.env.SUPABASE_URL, process.env.VITE_SUP
 export default async function handler(req, res) {
   const route = req.query?.route
 
-  const token = req.headers.authorization?.replace('Bearer ', '')
-  const { data: { user }, error } = await supabaseAuth.auth.getUser(token)
-  if (error || !user) return res.status(401).json({ error: 'Unauthorized' })
+  const auth = await requireUser(supabaseAuth, req)
+  if (auth.error) return res.status(auth.status).json({ error: auth.error })
+  const user = auth.user
 
   switch (route) {
     case 'preferences':  return preferences(req, res, user)
@@ -87,6 +88,9 @@ async function coach(req, res, user) {
     return res.status(429).json({ error: 'COACH_LIMIT_REACHED', remaining: 0 })
   }
 
+  if (avatar_id != null && !COACH_VOICES[avatar_id]) {
+    return res.status(400).json({ error: 'Unknown companion' })
+  }
   const voice = COACH_VOICES[avatar_id] || COACH_VOICES.zap
 
   const system = `You are the user's companion inside Buddin's "Learn It" section, helping a teenager actually understand a real-world situation rather than memorise an answer.
@@ -142,10 +146,24 @@ CRISIS: if there are genuine signs of self-harm or crisis, drop everything else,
     if (!reply) return res.status(502).json({ error: 'Empty reply' })
 
     if (countable) {
-      await supabase.from('usage').upsert(
-        { user_id: user.id, date: today, coach_count: used + 1 },
-        { onConflict: 'user_id,date' }
-      )
+      // Atomic, and the result is checked. Falls back to the old read-modify-
+      // write only if supabase-schema-v3.sql hasn't been applied yet.
+      const { error: incErr } = await supabase
+        .rpc('increment_coach_usage', { p_user: user.id, p_date: today })
+      if (incErr) {
+        const missing = incErr.code === '42883' ||
+          /function .* does not exist|could not find the function/i.test(incErr.message || '')
+        if (!missing) {
+          console.error('Coach usage increment failed:', incErr)
+        } else {
+          console.warn('increment_coach_usage RPC missing — run supabase-schema-v3.sql.')
+          const { error: upErr } = await supabase.from('usage').upsert(
+            { user_id: user.id, date: today, coach_count: used + 1 },
+            { onConflict: 'user_id,date' }
+          )
+          if (upErr) console.error('Coach usage fallback write failed:', upErr)
+        }
+      }
     }
 
     return res.status(200).json({
@@ -207,7 +225,7 @@ async function preferences(req, res, user) {
 async function popCulture(req, res, user) {
   if (req.method === 'GET') {
     const { data } = await supabase
-      .from('pop_culture_responses').select('name_id').eq('user_id', user.id)
+      .from('pop_culture_responses').select('name_id').eq('user_id', user.id).limit(500)
     return res.status(200).json(data || [])
   }
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' })
@@ -246,7 +264,7 @@ async function popCulture(req, res, user) {
 async function numbers(req, res, user) {
   if (req.method === 'GET') {
     const { data } = await supabase
-      .from('number_responses').select('number').eq('user_id', user.id)
+      .from('number_responses').select('number').eq('user_id', user.id).limit(500)
     return res.status(200).json(data || [])
   }
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' })
@@ -282,6 +300,7 @@ async function training(req, res, user) {
       .from('training_progress')
       .select('module_id, scenario_id, score, choice_index')
       .eq('user_id', user.id)
+      .limit(500)
     if (readErr) {
       console.error('Training read error:', readErr)
       return res.status(500).json({ error: 'Failed to load progress' })
@@ -293,6 +312,21 @@ async function training(req, res, user) {
   const { module_id, scenario_id, choice_index, score, response_time_ms } = req.body
   if (!module_id || !scenario_id || choice_index == null || score == null) {
     return res.status(400).json({ error: 'Missing required fields' })
+  }
+  // Scenario options carry a score of 0, 1 or 2. Anything else is a forged or
+  // buggy client — and one bad row permanently skews the average that
+  // infer-profile.js reads into the profile.
+  const n = Number(score)
+  if (!Number.isInteger(n) || n < 0 || n > 2) {
+    return res.status(400).json({ error: 'Invalid score' })
+  }
+  const ci = Number(choice_index)
+  if (!Number.isInteger(ci) || ci < 0 || ci > 9) {
+    return res.status(400).json({ error: 'Invalid choice' })
+  }
+  if (typeof module_id !== 'string' || module_id.length > 40 ||
+      typeof scenario_id !== 'string' || scenario_id.length > 40) {
+    return res.status(400).json({ error: 'Invalid identifiers' })
   }
 
   // Revisiting a scenario updates the answer instead of stacking duplicates

@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { requireUser } from '../lib/auth.js'
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY)
 const supabaseAuth = createClient(process.env.SUPABASE_URL, process.env.VITE_SUPABASE_ANON_KEY)
@@ -6,9 +7,9 @@ const supabaseAuth = createClient(process.env.SUPABASE_URL, process.env.VITE_SUP
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' })
 
-  const token = req.headers.authorization?.replace('Bearer ', '')
-  const { data: { user }, error } = await supabaseAuth.auth.getUser(token)
-  if (error || !user) return res.status(401).json({ error: 'Unauthorized' })
+  const auth = await requireUser(supabaseAuth, req)
+  if (auth.error) return res.status(auth.status).json({ error: auth.error })
+  const user = auth.user
 
   const { prompt, response, word_count, response_time_ms, time_to_first_keystroke_ms } = req.body
 

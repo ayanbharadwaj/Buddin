@@ -1,18 +1,20 @@
 import { createClient } from '@supabase/supabase-js'
+import { requireUser } from '../lib/auth.js'
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY)
 const supabaseAuth = createClient(process.env.SUPABASE_URL, process.env.VITE_SUPABASE_ANON_KEY)
 
 export default async function handler(req, res) {
-  const token = req.headers.authorization?.replace('Bearer ', '')
-  const { data: { user }, error } = await supabaseAuth.auth.getUser(token)
-  if (error || !user) return res.status(401).json({ error: 'Unauthorized' })
+  const auth = await requireUser(supabaseAuth, req)
+  if (auth.error) return res.status(auth.status).json({ error: auth.error })
+  const user = auth.user
 
   if (req.method === 'GET') {
     const { data } = await supabase
       .from('comparison_responses')
       .select('comparison_id')
       .eq('user_id', user.id)
+      .limit(500)
     return res.status(200).json(data || [])
   }
 
@@ -41,8 +43,10 @@ export default async function handler(req, res) {
     }
 
     if (insertError) {
-      console.error('Insert error:', insertError)
-      return res.status(500).json({ error: insertError.message })
+      // Log the detail server-side; never hand Postgres internals (constraint
+      // names, column names, query fragments) to whoever triggered the failure.
+      console.error('Comparison insert error:', insertError)
+      return res.status(500).json({ error: "Couldn't save that response" })
     }
     return res.status(200).json({ success: true })
   }

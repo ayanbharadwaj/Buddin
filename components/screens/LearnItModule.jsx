@@ -183,7 +183,7 @@ export default function LearnItModule({ setScreen, moduleId, avatar, avatarColor
       {/* Header — the bar tracks the whole module, not position inside a level.
           A bar that resets to empty every sixth scenario reads as losing progress. */}
       <div style={{ padding: "max(14px, calc(env(safe-area-inset-top) + 10px)) 20px 14px", display: "flex", alignItems: "center", gap: 12, background: "rgba(245,236,220,0.85)", backdropFilter: "blur(22px)", borderBottom: "1px solid rgba(255,235,200,0.28)", position: "sticky", top: 0, zIndex: 5 }}>
-        <button onClick={() => setScreen("learn")} style={{ background: "transparent", border: "none", cursor: "pointer", color: avatarColor, padding: "4px 2px", display: "flex", alignItems: "center" }}>
+        <button onClick={() => setScreen("learn")} aria-label="Go back" style={{ background: "transparent", border: "none", cursor: "pointer", color: avatarColor, padding: "4px 2px", display: "flex", alignItems: "center" }}>
           <ChevronLeft size={22} strokeWidth={2} />
         </button>
         <div style={{ flex: 1, minWidth: 0 }}>

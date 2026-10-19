@@ -1,12 +1,13 @@
 import { createClient } from '@supabase/supabase-js'
+import { requireUser } from '../lib/auth.js'
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY)
 const supabaseAuth = createClient(process.env.SUPABASE_URL, process.env.VITE_SUPABASE_ANON_KEY)
 
 export default async function handler(req, res) {
-  const token = req.headers.authorization?.replace('Bearer ', '')
-  const { data: { user }, error } = await supabaseAuth.auth.getUser(token)
-  if (error || !user) return res.status(401).json({ error: 'Unauthorized' })
+  const auth = await requireUser(supabaseAuth, req)
+  if (auth.error) return res.status(auth.status).json({ error: auth.error })
+  const user = auth.user
 
   // Route /api/feedback POST requests handled here to stay under Vercel's 12-function limit
   if (req.query?._route === 'feedback') {
@@ -37,8 +38,22 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'POST') {
-    const updates = req.body
-    const row = { user_id: user.id, ...updates, updated_at: new Date().toISOString() }
+    // The spread used to come AFTER user_id, so a client-supplied user_id in
+    // the JSON body silently overrode the authenticated one and wrote to
+    // someone else's row. An explicit allow-list removes the whole class of
+    // bug rather than blacklisting the two keys we happened to think of.
+    const ALLOWED = ['preferences']
+    const updates = req.body && typeof req.body === 'object' && !Array.isArray(req.body) ? req.body : {}
+    const safe = {}
+    for (const k of ALLOWED) {
+      if (Object.prototype.hasOwnProperty.call(updates, k)) safe[k] = updates[k]
+    }
+    if (Object.keys(safe).length === 0) {
+      return res.status(400).json({ error: 'No updatable fields supplied' })
+    }
+    // user_id is always the authenticated one, and is set LAST so nothing can
+    // override it.
+    const row = { ...safe, updated_at: new Date().toISOString(), user_id: user.id }
     // Prefer a single-row upsert keyed on user_id; if the UNIQUE(user_id)
     // constraint (supabase-fixes.sql) isn't in place yet, onConflict errors —
     // fall back to a manual update-or-insert so saving still works.

@@ -10,6 +10,7 @@ import Blog from './components/Blog.jsx'
 import GuestChat from './components/GuestChat.jsx'
 import { Privacy, Terms } from './components/Legal.jsx'
 import NotFound from './components/NotFound.jsx'
+import ErrorBoundary from './components/ErrorBoundary.jsx'
 import { usePath, navigate, useRouteMeta } from './components/SiteShell.jsx'
 import { supabase } from './lib/supabase.js'
 
@@ -86,7 +87,9 @@ function Root() {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <Root />
+    <ErrorBoundary>
+      <Root />
+    </ErrorBoundary>
     <Analytics />
   </StrictMode>
 )
