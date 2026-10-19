@@ -195,7 +195,7 @@ const FEATURES = [
 ]
 
 const FAQS = [
-  { q: 'Is Buddin a replacement for therapy?', a: "No. Buddin is a conversational companion — somewhere between a journal and a friend. If you're in crisis or working through something serious, please reach out to a counselor or a trusted adult." },
+  { q: 'Is Buddin a replacement for therapy?', a: "No. Buddin is a conversational companion — somewhere between a journal and a friend. If you're in crisis or working through something serious, please reach out to a counselor or a trusted adult. If you need someone right now: call or text 988 (Suicide & Crisis Lifeline), or text HOME to 741741 (Crisis Text Line). Both are free, 24/7, and confidential." },
   { q: 'What does Buddin do with what I say?', a: 'Your conversations stay between you and Buddin — never shared, posted, or sold, and there’s no social feed. The profile Buddin builds comes from what you choose to answer in Know Me, not from reading your chats back later.' },
   { q: 'Who built this?', a: 'I did — Ayan Bharadwaj, a sophomore at South Forsyth High School in Cumming, Georgia. I found myself doom-scrolling into a worse mood every night and wanted to build the opposite of that.' },
   { q: 'Is it free?', a: 'Yes — the core experience is free, and you can start without even making an account.' },
