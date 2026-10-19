@@ -1,4 +1,4 @@
-// Final path: api/boom/questionBank.js
+// src/boom/questionBank.js — imported by src/boom/moodInference.js
 export const QUESTION_BANK = [
   // ENERGY / MOTIVATION (6 questions)
   {

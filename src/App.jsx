@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 import { InstagramIcon, YoutubeIcon } from '../components/SocialIcons.jsx';
 import { toneToSystemInstruction } from './boom/memorySchema.js';
-import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
 import { supabase } from '../lib/supabase.js'
 import ComparisonEngine from '../components/screens/ComparisonEngine.jsx';
 import MyProfile from '../components/screens/MyProfile.jsx';
@@ -1202,14 +1201,12 @@ export default function App() {
   useEffect(() => {
     async function initSession() {
       try {
-        await fetch("/api/session", { method: "POST" });
         const { data: { session } } = await supabase.auth.getSession();
         const token = session?.access_token;
         const memRes = await fetch("/api/memory", {
           headers: { "Authorization": `Bearer ${token}` }
 });        if (memRes.ok) {
            const store = await memRes.json();
-          const { deriveAdaptiveTone } = await import("./boom/memorySchema.js");
 
            // Extract recent question IDs to avoid repeating
            const recentIds = store.snapshots ? store.snapshots.slice(-5).map(s => s.questionId).filter(Boolean) : [];
@@ -1508,11 +1505,11 @@ const res = await fetch("/api/chat", {
           <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:22, marginTop:14 }}>
             <a href="https://www.youtube.com/channel/UClXPubvuKuWSYKkRwBqwo1Q" target="_blank" rel="noopener noreferrer"
               style={{ display:"flex", alignItems:"center", gap:6, color:C.stoneMid, fontSize:12, fontWeight:600, textDecoration:"none" }}>
-              <YoutubeIcon size={15}/> @Getbuddin
+              <YoutubeIcon size={15}/> @getbuddin
             </a>
             <a href="https://www.instagram.com/getbuddin" target="_blank" rel="noopener noreferrer"
               style={{ display:"flex", alignItems:"center", gap:6, color:C.stoneMid, fontSize:12, fontWeight:600, textDecoration:"none" }}>
-              <InstagramIcon size={15}/> getbuddin
+              <InstagramIcon size={15}/> @getbuddin
             </a>
           </div>
         </div>
@@ -2188,34 +2185,20 @@ const res = await fetch("/api/chat", {
       </div>
 
       <div className="glass card" style={{ borderRadius:22, padding:22, marginBottom:14, border:`2px solid ${avatarColor}66`, position:"relative" }}>
-        <div style={{ position:"absolute", top:-14, left:"50%", transform:"translateX(-50%)", background:`linear-gradient(135deg, ${avatarColor}, ${avatarColor}cc)`, color:"#fff", borderRadius:20, padding:"6px 20px", fontSize:12, fontWeight:700, boxShadow:`0 4px 12px ${avatarColor}44`, whiteSpace:"nowrap" }}> POPULAR · $9/mo</div>
+        <div style={{ position:"absolute", top:-14, left:"50%", transform:"translateX(-50%)", background:`linear-gradient(135deg, ${avatarColor}, ${avatarColor}cc)`, color:"#fff", borderRadius:20, padding:"6px 20px", fontSize:12, fontWeight:700, boxShadow:`0 4px 12px ${avatarColor}44`, whiteSpace:"nowrap" }}>MOST USEFUL</div>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
           <div style={{ display:"flex", alignItems:"center", gap:8 }}>
             <p style={{ fontWeight:700, fontSize:16, color:C.ink, fontFamily:"'Fraunces', Georgia, serif" }}>Supporter</p>
             <HeartHandshake size={18} color={avatarColor} strokeWidth={1.8}/>
           </div>
-          <p style={{ fontSize:22, fontWeight:700, color:avatarColor, fontFamily:"'Fraunces', Georgia, serif" }}>$9<span style={{ fontSize:13, fontWeight:400 }}>/mo</span></p>
+          <p style={{ fontSize:22, fontWeight:700, color:avatarColor, fontFamily:"'Fraunces', Georgia, serif" }}>40<span style={{ fontSize:13, fontWeight:400 }}>/day</span></p>
         </div>
-        {["40 messages per day","Upgraded to Sonnet — smarter, warmer replies","Everything in Free","Keeps Buddin running"].map(f => (
+        {["40 messages per day","Claude Sonnet 4.5 — longer, more nuanced replies","Everything in Free","Keeps Buddin running"].map(f => (
           <div key={f} style={{ display:"flex", gap:10, alignItems:"center", marginBottom:7 }}>
             <Check size={13} color={avatarColor} strokeWidth={2.5}/>
             <p style={{ color:C.stone, fontSize:13 }}>{f}</p>
           </div>
         ))}
-        <PayPalScriptProvider options={{ 'client-id': import.meta.env.VITE_PAYPAL_CLIENT_ID, currency: 'USD' }}>
-  <PayPalButtons
-    style={{ layout: 'vertical', shape: 'pill' }}
-    createOrder={(data, actions) => actions.order.create({
-      purchase_units: [{ amount: { value: '4.99' }, description: 'Buddin Supporter Plan' }]
-    })}
-    onApprove={async () => {
-      if (session) {
-        await supabase.from('profiles').update({ tier: 'supporter' }).eq('id', session.user.id)
-        alert('You are now a Supporter! Refresh to see your new limits.')
-      }
-    }}
-  />
-</PayPalScriptProvider>
       </div>
 
       <div className="glass card" style={{ borderRadius:22, padding:22, marginBottom:20, border:`1px solid ${C.gold}55` }}>
@@ -2224,31 +2207,35 @@ const res = await fetch("/api/chat", {
             <p style={{ fontWeight:700, fontSize:16, color:C.ink, fontFamily:"'Fraunces', Georgia, serif" }}>Max</p>
             <Crown size={18} color={C.gold} strokeWidth={1.8}/>
           </div>
-          <p style={{ fontSize:22, fontWeight:700, color:C.gold, fontFamily:"'Fraunces', Georgia, serif" }}>$19<span style={{ fontSize:13, fontWeight:400 }}>/mo</span></p>
+          <p style={{ fontSize:22, fontWeight:700, color:C.gold, fontFamily:"'Fraunces', Georgia, serif" }}>120<span style={{ fontSize:13, fontWeight:400 }}>/day</span></p>
         </div>
-        {["120 messages per day","Upgraded to Sonnet 4.6 — the latest model","Everything in Supporter","You're a real one"].map(f => (
+        {["120 messages per day","Claude Sonnet 4.6 — the newest model","Everything in Supporter","You're a real one"].map(f => (
           <div key={f} style={{ display:"flex", gap:10, alignItems:"center", marginBottom:7 }}>
             <Check size={13} color={C.gold} strokeWidth={2.5}/>
             <p style={{ color:C.stone, fontSize:13 }}>{f}</p>
           </div>
         ))}
-        <PayPalScriptProvider options={{ 'client-id': import.meta.env.VITE_PAYPAL_CLIENT_ID, currency: 'USD' }}>
-  <PayPalButtons
-    style={{ layout: 'vertical', shape: 'pill' }}
-    createOrder={(data, actions) => actions.order.create({
-      purchase_units: [{ amount: { value: '9.99' }, description: 'Buddin Max Plan' }]
-    })}
-    onApprove={async () => {
-      if (session) {
-        await supabase.from('profiles').update({ tier: 'max' }).eq('id', session.user.id)
-        alert('You are now on Max! Refresh to see your new limits.')
-      }
-    }}
-  />
-</PayPalScriptProvider>
       </div>
 
-      <p style={{ color:C.stoneMid, fontSize:11, textAlign:"center", lineHeight:1.65 }}>No subscription traps — cancel anytime.<br/>Built by a high school student. Every dollar goes to API costs.</p>
+      {/* Purchasing is deliberately switched off. The old flow approved PayPal
+          orders without ever capturing them and granted tiers from the browser,
+          so it could neither take money nor be trusted. Rather than ship a
+          payment path I can't verify end to end, it's off until I can. */}
+      <div className="glass" style={{ borderRadius:18, padding:"18px 20px", marginBottom:16, border:`1px solid ${C.stoneLight}` }}>
+        <p style={{ color:C.ink, fontSize:13, fontWeight:700, marginBottom:7 }}>Supporter and Max aren't on sale yet.</p>
+        <p style={{ color:C.stone, fontSize:13, lineHeight:1.75, marginBottom:10 }}>
+          I took the checkout down. The old version couldn't actually verify a payment on my
+          server, and I'd rather have no payment page than one I can't stand behind. It's
+          coming back once I've built it properly.
+        </p>
+        <p style={{ color:C.stone, fontSize:13, lineHeight:1.75 }}>
+          If you've genuinely run out of messages and need more, just email{" "}
+          <a href="mailto:getbuddin@gmail.com" style={{ color:avatarColor, textDecoration:"underline" }}>getbuddin@gmail.com</a>{" "}
+          and I'll raise your limit by hand. No charge.
+        </p>
+      </div>
+
+      <p style={{ color:C.stoneMid, fontSize:11, textAlign:"center", lineHeight:1.65 }}>Built by a high school student. Every dollar I spend goes to API costs.</p>
     </div>
     <Dock screen={screen} setScreen={setScreen} onMissions={onMissions} avatarColor={avatarColor}/>
   </div>
@@ -2488,7 +2475,7 @@ const res = await fetch("/api/chat", {
           <p style={{ color:avatarColor, fontSize:11, fontWeight:700, letterSpacing:"0.12em", marginBottom:10 }}>THE STORY</p>
           <p style={{ color:C.ink, fontSize:15, lineHeight:1.88, fontFamily:"'Fraunces', Georgia, serif", fontStyle:"italic", fontWeight:300, marginBottom:14 }}>
             "I built Buddin because I know what it feels like to need someone to talk to and have no one around.
-  I'm 14 years old, a high school student in Cumming, Georgia, and I coded this entirely from scratch
+  I'm a sophomore at South Forsyth High School in Cumming, Georgia, and I coded this entirely from scratch
   — not for a class, not for a grade, but because I genuinely wanted it to exist.
   There were nights I wished an app like this existed for me. So I built it."
           </p>
@@ -2510,31 +2497,34 @@ const res = await fetch("/api/chat", {
           ))}
         </div>
 
-        <PayPalScriptProvider options={{ 'client-id': import.meta.env.VITE_PAYPAL_CLIENT_ID, currency: 'USD' }}>
-  <PayPalButtons
-    style={{ layout: 'vertical', shape: 'pill' }}
-    createOrder={(data, actions) => actions.order.create({
-      purchase_units: [{ amount: { value: '5.00' }, description: 'Buddin Donation' }]
-    })}
-    onApprove={() => alert('Thank you so much! Every dollar keeps Buddin alive.')}
-  />
-</PayPalScriptProvider>
 
 
-        <p style={{ color:C.stoneMid, fontSize:12, textAlign:"center", lineHeight:1.65 }}>
-          No account needed. Any amount helps. Thank you for believing in this.
-        </p>
+        {/* Donations are off for the same reason purchasing is: the embedded
+            checkout said "any amount" while charging a flat $5.00, and never
+            captured the order. Sharing the app is worth more than $5 anyway. */}
+        <div className="glass" style={{ borderRadius:18, padding:"18px 20px", border:`1px solid ${C.stoneLight}` }}>
+          <p style={{ color:C.ink, fontSize:13, fontWeight:700, marginBottom:7 }}>Donations are paused.</p>
+          <p style={{ color:C.stone, fontSize:13, lineHeight:1.75, marginBottom:10 }}>
+            The old donate button said "any amount" but actually charged a flat $5, and it
+            couldn't confirm the payment went through. That's not something I want to leave
+            running, so it's off until I rebuild it properly.
+          </p>
+          <p style={{ color:C.stone, fontSize:13, lineHeight:1.75 }}>
+            Genuinely, the most useful thing right now is telling one person who'd use this
+            that it exists. That helps more than five dollars.
+          </p>
+        </div>
 
         <div className="glass" style={{ borderRadius:18, padding:20, marginTop:16, border:`1px solid ${avatarColor}22` }}>
           <p style={{ color:C.forest, fontSize:13, fontWeight:600, marginBottom:12 }}>Follow Buddin</p>
           <div style={{ display:"flex", gap:10, marginBottom:12 }}>
             <a href="https://www.youtube.com/channel/UClXPubvuKuWSYKkRwBqwo1Q" target="_blank" rel="noopener noreferrer"
               style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:7, padding:"11px 12px", borderRadius:12, border:`1px solid ${C.stoneLight}`, color:C.stone, fontSize:13, fontWeight:600, textDecoration:"none", background:"rgba(255,248,235,0.55)" }}>
-              <YoutubeIcon size={15}/> @Getbuddin
+              <YoutubeIcon size={15}/> @getbuddin
             </a>
             <a href="https://www.instagram.com/getbuddin" target="_blank" rel="noopener noreferrer"
               style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:7, padding:"11px 12px", borderRadius:12, border:`1px solid ${C.stoneLight}`, color:C.stone, fontSize:13, fontWeight:600, textDecoration:"none", background:"rgba(255,248,235,0.55)" }}>
-              <InstagramIcon size={15}/> getbuddin
+              <InstagramIcon size={15}/> @getbuddin
             </a>
           </div>
           <button onClick={() => setScreen("feedback")} className="btn"

@@ -1,6 +1,6 @@
 # Buddin
 
-[getbuddin.org](https://getbuddin.org) — a free, private mental wellness app for teens. Built solo by a 9th-grade student founder.
+[getbuddin.org](https://getbuddin.org) — a free, private mental wellness app for teens. Built solo by a high-school student founder.
 
 Teens are more connected than ever and lonelier than ever, and most of that screen time goes into feeds that don't actually help. Buddin is a small set of tools aimed at the other direction:
 
@@ -18,19 +18,24 @@ Buddin isn't therapy and isn't a social feed. It's a judgment-free place to thin
 - **Frontend** — React 18 + Vite, no React Router (hand-rolled routing via `components/SiteShell.jsx`)
 - **Auth & DB** — Supabase
 - **Hosting** — Vercel, serverless functions in `/api`
-- **AI** — Anthropic API, called server-side only via `/api/chat.js` (never exposed to the browser)
+- **AI** — Anthropic API, called server-side only (the key never reaches the browser). Three routes call it: `api/chat.js` for conversation, `api/infer-profile.js` for the Know Me personality synthesis, and `api/knowme.js` for Career Discovery and the Learn It coach.
+- **Payments** — none. See *Tiers* below.
 
 ## Project structure
 
 ```
-api/                serverless functions (chat, mood/profile inference, module saves, sessions)
-components/         marketing site, auth, guest chat, legal pages
-components/screens/ the Know Me and Learn It module screens
-src/                the authenticated app (chat, missions, progress, screen router)
-src/data/           question banks and scenario content for every module
-lib/                shared client-side helpers
-public/             static assets (audio, images, sitemap)
-scripts/            one-off maintenance scripts
+main.jsx             entry point + the top-level router (marketing vs. app vs. 404)
+index.html           single static shell served for every route
+api/                 9 Vercel serverless functions (chat, profile inference, module saves)
+components/          marketing site, auth, guest chat, legal pages, 404
+components/screens/  the Know Me and Learn It module screens
+components/learnit/  Learn It scenario diagrams and the companion coach panel
+src/App.jsx          the authenticated app — chat, missions, progress, screen router
+src/boom/            memory schema, mood inference and the question bank
+src/data/            question banks and scenario content for every module
+lib/                 shared client-side helpers (Supabase client, guest chat)
+public/              static assets (audio, icons, sitemap, robots.txt)
+scripts/             one-off maintenance scripts
 ```
 
 ## Local development
@@ -42,15 +47,48 @@ npm run build     # production build
 npm run preview   # preview the production build
 ```
 
-Guest mode (`/try` and the homepage demo) calls `/api/chat`, which only runs on Vercel — use `vercel dev` instead of `npm run dev` to test it locally.
+`npm run dev` serves the frontend only. **Every** `/api/*` route is a Vercel
+function and returns 404 under plain Vite — so chat, the Know Me modules, the
+Learn It coach and profile inference are all non-functional locally unless you
+run `vercel dev` instead. Marketing pages, routing and layout work fine either
+way.
 
-Copy `.env.example` to `.env.local` and fill in your own Supabase and Anthropic keys.
+Copy `.env.example` to `.env.local` and fill it in — it documents all five
+variables and where each one comes from.
 
-Database setup: run `supabase-fixes.sql` and then `supabase-schema-v2.sql` in the Supabase SQL editor. Both are idempotent and safe to re-run.
+### Database setup
+
+Run these in the Supabase SQL editor, **in this order**, because the second
+depends on the `UNIQUE(user_id)` constraint the first adds:
+
+1. `supabase-fixes.sql` — adds the missing `writing_samples` column, de-duplicates
+   `user_profile` and adds its unique constraint, creates the `feedback` table.
+2. `supabase-schema-v2.sql` — everything the Know Me and Learn It modules need.
+
+`supabase-schema-v2.sql` is written to be idempotent and ends with a check query
+that should return `true` on every row. `supabase-fixes.sql` says to run it once:
+its `DELETE ... USING` de-duplication step is destructive by design, so re-running
+it is harmless on clean data but is not something to do casually.
+
+### Tiers
+
+There is no way to buy a tier — the purchase flow was removed in October 2026
+because it could not verify payments server-side. Tiers are granted by hand:
+
+```sql
+update profiles set tier = 'supporter' where id = '<user-uuid>';
+```
+
+See `TIER_SYSTEM_SETUP.md` for what each tier changes and what would have to be
+built before purchasing could return.
 
 ## Tools
 
 Tried a few AI coding tools along the way — Claude Code, Google Labs' Jules — and ultimately ended up doing much of it myself except for the web hosting and Supabase Dashboard managements which I had no prior experience doing so I needed some assistance from Claude.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
 
 ## Contact
 

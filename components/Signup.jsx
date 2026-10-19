@@ -91,9 +91,9 @@ export default function Signup({ onSwitch }) {
 
         <p style={{ textAlign: 'center', marginTop: 20, fontSize: 13, color: '#786858' }}>
           Already have an account?{' '}
-          <span onClick={onSwitch} style={{ color: '#b87840', cursor: 'pointer', fontWeight: 600 }}>
+          <button type="button" onClick={onSwitch} style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: '#b87840', cursor: 'pointer', fontWeight: 600, textDecoration: 'underline' }}>
             Sign in
-          </span>
+          </button>
         </p>
       </div>
     </div>
@@ -103,6 +103,10 @@ export default function Signup({ onSwitch }) {
 const inputStyle = {
   width: '100%', padding: '12px 14px', borderRadius: 10, border: '1.5px solid #ddd0bc',
   marginBottom: 12, fontSize: 15, boxSizing: 'border-box', background: '#fdf8f2',
+  // Explicit colour and colorScheme: the background was set but the text colour
+  // was left to the user agent, so a force-darkened browser painted the field
+  // (and the password bullets) black on near-black.
+  color: '#2c2018', caretColor: '#2c2018', colorScheme: 'light',
   outline: 'none', fontFamily: 'inherit'
 }
 const primaryBtn = {

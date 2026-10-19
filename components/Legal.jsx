@@ -1,6 +1,6 @@
 import { PageShell, navigate } from './SiteShell.jsx'
 
-const LAST_UPDATED = 'June 16, 2026'
+const LAST_UPDATED = 'October 18, 2026'
 
 function LegalShell({ title, children }) {
   return (
@@ -73,7 +73,6 @@ export function Privacy() {
         <li><strong>Supabase</strong> — secure account login and database storage.</li>
         <li><strong>Anthropic</strong> — generates Buddin's AI responses from your messages. Anthropic does not train its models on data sent through its API.</li>
         <li><strong>Vercel</strong> — hosting and privacy-friendly, aggregate analytics.</li>
-        <li><strong>PayPal</strong> — only if you choose to support Buddin financially; we never see or store your card details.</li>
       </ul>
       <p style={p}>
         We will only ever disclose data outside these providers if required by law (for
@@ -161,9 +160,10 @@ export function Terms() {
 
       <h2 style={h2}>Payments</h2>
       <p style={p}>
-        Buddin's core experience is free. If optional supporter tiers are offered, payments are
-        handled by PayPal and any paid terms will be shown to you before you pay. We don't store
-        your card details.
+        Buddin is free, and right now there is no way to pay for it at all — we don't accept
+        payments or donations and we have no payment processor connected. If that ever changes,
+        the terms and the price will be shown to you clearly before you pay anything, and we
+        still won't store your card details.
       </p>
 
       <h2 style={h2}>Your content</h2>

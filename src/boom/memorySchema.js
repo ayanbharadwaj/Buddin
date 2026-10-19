@@ -1,4 +1,4 @@
-// Final path: api/boom/memorySchema.js
+// src/boom/memorySchema.js — imported by api/memory.js and src/App.jsx
 export const createMemoryStore = () => ({
   snapshots: [],
   baseline: {

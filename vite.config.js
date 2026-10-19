@@ -1,24 +1,12 @@
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), '')
-  return {
-    plugins: [react()],
-    server: {
-      proxy: {
-        '/api/anthropic': {
-          target: 'https://api.anthropic.com',
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/anthropic/, ''),
-          configure: (proxy, options) => {
-            proxy.on('proxyReq', (proxyReq, req, res) => {
-              proxyReq.setHeader('x-api-key', env.ANTHROPIC_API_KEY || '');
-              proxyReq.setHeader('anthropic-version', '2023-06-01');
-            });
-          }
-        }
-      }
-    }
-  }
+// The /api/anthropic dev proxy that used to live here injected
+// ANTHROPIC_API_KEY into every proxied request, which handed any page or
+// script running in the dev browser unauthenticated, unmetered access to the
+// Anthropic API on the developer's key. It had zero callers — nothing in src/,
+// components/, lib/ or main.jsx ever fetched that path — and it contradicted
+// the README's promise that the key never reaches the browser. Removed.
+export default defineConfig({
+  plugins: [react()],
 })

@@ -12,6 +12,67 @@ export function navigate(path) {
   window.dispatchEvent(new PopStateEvent('popstate'))
 }
 
+const SITE = 'https://getbuddin.org'
+const DEFAULT_TITLE = 'Buddin — The quiet companion for teens. Free.'
+
+// One static index.html serves every route, so without this every page shared
+// a single <title> and declared the homepage as its canonical — which tells
+// Google to drop the sub-pages from the index entirely, defeating the sitemap.
+const ROUTE_TITLES = {
+  '/': DEFAULT_TITLE,
+  '/about': 'About Buddin — why a high-schooler built it',
+  '/blog': 'Buddin Blog — on loneliness, focus and screen time',
+  '/try': 'Try Buddin free — no signup needed',
+  '/privacy': 'Privacy Policy — Buddin',
+  '/terms': 'Terms of Use — Buddin',
+  '/login': 'Sign in — Buddin',
+  '/signup': 'Create your account — Buddin',
+}
+
+const POST_TITLES = {
+  'why-i-built-buddin': 'Buddin started at 1am, after a talk with my mom. — Buddin',
+  'waiting-for-the-perfect-time': 'I keep waiting for the perfect time to say things. — Buddin',
+  'forgot-how-to-stop': "I didn't scroll to escape. I forgot how to stop. — Buddin",
+  'my-brain-runs-too-fast': 'My brain runs too fast, and it makes the small stuff hard. — Buddin',
+}
+
+// The authenticated app's own screens. Without these, every signed-in user got
+// a browser tab reading "Page not found" on a perfectly working screen.
+const APP_TITLES = {
+  '/home': 'Home — Buddin',
+  '/chat': 'Chat — Buddin',
+  '/do': 'Do something — Buddin',
+  '/growth': 'Your growth — Buddin',
+  '/me': 'Know Me — Buddin',
+  '/learn': 'Learn It — Buddin',
+  '/plans': 'Plans — Buddin',
+  '/breathe': 'Breathe — Buddin',
+}
+
+export function titleForPath(path) {
+  if (path.startsWith('/blog/')) {
+    return POST_TITLES[path.slice('/blog/'.length)] || ROUTE_TITLES['/blog']
+  }
+  return ROUTE_TITLES[path] || APP_TITLES[path] || 'Page not found — Buddin'
+}
+
+// Only the public marketing and content pages belong in a search index. App
+// screens are behind auth, /login and /signup are bare forms, and the 404 is a
+// soft 404 — none should advertise a self-canonical.
+const INDEXABLE = new Set(['/', '/about', '/blog', '/try', '/privacy', '/terms'])
+
+// Keeps <title> and <link rel=canonical> in step with the hand-rolled router.
+export function useRouteMeta(path) {
+  useEffect(() => {
+    document.title = titleForPath(path)
+    const link = document.querySelector('link[rel="canonical"]')
+    if (link) {
+      const indexable = INDEXABLE.has(path) || path.startsWith('/blog/')
+      link.href = SITE + (indexable ? path : '/')
+    }
+  }, [path])
+}
+
 export function usePath() {
   const [path, setPath] = useState(window.location.pathname)
   useEffect(() => {
@@ -80,18 +141,25 @@ export function SiteNav() {
     }}>
     <nav style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '20px 36px', maxWidth: 1160, margin: '0 auto', flexWrap: 'wrap', gap: 18
+      padding: '16px clamp(16px, 4vw, 36px)', maxWidth: 1160, margin: '0 auto',
+      flexWrap: 'wrap', gap: 'clamp(10px, 2vw, 18px)'
     }}>
       <a href="/" onClick={e => { e.preventDefault(); navigate('/') }}
         style={{ display: 'flex', alignItems: 'center', gap: 11, textDecoration: 'none' }}>
         <img src="/imagebuddin.png" alt="" width={38} height={38} style={{ borderRadius: 9 }} />
-        <span style={{ fontSize: 24, fontWeight: 700, color: '#2c2018', letterSpacing: -0.5 }}>
+        <span style={{ fontSize: 'clamp(20px, 5vw, 24px)', fontWeight: 700, color: '#2c2018', letterSpacing: -0.5 }}>
           Buddin
         </span>
       </a>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 30 }}>
-        <div ref={wrapRef} style={{ position: 'relative', display: 'flex', gap: 30 }}>
+      <div style={{
+        display: 'flex', alignItems: 'center', flexWrap: 'wrap',
+        justifyContent: 'flex-end', gap: 'clamp(14px, 3vw, 30px)', rowGap: 10,
+      }}>
+        {/* This group deliberately does NOT wrap — the sliding underline is
+            absolutely positioned from measured link rects, and wrapping these
+            three would strand it on the wrong row. */}
+        <div ref={wrapRef} style={{ position: 'relative', display: 'flex', gap: 'clamp(16px, 3.5vw, 30px)', flexShrink: 0 }}>
           {NAV_ITEMS.map((item, i) => {
             const active = i === idx
             return (
@@ -116,14 +184,14 @@ export function SiteNav() {
         </div>
 
         <a href="/login" onClick={e => { e.preventDefault(); navigate('/login') }}
-          style={{ color: '#6a5848', textDecoration: 'none', fontWeight: 500, fontSize: 16 }}>
+          style={{ color: '#6a5848', textDecoration: 'none', fontWeight: 500, fontSize: 16, whiteSpace: 'nowrap' }}>
           Sign in
         </a>
         <a href="/try" onClick={e => { e.preventDefault(); navigate('/try') }}
           style={{
-            background: '#b87840', color: 'white', padding: '12px 22px',
+            background: '#b87840', color: 'white', padding: '11px clamp(14px, 3vw, 22px)',
             borderRadius: 12, textDecoration: 'none', fontWeight: 600, fontSize: 15,
-            display: 'inline-flex', alignItems: 'center', gap: 7,
+            display: 'inline-flex', alignItems: 'center', gap: 7, whiteSpace: 'nowrap',
             boxShadow: '0 4px 14px rgba(184,120,64,0.25)'
           }}>
           Start talking <Icon name="arrow" size={17} />

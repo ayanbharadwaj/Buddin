@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+# Nothing here is private, but these have no value in a search index.
+Disallow: /home
+Disallow: /chat
+Disallow: /do
+Disallow: /growth
+Disallow: /me
+Disallow: /learn
+Disallow: /breathe
+Disallow: /plans
+
+Sitemap: https://getbuddin.org/sitemap.xml

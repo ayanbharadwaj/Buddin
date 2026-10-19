@@ -1,181 +1,68 @@
-# Buddin Tier System - Implementation Guide
+# Buddin — how tiers actually work
 
-## What Was Updated
+Rewritten October 18, 2026. The previous version of this file described a
+`/data/tiers.json` file-based system, file-backed rate limiting in
+`/data/ratelimit/`, a BuyMeACoffee integration, and `claude-3-haiku-20240307`.
+None of those exist. This file now describes what the code really does.
 
-### 1. Backend Changes (`/api/chat.js`)
+## Where a tier lives
 
-✅ **Model Updated**: `claude-3-haiku-20240307`
-✅ **Tier System**: Reads from `/data/tiers.json` (or `/tmp/buddin_tiers` in production)
-✅ **Rate Limiting**: 100 requests per minute per IP
-✅ **Supporter Tier**: Renamed from "pro" (40 messages/day)
-✅ **Unified Off-Topic Logic**: All patterns in backend, backend returns flag
+One column: `profiles.tier`, holding `free`, `supporter`, or `max`.
+`api/chat.js` reads it via `getTierFromDB(userId)`. There is no JSON file and
+no IP-based tier mapping.
 
-### 2. Frontend Changes (`/src/App.jsx`)
+## What each tier changes
 
-✅ **Tier Badge**: Displays in chat header showing current tier (Free/Supporter/Max)
-✅ **Plans Button**: Added to home screen navbar
-✅ **Message Limits**: Automatically enforced by backend
-✅ **UI State**: Reads tier from `usageMeta.tier`
+| Tier | Messages/day | Chat model | Learn It coaching/day |
+|---|---|---|---|
+| `free` | 10 | `claude-haiku-4-5` | 25 |
+| `supporter` | 40 | `claude-sonnet-4-5` | 80 |
+| `max` | 120 | `claude-sonnet-4-6` | 200 |
 
-### 3. New Files
+Message limits and model selection: `api/chat.js` (`limitForTier`,
+`modelForTier`). Coaching limits: `api/knowme.js` (`COACH_LIMITS`), counted
+separately so finishing a Learn It lesson never eats your conversation quota.
 
-- `/data/tiers.json` - Mock tier database (starts empty `{}`)
+Daily counts live in the Supabase `usage` table, keyed `(user_id, date)` —
+`count` for chat, `coach_count` for coaching.
 
----
+## How someone gets a paid tier
 
-## How the Tier System Works
+**By hand, in Supabase.** There is deliberately no way to buy one.
 
-### Tier Limits
+The purchase flow was removed on October 18, 2026. It approved PayPal orders
+without ever calling `actions.order.capture()`, so money never moved; it then
+granted the tier with a `profiles.update({tier})` call **from the browser**,
+which any signed-in user could run themselves from devtools; and it displayed
+$9/$19 while charging $4.99/$9.99. Rather than ship a payment path that could
+not be verified server-side, it is off until it can be built properly.
 
-- **Free**: 10 messages/day
-- **Supporter**: 40 messages/day
-- **Max**: 120 messages/day
+To grant a tier:
 
-### Tier Assignment (Manual for Now)
-
-Until you integrate real payments, upgrade users manually by adding to `/data/tiers.json`:
-
-```json
-{
-  "hashedIP_abc123": "free",
-  "hashedIP_def456": "supporter",
-  "hashedIP_ghi789": "max"
-}
+```sql
+update profiles set tier = 'supporter' where id = '<user-uuid>';
 ```
 
-### Data Flow
+Before purchasing can come back, all of these are required:
+1. An `api/verify-payment.js` route that captures the order with the PayPal
+   secret server-side and only then sets the tier using the service key.
+2. An RLS policy making `profiles.tier` writable by the service role only.
+3. One source of truth for prices, rendered by both the pricing cards and the
+   order amount, so the two can never drift apart again.
 
-1. **User sends message** → Backend reads tier from `tiers.json`
-2. **Backend enforces limit** → Returns `usage_meta: { tier, limit, remaining }`
-3. **Frontend displays tier badge** → Shows in chat header
-4. **Limit reached** → Shows upgrade prompt
+## Rate limiting
 
----
+`api/chat.js` applies 100 requests/minute per identity, in memory
+(`rateLimitStore`). Two known weaknesses, both tracked:
+- In-memory counters do not survive serverless instances scaling out.
+- The identity comes from the **leftmost** `X-Forwarded-For` entry, which the
+  client controls and can rotate.
 
-## Off-Topic Logic (Unified)
+Both are fixed in the security pass, not here.
 
-All off-topic patterns are now **centralized in backend**:
+## Off-topic handling
 
-- Backend detects off-topic message
-- Returns `offTopicRedirect: true` flag
-- Frontend just displays the message (no duplicate logic)
-- After 2 strikes, shows friendly redirect message
-
-This prevents:
-
-- Double redirects
-- Inconsistent behavior
-- Conflicting logic
-
----
-
-## Rate Limiting
-
-Protects your server from abuse:
-
-- **Window**: 60 seconds
-- **Limit**: 100 requests per IP
-- **File**: `/data/ratelimit/` (auto-created)
-
----
-
-## Tier Badge in Chat
-
-**Location**: Top-right of chat screen, next to "Breathe" button
-**Format**: Small glass-morphic badge showing "free" | "supporter" | "max"
-**Updates**: When backend returns `usage_meta.tier`
-
----
-
-## Plans Button on Home
-
-**Location**: Home screen navbar, next to "Switch" button
-**Icon**: Sparkles (Lucide React)
-**Action**: `onClick={() => setScreen("upgrade")}`
-**Label**: "Plans"
-
----
-
-## Manual Tier Testing
-
-To test tiers locally, edit `/data/tiers.json`:
-
-```json
-{
-  "abc123def456ghi789": "supporter"
-}
-```
-
-Then:
-
-1. Make sure your hashed IP matches
-2. Send a chat message
-3. Badge should show "supporter"
-4. You'll have 40 messages/day instead of 10
-
----
-
-## Next Steps for Production
-
-### 1. Real Payment Integration
-
-Use BuyMeACoffee webhook to auto-update tiers:
-
-- User donates → Webhook receives payment
-- Backend maps user email → hashed IP
-- Updates `tiers.json` automatically
-
-### 2. User Identity
-
-Right now, tiers are IP-based. For real users:
-
-- Add email/account system
-- Hash email instead of IP
-- Persist identity across devices
-
-### 3. Database
-
-Phase out JSON files:
-
-- Migrate to Supabase/MongoDB
-- Store: `{ ipHash, tier, createdAt, updatedAt, email }`
-- Query directly instead of file reads
-
----
-
-## Error Codes
-
-- `RATE_LIMIT` - Too many requests (429)
-- `LIMIT_REACHED` - Daily message limit hit (429)
-- `BLOCKED` - User permanently blocked (429)
-- `OVERSIZED` - Request body too large (413)
-- `OFFCATION` - Returns message with `offTopicRedirect: true`
-
----
-
-## Safety Notes
-
-✅ **Safe**: IP hashing (one-way, no PII stored)
-✅ **Safe**: No real payments yet (BuyMeACoffee only)
-✅ **Safe**: Off-topic logic is friendly, not punitive
-✅ **Safe**: Rate limiting prevents abuse
-
-⚠️ **TODO**: Add authentication for real tier persistence
-⚠️ **TODO**: Implement BuyMeACoffee webhook integration
-⚠️ **TODO**: Add database migration plan
-
----
-
-## Files Modified
-
-```
-/api/chat.js                    [✅ Updated with tier support, rate limiting]
-/src/App.jsx                    [✅ Added tier badge, Plans button]
-/data/tiers.json                [✅ Created - mock tier database]
-/data/usage/                    [✅ Existing - usage tracking]
-/data/ratelimit/                [✅ Auto-created - rate limit tracking]
-```
-
----
-
-Questions? Everything is aligned with Buddin's warm, supportive tone. No shaming, no punishment — just honest guardrails.
+Patterns live in `OFF_TOPIC_PATTERNS` in `api/chat.js`. The backend detects
+them and returns `offTopicRedirect: true`; the frontend only renders the
+message. Two strikes produces a redirect message. Keeping the logic in one
+place is what stops the double-redirect bug this originally had.

@@ -20,7 +20,7 @@ import { useState } from "react";
 // few points off from what someone meant, and typing never does. Both paths
 // resolve to the same single integer handed to onCommit.
 
-export const PRIME_SCALES = [97, 107, 113, 127, 151];
+const PRIME_SCALES = [97, 107, 113, 127, 151];
 
 export function getRandomScale() {
   return PRIME_SCALES[Math.floor(Math.random() * PRIME_SCALES.length)];

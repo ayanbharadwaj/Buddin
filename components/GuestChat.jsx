@@ -73,7 +73,7 @@ export default function GuestChat() {
       }}>
         You're in a free guest preview · {remaining} message{remaining === 1 ? '' : 's'} left ·{' '}
         <span style={{ textDecoration: 'underline', cursor: 'pointer' }}
-          onClick={() => navigate('/login')}>sign up to save</span>
+          onClick={() => navigate('/signup')}>sign up to save</span>
       </div>
 
       {/* Header */}
@@ -145,7 +145,7 @@ export default function GuestChat() {
               free account to keep going and have Buddin remember you.
             </div>
             <div style={cardBtns}>
-              <button onClick={() => navigate('/login')} style={cardPrimary}>Sign up free</button>
+              <button onClick={() => navigate('/signup')} style={cardPrimary}>Sign up free</button>
               <button onClick={() => setRemind(false)} style={cardGhost}>Keep chatting</button>
             </div>
           </div>
@@ -161,7 +161,7 @@ export default function GuestChat() {
               have Buddin actually remember you next time.
             </div>
             <div style={cardBtns}>
-              <button onClick={() => navigate('/login')} style={cardPrimary}>Sign up free</button>
+              <button onClick={() => navigate('/signup')} style={cardPrimary}>Sign up free</button>
               <button onClick={() => navigate('/')} style={cardGhost}>Back to home</button>
             </div>
           </div>

@@ -61,7 +61,7 @@ export default function Landing() {
               </button>
             </div>
             <div style={{ fontSize: 13.5, color: '#786858' }}>
-              No social feed. No algorithm. Talk to Buddin for real, on the right →
+              No social feed. No algorithm. Try it for real — the live preview is right here.
             </div>
           </Reveal>
 
@@ -124,7 +124,7 @@ export default function Landing() {
               }}>A</div>
               <div>
                 <div style={{ fontWeight: 700, fontSize: 17, color: '#2c2018' }}>Ayan Bharadwaj</div>
-                <div style={{ color: '#786858', fontSize: 14 }}>Founder · 9th grader · Cumming, GA</div>
+                <div style={{ color: '#786858', fontSize: 14 }}>Founder · South Forsyth High School · Cumming, GA</div>
               </div>
             </div>
             <p style={{ fontSize: 17.5, lineHeight: 1.62, color: '#3a2d22', margin: 0 }}>

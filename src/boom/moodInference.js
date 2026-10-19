@@ -1,4 +1,4 @@
-// Final path: api/boom/moodInference.js
+// src/boom/moodInference.js — imported by api/select-question.js
 import { QUESTION_BANK } from './questionBank.js';
 
 export function buildInferencePrompt(question, responseText, contextSummary = "") {

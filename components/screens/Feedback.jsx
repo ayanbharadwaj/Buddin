@@ -132,10 +132,10 @@ export default function Feedback({ setScreen, avatarColor, C }) {
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 20, marginTop: 22 }}>
           <a href="https://www.youtube.com/channel/UClXPubvuKuWSYKkRwBqwo1Q" target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 6, color: C.stone, fontSize: 13, textDecoration: "none", fontWeight: 600 }}>
-            <YoutubeIcon size={16} /> @Getbuddin
+            <YoutubeIcon size={16} /> @getbuddin
           </a>
           <a href="https://www.instagram.com/getbuddin" target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 6, color: C.stone, fontSize: 13, textDecoration: "none", fontWeight: 600 }}>
-            <InstagramIcon size={16} /> getbuddin
+            <InstagramIcon size={16} /> @getbuddin
           </a>
         </div>
       </div>

@@ -14,19 +14,21 @@
 
     <!-- SEO -->
     <meta name="description" content="Teens are more connected than ever — and lonelier than ever. Buddin is the friend that's always there: a private, judgment-free conversation built for teen emotional wellness by a high-school founder." />
-    <meta name="keywords" content="AI companion for teens, teen loneliness app, teen mental health, digital wellness for students, talk to someone online free teen, AI buddy, companion app, emotional support app" />
+    <meta name="keywords" content="Buddin, GetBuddin, getbuddin.org, AI companion for teens, teen loneliness app, teen mental health, digital wellness for students, talk to someone online free teen, AI buddy, companion app, emotional support app" />
     <meta name="author" content="Ayan Bharadwaj" />
     <meta name="robots" content="index, follow" />
     <meta name="google-site-verification" content="GihO8X2qF46dvfESkjqQCpg5xGzdtjkWRjjGyyaTW5k" />
-    <link rel="canonical" href="https://getbuddin.org" />
-    <link rel="alternate" href="https://getbuddin.org" hreflang="en" />
+    <!-- href is rewritten per route at runtime (see useRouteMeta in
+         components/SiteShell.jsx) — a single static canonical pointed every
+         page at the homepage. -->
+    <link rel="canonical" href="https://getbuddin.org/" />
 
     <!-- Open Graph (shows up when shared on WhatsApp, iMessage, etc.) -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://getbuddin.org" />
     <meta property="og:site_name" content="Buddin" />
     <meta property="og:title" content="Buddin — The quiet companion for teens. Free." />
-    <meta property="og:description" content="48% of US teens now say social media harms people their age. Buddin is what one high schooler is building instead: a private, judgment-free place to think out loud." />
+    <meta property="og:description" content="Nearly half of US teens say social media is making people their age worse off (Pew Research). Buddin is what one high-schooler is building instead: a private, judgment-free place to think out loud." />
     <meta property="og:image" content="https://getbuddin.org/og-image.png" />
 
     <!-- Twitter Card -->
@@ -37,6 +39,7 @@
 
     <!-- PWA / Mobile -->
     <meta name="theme-color" content="#F5ECDC" />
+    <meta name="color-scheme" content="light" />
     <meta name="application-name" content="Buddin" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -53,12 +56,7 @@
           "name": "Buddin",
           "url": "https://getbuddin.org",
           "description": "Buddin is a conversational companion app for teen emotional wellness, built by high-school founder Ayan Bharadwaj. A private, judgment-free place to think out loud — not a social feed, not a clinician.",
-          "publisher": { "@id": "https://getbuddin.org/#org" },
-          "potentialAction": {
-            "@type": "SearchAction",
-            "target": "https://getbuddin.org/?q={search_term_string}",
-            "query-input": "required name=search_term_string"
-          }
+          "publisher": { "@id": "https://getbuddin.org/#org" }
         },
         {
           "@type": "Organization",
@@ -105,7 +103,7 @@
               "name": "Who built Buddin?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Ayan Bharadwaj, a 9th-grade high school student in Georgia, built Buddin in response to the teen mental health and loneliness crisis."
+                "text": "Ayan Bharadwaj, a sophomore at South Forsyth High School in Cumming, Georgia, built Buddin in response to the teen mental health and loneliness crisis."
               }
             },
             {
@@ -124,6 +122,11 @@
 
     <style>
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      /* Opt out of user-agent dark-mode forcing. Without this, Chrome's Auto
+         Dark Theme on Android inverts form controls and the login password
+         field renders as a solid black rectangle. The meta tag alone does not
+         cover every engine, so both are declared. */
+      html { color-scheme: light only; }
       html, body, #root { background: #F5ECDC; min-height: 100dvh; }
     </style>
   </head>

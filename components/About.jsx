@@ -15,7 +15,7 @@ export default function About() {
           I built Buddin because I needed it first.
         </h1>
         <p style={{ fontSize: 19, color: '#5a4634', marginBottom: 30 }}>
-          I'm Ayan Bharadwaj — I'm 14, a 9th grader at South Forsyth High School in
+          I'm Ayan Bharadwaj — a sophomore at South Forsyth High School in
           Cumming, Georgia. This is the story behind Buddin, in my own words.
         </p>
 
