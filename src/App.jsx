@@ -2239,57 +2239,6 @@ const res = await fetch("/api/chat", {
         ))}
       </div>
 
-      <div className="glass card" style={{ borderRadius:22, padding:22, marginBottom:14, border:`2px solid ${avatarColor}66`, position:"relative" }}>
-        <div style={{ position:"absolute", top:-14, left:"50%", transform:"translateX(-50%)", background:`linear-gradient(135deg, ${avatarColor}, ${avatarColor}cc)`, color:"#fff", borderRadius:20, padding:"6px 20px", fontSize:12, fontWeight:700, boxShadow:`0 4px 12px ${avatarColor}44`, whiteSpace:"nowrap" }}>MOST USEFUL</div>
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-            <p style={{ fontWeight:700, fontSize:16, color:C.ink, fontFamily:"'Fraunces', Georgia, serif" }}>Supporter</p>
-            <HeartHandshake size={18} color={avatarColor} strokeWidth={1.8}/>
-          </div>
-          <p style={{ fontSize:22, fontWeight:700, color:avatarColor, fontFamily:"'Fraunces', Georgia, serif" }}>40<span style={{ fontSize:13, fontWeight:400 }}>/day</span></p>
-        </div>
-        {["40 messages per day","Claude Sonnet 4.5 — longer, more nuanced replies","Everything in Free","Keeps GetBuddin running"].map(f => (
-          <div key={f} style={{ display:"flex", gap:10, alignItems:"center", marginBottom:7 }}>
-            <Check size={13} color={avatarColor} strokeWidth={2.5}/>
-            <p style={{ color:C.stone, fontSize:13 }}>{f}</p>
-          </div>
-        ))}
-      </div>
-
-      <div className="glass card" style={{ borderRadius:22, padding:22, marginBottom:20, border:`1px solid ${C.gold}55` }}>
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-            <p style={{ fontWeight:700, fontSize:16, color:C.ink, fontFamily:"'Fraunces', Georgia, serif" }}>Max</p>
-            <Crown size={18} color={C.gold} strokeWidth={1.8}/>
-          </div>
-          <p style={{ fontSize:22, fontWeight:700, color:C.gold, fontFamily:"'Fraunces', Georgia, serif" }}>120<span style={{ fontSize:13, fontWeight:400 }}>/day</span></p>
-        </div>
-        {["120 messages per day","Claude Sonnet 4.6 — the newest model","Everything in Supporter","You're a real one"].map(f => (
-          <div key={f} style={{ display:"flex", gap:10, alignItems:"center", marginBottom:7 }}>
-            <Check size={13} color={C.gold} strokeWidth={2.5}/>
-            <p style={{ color:C.stone, fontSize:13 }}>{f}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Purchasing is deliberately switched off. The old flow approved PayPal
-          orders without ever capturing them and granted tiers from the browser,
-          so it could neither take money nor be trusted. Rather than ship a
-          payment path I can't verify end to end, it's off until I can. */}
-      <div className="glass" style={{ borderRadius:18, padding:"18px 20px", marginBottom:16, border:`1px solid ${C.stoneLight}` }}>
-        <p style={{ color:C.ink, fontSize:13, fontWeight:700, marginBottom:7 }}>Supporter and Max aren't on sale yet.</p>
-        <p style={{ color:C.stone, fontSize:13, lineHeight:1.75, marginBottom:10 }}>
-          I took the checkout down. The old version couldn't actually verify a payment on my
-          server, and I'd rather have no payment page than one I can't stand behind. It's
-          coming back once I've built it properly.
-        </p>
-        <p style={{ color:C.stone, fontSize:13, lineHeight:1.75 }}>
-          If you've genuinely run out of messages and need more, just email{" "}
-          <a href="mailto:getbuddin@gmail.com" style={{ color:avatarColor, textDecoration:"underline" }}>getbuddin@gmail.com</a>{" "}
-          and I'll raise your limit by hand. No charge.
-        </p>
-      </div>
-
       <p style={{ color:C.stoneMid, fontSize:11, textAlign:"center", lineHeight:1.65 }}>Built by a high-school student. Every dollar I spend goes to API costs.</p>
     </div>
     <Dock screen={screen} setScreen={setScreen} onMissions={onMissions} avatarColor={avatarColor}/>
