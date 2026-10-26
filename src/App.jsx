@@ -964,9 +964,11 @@ export default function App() {
       rampVolume('bg', 0, 0);
       rampVolume('br', 0, 0);
 
-      // The <audio> tags use preload="none" so ~5MB isn't fetched on every page
-      // load. Kick off the fetch here, at the point someone actually asks for
-      // sound; the canplaythrough wait below already handles the delay.
+      // The background track uses preload="none" so 3.5MB isn't fetched on
+      // every page load. Kick off its fetch here, at the point someone actually
+      // asks for sound; the canplaythrough wait below handles the delay. The
+      // breathing track preloads normally — it's smaller and it has to be ready
+      // the instant someone presses Start.
       try { bg.load(); br.load(); } catch {}
 
       // Don't start playback until the file has buffered enough to play through
@@ -1144,7 +1146,10 @@ export default function App() {
       // Start breath track
       const br = brRef.current;
       if (br) {
-        br.currentTime = 0;
+        // readyState 0 means nothing is buffered yet, and play() on an empty
+        // element is what left the breathing track silent.
+        if (br.readyState === 0) { try { br.load(); } catch {} }
+        try { br.currentTime = 0; } catch {}
         rampVolume('br', 0.1, 0);
         br.play().catch(() => {});
       }
@@ -1507,7 +1512,7 @@ const res = await fetch("/api/chat", {
       <audio
         ref={brRef}
         src={BR_URL}
-        preload="none"
+        preload="auto"
         loop
         onCanPlayThrough={() => { if (brRef.current) brRef.current._ready = true; }}
         style={{display:"none"}}
