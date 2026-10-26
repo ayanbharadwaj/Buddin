@@ -994,6 +994,14 @@ export default function App() {
     if (brRef.current) { brRef.current.pause(); brRef.current.currentTime = 0; }
   }, []);
 
+  // Start both tracks silent, exactly once. This used to live in the audio
+  // elements' ref callbacks, which React re-ran on every render — so typing a
+  // message or hovering a companion reset the volume mid-playback.
+  useEffect(() => {
+    if (bgRef.current) bgRef.current.volume = 0;
+    if (brRef.current) brRef.current.volume = 0;
+  }, []);
+
   // ── Restore the chosen companion ──────────────────────────────
   // The choice used to live only in component state, so every reload — and
   // every bookmarked app URL — dropped the user back into onboarding, even
@@ -1489,7 +1497,7 @@ const res = await fetch("/api/chat", {
       {/* Global audio elements — live outside all screen conditionals,
           never destroyed on screen switch, refs stay valid always */}
       <audio
-        ref={el => { bgRef.current = el; if (el) el.volume = 0; }}
+        ref={bgRef}
         src={BG_URL}
         preload="none"
         onCanPlayThrough={() => { if (bgRef.current) bgRef.current._ready = true; }}
@@ -1497,7 +1505,7 @@ const res = await fetch("/api/chat", {
       />
 
       <audio
-        ref={el => { brRef.current = el; if (el) el.volume = 0; }}
+        ref={brRef}
         src={BR_URL}
         preload="none"
         loop
